@@ -1,0 +1,13 @@
+torch
+torchvision
+torchaudio
+onnx
+onnxruntime
+onnxruntime-gpu
+transformers
+optimum
+sentence-transformers
+scikit-learn
+matplotlib
+accelerate
+qai-hub
