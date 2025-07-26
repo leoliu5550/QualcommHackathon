@@ -74,7 +74,7 @@ def print_scan_summary(scan_data: Dict[str, Any]):
     print(f"掃描時間: {scan_data.get('scan_time', 'N/A')}")
     print(f"目標路徑: {scan_data.get('target_path', 'N/A')}")
     print(f"檔案總數: {total_files}")
-    print(f"總大小: {format_file_size(total_size)}")
+    print(f"總大小: {total_size} bytes")
     
     # 統計副檔名
     extensions = {}
@@ -91,28 +91,9 @@ def print_scan_summary(scan_data: Dict[str, Any]):
     
 
 if __name__ == "__main__":
-    # 測試save_scan_result和print_scan_summary函數
-    test_data = {
-        "scan_time": "2023-10-01T12:00:00",
-        "target_path": "/path/to/scan",
-        "original_files": [
-            {
-                "path": "/path/to/scan/file1.txt",
-                "name": "file1.txt",
-                "extension": ".txt",
-                "size": 1234,
-                "modified_time": "2023-10-01T11:59:59",
-                "is_readable": True                                             
-            },
-            {
-                "path": "/path/to/scan/file2.pdf",
-                "name": "file2.pdf",
-                "extension": ".pdf",
-                "size": 5678,
-                "modified_time": "2023-10-01T11:59:58",
-                "is_readable": True
-            }
-        ]
-    }
-    save_scan_result(test_data, "test_scan_result.json")
-    print_scan_summary(test_data)
+    # 測試 get_file_info 、save_scan_result 和 print_scan_summary 函數
+    test_path = Path("test/data/filetype")
+    file_info = get_file_info(test_path)
+    print(f"檔案資訊: {file_info}")
+    save_scan_result({"original_files": [file_info], "scan_time": datetime.now().isoformat(), "target_path": str(test_path.parent)})
+    print_scan_summary({"original_files": [file_info], "scan_time": datetime.now().isoformat(), "target_path": str(test_path.parent)})
