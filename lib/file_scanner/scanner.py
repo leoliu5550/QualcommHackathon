@@ -1,5 +1,14 @@
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+from datetime import datetime
+import logging
+
+# 嘗試相對導入，如果失敗則使用絕對導入
+try:
+    from .utils import get_file_info, save_scan_result, print_scan_summary
+except ImportError:
+    # 如果相對導入失敗，嘗試直接從 utils 導入
+    from utils import get_file_info, save_scan_result, print_scan_summary
 
 class FileScanner:
     """檔案掃描器類別"""
@@ -63,6 +72,46 @@ class FileScanner:
         except Exception as e:
             print(f"掃描錯誤 {current_path}: {e}")
 
+    def scan_with_details(self, save_result: bool = True, output_file: str = "scan_result.json") -> Dict[str, Any]:
+        """
+        執行詳細掃描並返回完整資訊
+        
+        Args:
+            save_result: 是否保存掃描結果到檔案
+            output_file: 輸出檔案名稱
+            
+        Returns:
+            包含完整掃描結果的字典
+        """
+        print(f"開始掃描: {self.target_path}")
+        
+        # 獲取檔案路徑列表
+        file_paths = self.scan_directory()
+        
+        # 收集檔案詳細資訊
+        file_details = []
+        for file_path_str in file_paths:
+            file_path = Path(file_path_str)
+            file_info = get_file_info(file_path)
+            file_details.append(file_info)
+        
+        # 組織掃描結果
+        scan_result = {
+            "scan_time": datetime.now().isoformat(),
+            "target_path": str(self.target_path.absolute()),
+            "original_files": file_details
+        }
+        
+        print(f"掃描完成: 找到 {len(file_details)} 個檔案")
+        
+        # 顯示掃描摘要
+        print_scan_summary(scan_result)
+        
+        # 保存掃描結果（如果需要）
+        if save_result:
+            save_scan_result(scan_result, output_file)
+        
+        return scan_result
 
 if __name__ == "__main__":
     # 測試遞迴掃描功能
@@ -71,6 +120,7 @@ if __name__ == "__main__":
         scanner = FileScanner(".", max_depth=2)
         print(f"掃描器初始化成功，目標路徑: {scanner.target_path}")
         
+        # 測試基本掃描
         files = scanner.scan_directory()
         print(f"找到 {len(files)} 個檔案 (最大深度: 2)")
         
@@ -89,6 +139,11 @@ if __name__ == "__main__":
                 print(f"  - {file_name}")
             if len(files_in_folder) > 3:
                 print(f"  ... 還有 {len(files_in_folder) - 3} 個檔案")
+        
+        # 測試詳細掃描功能
+        print("\n" + "="*50)
+        print("測試詳細掃描功能:")
+        detailed_result = scanner.scan_with_details(save_result=False)  # 測試時不保存檔案
             
     except Exception as e:
         print(f"錯誤: {e}")
