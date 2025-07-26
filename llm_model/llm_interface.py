@@ -18,7 +18,7 @@ class LocalTransformersLLM(BaseLLM):
 
 # 假設 SNPE Python API 已安裝（決賽時補上 import snpe 等…）
 # from snpe import ... (依實際情境引入)
-class QualcommLLM:
+class QualcommLLM(BaseLLM):
     """
     Qualcomm/SNPE LLM 推理接口，input/output = str。
     適用於 Snapdragon X/Windows（決賽時將推理部分補齊）。
