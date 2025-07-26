@@ -67,11 +67,48 @@ def format_file_size(size_bytes: int) -> str:
     
     return f"{size:.1f} {size_names[i]}"
 
-
+def print_scan_summary(scan_data: Dict[str, Any]):
+    """
+    列印掃描結果摘要
+    
+    Args:
+        scan_data: 掃描結果資料
+    """
+    files = scan_data.get('original_files', [])
+    total_files = len(files)
+    total_size = sum(f.get('size', 0) for f in files)
+    
+    print(f"\n📊 掃描摘要:")
+    print(f"掃描時間: {scan_data.get('scan_time', 'N/A')}")
+    print(f"目標路徑: {scan_data.get('target_path', 'N/A')}")
+    print(f"檔案總數: {total_files}")
+    print(f"總大小: {format_file_size(total_size)}")
+    
+    # 統計副檔名
+    extensions = {}
+    for file_info in files:
+        ext = file_info.get('extension', '無副檔名')
+        if not ext:
+            ext = '無副檔名'
+        extensions[ext] = extensions.get(ext, 0) + 1
+    
+    if extensions:
+        print(f"\n📋 檔案類型統計:")
+        for ext, count in sorted(extensions.items(), key=lambda x: x[1], reverse=True)[:5]:
+            print(f"  {ext}: {count} 個檔案")
     
 
 if __name__ == "__main__":
-    # 測試 format_file_size 函數
-    test_sizes = [0, 1023, 1024, 2048, 1048576, 1073741824]
-    for size in test_sizes:
-        print(f"{size} bytes = {format_file_size(size)}")
+    # 測試 print_scan_summary 函數
+    test_data = {
+        "scan_time": "2023-10-01T12:00:00",
+        "target_path": "/path/to/scan",
+        "original_files": [
+            {"path": "/path/to/scan/file1.txt", "size": 1234, "extension": ".txt"},
+            {"path": "/path/to/scan/file2.jpg", "size": 5678, "extension": ".jpg"},
+            {"path": "/path/to/scan/file3.pdf", "size": 91011, "extension": ".pdf"},
+            {"path": "/path/to/scan/file4.txt", "size": 1213, "extension": ".txt"},
+            {"path": "/path/to/scan/file5.docx", "size": 1415, "extension": ".docx"},
+        ]
+    }
+    print_scan_summary(test_data)
