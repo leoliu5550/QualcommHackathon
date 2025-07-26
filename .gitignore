@@ -1,0 +1,3 @@
+.venv/
+show_content.py
+*__pycache__*
