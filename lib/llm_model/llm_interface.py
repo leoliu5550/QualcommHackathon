@@ -1,5 +1,7 @@
 from typing import List
 
+from lib.llm_model.mode_config import config
+
 class BaseLLM:
     def inference(self, prompt: str) -> str:
         raise NotImplementedError("Must implement in subclass")
@@ -68,3 +70,15 @@ def get_llm(backend: str, **kwargs) -> BaseLLM:
     else:
         raise ValueError(f"Unknown backend: {backend}")
 
+if __name__ == "__main__":
+    llm = get_llm(
+        backend=config.get("backend"),
+        model_id=config.get("model_id"),
+        # dlc_path=config.get("dlc_path"),
+        # tokenizer_id=config.get("tokenizer_id"),
+    )
+
+    # 標準接口（比賽或串接都統一呼叫）
+    prompt = "我們的資料結構及每個檔案的部分資訊如下:"
+    result = llm.inference(prompt)
+    print(f"Prompt: {prompt}\n===\n{result}\n{'='*30}")
