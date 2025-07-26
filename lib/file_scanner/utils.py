@@ -43,12 +43,35 @@ def get_file_info(file_path: Path) -> Dict[str, Any]:
             "is_readable": False,
             "error": str(e)
         }
+    
+def format_file_size(size_bytes: int) -> str:
+    """
+    格式化檔案大小顯示
+    
+    Args:
+        size_bytes: 檔案大小（位元組）
+        
+    Returns:
+        格式化後的大小字串
+    """
+    if size_bytes == 0:
+        return "0 B"
+    
+    size_names = ["B", "KB", "MB", "GB", "TB"]
+    size = size_bytes
+    i = 0
+    
+    while size >= 1024 and i < len(size_names) - 1:
+        size /= 1024.0
+        i += 1
+    
+    return f"{size:.1f} {size_names[i]}"
+
+
+    
 
 if __name__ == "__main__":
-    # 測試 get_file_info 函數
-    test_path = Path("test/data/filetype/書僕.txt")
-    if test_path.exists():
-        info = get_file_info(test_path)
-        print(json.dumps(info, indent=4, ensure_ascii=False))
-    else:
-        print(f"檔案 {test_path} 不存在。")
+    # 測試 format_file_size 函數
+    test_sizes = [0, 1023, 1024, 2048, 1048576, 1073741824]
+    for size in test_sizes:
+        print(f"{size} bytes = {format_file_size(size)}")
