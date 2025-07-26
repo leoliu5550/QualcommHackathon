@@ -88,12 +88,3 @@ def print_scan_summary(scan_data: Dict[str, Any]):
         print(f"\n📋 檔案類型統計:")
         for ext, count in sorted(extensions.items(), key=lambda x: x[1], reverse=True)[:5]:
             print(f"  {ext}: {count} 個檔案")
-    
-
-if __name__ == "__main__":
-    # 測試 get_file_info 、save_scan_result 和 print_scan_summary 函數
-    test_path = Path("test/data/filetype")
-    file_info = get_file_info(test_path)
-    print(f"檔案資訊: {file_info}")
-    save_scan_result({"original_files": [file_info], "scan_time": datetime.now().isoformat(), "target_path": str(test_path.parent)})
-    print_scan_summary({"original_files": [file_info], "scan_time": datetime.now().isoformat(), "target_path": str(test_path.parent)})

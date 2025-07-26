@@ -1,14 +1,8 @@
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-import logging
 
-# 嘗試相對導入，如果失敗則使用絕對導入
-try:
-    from .utils import get_file_info, save_scan_result, print_scan_summary
-except ImportError:
-    # 如果相對導入失敗，嘗試直接從 utils 導入
-    from utils import get_file_info, save_scan_result, print_scan_summary
+from lib.file_scanner.utils import get_file_info, save_scan_result, print_scan_summary
 
 class FileScanner:
     """檔案掃描器類別"""
@@ -104,6 +98,7 @@ class FileScanner:
         
         print(f"掃描完成: 找到 {len(file_details)} 個檔案")
         
+        
         # 顯示掃描摘要
         print_scan_summary(scan_result)
         
@@ -112,38 +107,4 @@ class FileScanner:
             save_scan_result(scan_result, output_file)
         
         return scan_result
-
-if __name__ == "__main__":
-    # 測試遞迴掃描功能
-    try:
-        # 測試基本掃描
-        scanner = FileScanner(".", max_depth=2)
-        print(f"掃描器初始化成功，目標路徑: {scanner.target_path}")
         
-        # 測試基本掃描
-        files = scanner.scan_directory()
-        print(f"找到 {len(files)} 個檔案 (最大深度: 2)")
-        
-        # 按資料夾分組顯示
-        folders = {}
-        for file_path in files[:10]:  # 只顯示前 10 個
-            path_obj = Path(file_path)
-            folder = str(path_obj.parent)
-            if folder not in folders:
-                folders[folder] = []
-            folders[folder].append(path_obj.name)
-        
-        for folder, files_in_folder in folders.items():
-            print(f"\n📁 {folder}:")
-            for file_name in files_in_folder[:3]:  # 每個資料夾最多顯示 3 個檔案
-                print(f"  - {file_name}")
-            if len(files_in_folder) > 3:
-                print(f"  ... 還有 {len(files_in_folder) - 3} 個檔案")
-        
-        # 測試詳細掃描功能
-        print("\n" + "="*50)
-        print("測試詳細掃描功能:")
-        detailed_result = scanner.scan_with_details(save_result=False)  # 測試時不保存檔案
-            
-    except Exception as e:
-        print(f"錯誤: {e}")
