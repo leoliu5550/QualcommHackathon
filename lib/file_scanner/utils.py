@@ -67,6 +67,21 @@ def format_file_size(size_bytes: int) -> str:
     
     return f"{size:.1f} {size_names[i]}"
 
+def save_scan_result(scan_data: Dict[str, Any], output_file: str = "scan_result.json"):
+    """
+    將掃描結果保存為 JSON 檔案
+    
+    Args:
+        scan_data: 掃描結果資料
+        output_file: 輸出檔案名稱
+    """
+    try:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(scan_data, f, ensure_ascii=False, indent=2)
+        print(f"掃描結果已保存至: {output_file}")
+    except Exception as e:
+        print(f"保存檔案時發生錯誤: {e}")
+
 def print_scan_summary(scan_data: Dict[str, Any]):
     """
     列印掃描結果摘要
@@ -99,16 +114,28 @@ def print_scan_summary(scan_data: Dict[str, Any]):
     
 
 if __name__ == "__main__":
-    # 測試 print_scan_summary 函數
+    # 測試save_scan_result和print_scan_summary函數
     test_data = {
         "scan_time": "2023-10-01T12:00:00",
         "target_path": "/path/to/scan",
         "original_files": [
-            {"path": "/path/to/scan/file1.txt", "size": 1234, "extension": ".txt"},
-            {"path": "/path/to/scan/file2.jpg", "size": 5678, "extension": ".jpg"},
-            {"path": "/path/to/scan/file3.pdf", "size": 91011, "extension": ".pdf"},
-            {"path": "/path/to/scan/file4.txt", "size": 1213, "extension": ".txt"},
-            {"path": "/path/to/scan/file5.docx", "size": 1415, "extension": ".docx"},
+            {
+                "path": "/path/to/scan/file1.txt",
+                "name": "file1.txt",
+                "extension": ".txt",
+                "size": 1234,
+                "modified_time": "2023-10-01T11:59:59",
+                "is_readable": True                                             
+            },
+            {
+                "path": "/path/to/scan/file2.pdf",
+                "name": "file2.pdf",
+                "extension": ".pdf",
+                "size": 5678,
+                "modified_time": "2023-10-01T11:59:58",
+                "is_readable": True
+            }
         ]
     }
+    save_scan_result(test_data, "test_scan_result.json")
     print_scan_summary(test_data)
