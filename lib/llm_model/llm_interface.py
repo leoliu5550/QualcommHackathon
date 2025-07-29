@@ -1,5 +1,5 @@
 from typing import List
-
+import torch
 from lib.llm_model.mode_config import config
 
 class BaseLLM:
@@ -10,12 +10,25 @@ class BaseLLM:
 class LocalTransformersLLM(BaseLLM):
     def __init__(self, model_id: str, device: str = "cuda"):
         from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        self.model = AutoModelForCausalLM.from_pretrained(model_id).to(device)
-        self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=0 if device == "cuda" else -1)
+        model_dir = "./lib/llm_model/model"
+
+        # 檢查 CUDA 可用性，若不可用則切換到 CPU
+        if device == "cuda" and not torch.cuda.is_available():
+            # print("[LocalTransformersLLM] CUDA not available, switching to CPU")
+            self.device = "cpu"
+        else:
+            self.device = device  # "cuda" or "cpu"
+
+        # pipeline 需要的 device_idx，CPU 用 -1，CUDA 用 0
+        device_idx = 0 if self.device == "cuda" else -1
+        
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=model_dir)
+        self.model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=model_dir).to(self.device)
+        self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=device_idx,
+    return_full_text=False)
 
     def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
-        output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=True, temperature=0.7)[0]["generated_text"]
+        output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=False, temperature=0)[0]["generated_text"]
         return output
 
 # 假設 SNPE Python API 已安裝（決賽時補上 import snpe 等…）
