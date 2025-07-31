@@ -1,5 +1,6 @@
-from pathlib import Path
+import datetime
 import json
+import os
 from typing import List
 from lib.file_scanner import FileScanner
 from lib.file_parser import parser_manager
@@ -26,14 +27,20 @@ class Organizer:
     
     def _file_parser(self, scanner_result:json, save_result :False)->json:
         file_parserd:List[ParseResult] = parser_manager.parse_multiple_files(scanner_result)
-      
-        parser_results = []
+        now = datetime.datetime.now()
+        parser_results = {
+            "scan_time": now.isoformat() ,
+            "summaries":[],
+        }
         for _file_path,result in zip(scanner_result,file_parserd):
             _temp = {}
             _temp["summary"] = result.content
             _temp["path"] = _file_path
-            parser_results.append(_temp)
+            _temp["name"] = os.path.basename(_file_path)
+            parser_results["summaries"].append(_temp)
         if save_result:
             with open("summ_load.json", 'w', encoding='utf-8') as f:
                 json.dump(parser_results, f, ensure_ascii=False, indent=4)
+                
+        
         return parser_results
