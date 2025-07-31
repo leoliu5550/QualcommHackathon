@@ -12,7 +12,7 @@ from lib.file_parser.xlsx_parser import XlsxParser
 from lib.file_parser.xml_parser import XmlParser
 
 # 創建管理器
-parser_manager = FileParserManager(char_limit=120)
+parser_manager = FileParserManager(char_limit=400)
 parser_manager.register_custom_parser('.csv', CsvParser)
 parser_manager.register_custom_parser('.docx', DocxParser)
 parser_manager.register_custom_parser('.pdf', PdfParser)
