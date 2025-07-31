@@ -19,7 +19,8 @@ class CreateFolderNamer:
     def create_folder_name(self, content: str):
         """
         輸入部分的檔案文字後產出合適的folder_name
-        一份檔案就會有一個folder_name
+        一份檔案就會有一個folder_name，實際上LLM 的產出會是一個字串像是"Christmas in August"
+        輸入部分的檔案文字後產出合適的folder_name，格式: /foldername
         """
         pmt = "give me an appropriate folder name of the content must in json format:"
         txt = content
@@ -38,6 +39,11 @@ class CreateFolderNamer:
     def remapping_folder(self, candidate_folder:List[str]):
         """
         create_folder_name會每一個檔案都建立一個檔案夾名稱，此函數用意是將相同的意義的檔案夾名稱聚合在一起
+        產出是，前面是foldername原先的資料夾名稱，groupname應該要合併到這個資料夾名稱
+        [
+            {"foldername": "/Famine in Gaza", "groupname": "Famine"},
+            {"foldername": "/Screen Time: The Dark Side", "groupname": "Screen Time"},
+        ]
         """
         pmt = "categorize the foldername into several groups if they are related or similar and give each group a name, must in json format:"
         txt = "[" + ", ".join(candidate_folder) + "]"
@@ -61,4 +67,4 @@ class CreateFolderNamer:
         for item in data:
             item["foldername"] = item["foldername"].lstrip('/')
 
-        return create_folder
+        return data
