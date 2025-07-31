@@ -22,26 +22,17 @@ class LocalTransformersLLM(BaseLLM):
             self.device = device  # "cuda" or "cpu"
 
         # pipeline 需要的 device_idx，CPU 用 -1，CUDA 用 0
-        # device_idx = 0 if self.device == "cuda" else -1
+        device_idx = 0 if self.device == "cuda" else -1
         
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=model_dir)
         self.model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=model_dir).to(self.device)
-    #     self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=device_idx,
-    # return_full_text=False)
+        self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=device_idx,
+    return_full_text=False)
 
-    # def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
-    #     output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=False, temperature=0)[0]["generated_text"]
-    #     return output
-    def inference(self, messages: list[dict], max_new_tokens: int = 128) -> str:
-        inputs = self.tokenizer.apply_chat_template(
-            messages,
-            add_generation_prompt=True,
-            return_tensors="pt"
-        ).to(self.model.device)
+    def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
+        output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=False, temperature=0)[0]["generated_text"]
+        return output
 
-        output_ids = self.model.generate(inputs, max_new_tokens=max_new_tokens)
-        output_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
-        return output_text
 # 假設 SNPE Python API 已安裝（決賽時補上 import snpe 等…）
 # from snpe import ... (依實際情境引入)
 class QualcommLLM(BaseLLM):

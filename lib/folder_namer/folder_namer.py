@@ -1,5 +1,9 @@
+from typing import List
+import json
 from lib.llm_model.llm_interface import get_llm
 from lib.llm_model.mode_config import config
+
+
 
 
 class CreateFolderNamer:
@@ -28,7 +32,33 @@ class CreateFolderNamer:
             {"role": "user", "content": cnt},
             {"role": "assistant", "content": '{"foldername": "'},
         ]
-        create_folder = self.llm.inference(messages,max_new_tokens= 20) ## 這部分可能會有問題，plpeline有點限制太多，我想用generate方式使用
+        create_folder = self.llm.inference(prompt = messages,max_new_tokens= 20) ## 這部分可能會有問題，plpeline有點限制太多，我想用generate方式使用
         return create_folder
 
+    def remapping_folder(self, candidate_folder:List[str]):
+        """
+        create_folder_name會每一個檔案都建立一個檔案夾名稱，此函數用意是將相同的意義的檔案夾名稱聚合在一起
+        """
+        pmt = "categorize the foldername into several groups if they are related or similar and give each group a name, must in json format:"
+        txt = "[" + ", ".join(candidate_folder) + "]"
+        cnt = pmt+txt
+        messages = [
+            {"role": "system", "content": 'you are a master of categorizing folder names and give it a new group name in json format, eg. {"foldername":"/foldername", "groupname":"/groupname"]}'},
+            {"role": "user", "content": cnt},
+            {"role": "assistant", "content": '{"groups": ["'},
+        ]
+        mapp_folder = self.llm.inference(prompt = messages,max_new_tokens= 400) ## 這部分可能會有問題，plpeline有點限制太多，我想用generate方式使用
+        """
+        [
+            {"foldername": "/Famine in Gaza", "groupname": "Famine"},
+            {"foldername": "/Screen Time: The Dark Side", "groupname": "Screen Time"},
+        ]
+        """
+        # 1. 字串轉 Python 物件
+        data = json.loads(mapp_folder)
 
+        # 2. 去掉每個 foldername 的開頭斜線
+        for item in data:
+            item["foldername"] = item["foldername"].lstrip('/')
+
+        return create_folder
