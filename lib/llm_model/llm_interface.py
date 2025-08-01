@@ -30,6 +30,7 @@ class LocalTransformersLLM(BaseLLM):
     return_full_text=False)
 
     def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
+        print(f"model inferences: {prompt}")
         output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=True, temperature = 0.1)[0]["generated_text"]
         return output
 

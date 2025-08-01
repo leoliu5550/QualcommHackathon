@@ -4,3 +4,5 @@ show_content.py
 *.DS_Store
 .vscode*
 lib/llm_model/model*
+.backup/
+.claude/

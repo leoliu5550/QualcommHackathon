@@ -100,12 +100,10 @@ class CreateFolderNamer:
             {
             "file_paths": [
                 {
-                    "initial_path": "./documents/init_folder/CH04account.pdf",
                     "original": "./documents/Accounting/CH04account.pdf", 
                     "new": "./documents/AcademicSubjects/CH04account.pdf"
                 },
                 {
-                    "initial_path": "./documents/init_folder/Ch4  Principles component analysis(2)(1).pdf",
                     "original": "./documents/Statistics/Ch4  Principles component analysis(2)(1).pdf",
                     "new": "./documents/AcademicSubjects/Ch4  Principles component analysis(2)(1).pdf"
                 }
@@ -156,12 +154,10 @@ class CreateFolderNamer:
             group_name = folder_to_group.get(initial_folder, initial_folder)
             
             # 構建路徑
-            initial_path = f"{base_output_dir}/init_folder/{file_name}"
-            old_path = f"{base_output_dir}/{initial_folder}/{file_name}"
+            old_path = file_info["original_path"]
             new_path = f"{base_output_dir}/{group_name}/{file_name}"
             
             file_paths.append({
-                "initial_path": initial_path,
                 "original": old_path,
                 "new": new_path
             })
