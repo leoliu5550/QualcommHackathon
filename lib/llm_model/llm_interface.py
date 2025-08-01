@@ -26,11 +26,11 @@ class LocalTransformersLLM(BaseLLM):
         
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=model_dir)
         self.model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=model_dir).to(self.device)
-        self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=device_idx,
+        self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer , #device=device_idx,
     return_full_text=False)
 
     def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
-        output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=False, temperature=0)[0]["generated_text"]
+        output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=True, temperature = 0.1)[0]["generated_text"]
         return output
 
 # 假設 SNPE Python API 已安裝（決賽時補上 import snpe 等…）

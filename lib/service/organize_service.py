@@ -5,6 +5,7 @@ from typing import List
 from lib.file_scanner import FileScanner
 from lib.file_parser import parser_manager
 from lib.file_parser.base_parser import ParseResult
+from lib.folder_namer.folder_namer import create_name
 
 class Organizer:
     def __init__(self):
@@ -16,8 +17,12 @@ class Organizer:
         scanner_result = self._file_scanner(target_path)
 
         # step 2 
-        file_parserd = self._file_parser(scanner_result,  save_result = True)
-        return file_parserd
+        file_parserd = self._file_parser(scanner_result = scanner_result,  save_result = True)
+        
+        # step 2
+        generate_result =self._generate_folder(file_parserd, base_output_dir=target_path,  save_result = True)
+        
+        return generate_result
     
     def _file_scanner(self,target_path:str)->json:
         file_scanner = FileScanner(target_path=target_path)
@@ -39,8 +44,15 @@ class Organizer:
             _temp["name"] = os.path.basename(_file_path)
             parser_results["summaries"].append(_temp)
         if save_result:
-            with open("summ_load.json", 'w', encoding='utf-8') as f:
+            with open(".backup/summ_load.json", 'w', encoding='utf-8') as f:
                 json.dump(parser_results, f, ensure_ascii=False, indent=4)
-                
-        
         return parser_results
+    
+    def _generate_folder(self,file_parserd:json,base_output_dir:str, save_result :False )->json:
+        file_paths_dict = create_name.process_files(summaries_data=file_parserd,base_output_dir=base_output_dir)
+        file_paths_dict["classification_time"] = datetime.datetime.now().isoformat()
+
+        if save_result:
+            with open(".backup/file_paths.json", 'w', encoding='utf-8') as f:
+                json.dump(file_paths_dict, f, ensure_ascii=False, indent=4)
+        return file_paths_dict
