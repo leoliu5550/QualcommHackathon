@@ -3,3 +3,6 @@ show_content.py
 *__pycache__*
 *.DS_Store
 .vscode*
+lib/llm_model/model*
+.backup/
+.claude/

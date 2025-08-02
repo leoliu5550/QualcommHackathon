@@ -1,0 +1,50 @@
+{
+    "scan_time": "2025-08-01T14:00:11.595101",
+    "summaries": [
+        {
+            "summary": "CH4  \n1. Revenues and expenses accounts, which are closed at the end of each accounting \nperiod are:  \nA. Real accounts.  \nB. Temporary accounts.  \nC. Closing accounts.  \nD. Permanent accounts  \nANS:B  \n2. Which of the  following statements is incorrect?  \nA. Permanent accounts is another name for nominal accounts.  \nB. Temporary accounts carry a zero balance at the beginning of each accounting \np",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\CH04account.pdf",
+            "name": "CH04account.pdf"
+        },
+        {
+            "summary": "Multivariate Statistical Analysis\nRung -Hung, Su\nFu Jen Catholic University\nDepartment of Statistics and Information Science\nMail: 141637@mail.fju.edu.tw\nPhone: 2905 -3194 (SL474)Chapter 4\nPrinciples Component Analysis (2)\n2\n4.4 Issues Relating to the use of Principal Component \nAnalysis\n1)What effect does thetype ofdata (i.e.,mean -corrected orstandardized\ndata) have onprincipal components analys",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\Ch4  Principles component analysis(2)(1).pdf",
+            "name": "Ch4  Principles component analysis(2)(1).pdf"
+        },
+        {
+            "summary": "Multivariate Statistical Analysis\nRung -Hung, Su\nFu Jen Catholic University\nDepartment of Statistics and Information Science\nMail: 141637@mail.fju.edu.tw\nPhone: 2905 -3194 (SL474)Chapter 7\nCluster Analysis (2)\n2\n7.6.1 Interpreting the SAS outputMultivariate Statistical Analysis\nEvaluating theCluster Solution andDetermining theNumber ofClusters\n1)Themost widely used statistics are:\n•Root -mean -squ",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\Ch7  Cluster analysis (2)(1).pdf",
+            "name": "Ch7  Cluster analysis (2)(1).pdf"
+        },
+        {
+            "summary": "{\n  \"project\": {\n    \"id\": 101,\n    \"name\": \"新產品開發\",\n    \"description\": \"針對市場需求進行新產品規劃、設計與測試。\",\n    \"startDate\": \"2025-06-01\",\n    \"endDate\": \"2025-12-31\",\n    \"status\": \"進行中\",\n    \"budget\": 250000,\n    \"tags\": [\n      \"研發\",\n      \"市場調查\",\n      \"測試\"\n    ]\n  },\n  \"team\": [\n    {\n      \"userId\": 1,\n      \"name\": \"王小明\",\n      \"role\": \"產品經理\",\n      \"email\": \"xiaoming.wang@example.com\",\n      \"active\":",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\customer_order.json",
+            "name": "customer_order.json"
+        },
+        {
+            "summary": "# 客戶訂單要求 / Client Order Requirements\n這份文件概述了客戶的訂單要求。請仔細審閱所有細節，以確保訂單能準確無誤地處理和交付。任何疑問或需要澄清的地方，請立即聯繫相關部門。\n\nThis document outlines the client's order requirements. Please review all details carefully to ensure the order is processed and delivered accurately. For any questions or clarifications, please contact the relevant department immediately.\n\n---\n## 訂單基本資訊 / 1. Basic Order Information\n    - 訂單編號 /",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\customer_order.md",
+            "name": "customer_order.md"
+        },
+        {
+            "summary": "工作表: Sheet1\nCategory, Function, Description, New?, Help Topic, Help, , , \nLogical, IFERROR, Returns a different result if the first argument evaluates to an error, True, HA01231765, =HYPERLINK(SUBSTITUTE(HelpURLTemplate,\"xxxxxxxxxx\",[Help Topic]),\"<More Info>\"), , , \nStatistical, AVERAGEIF, Returns the average for the cells specified by a given criterion, True, HA10047433, =HYPERLINK(SUBSTITUTE(He",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\Excel_Function.xlsx",
+            "name": "Excel_Function.xlsx"
+        },
+        {
+            "summary": "As health actors meet this week in Brasilia to refine a Health Action Plan for COP30, ending relationships with PR firms that engage with fossil fuel producers is one concrete step both civil society and UN actors could take now, two leading global health actors argue. The call is the more urgent in light of the UN’s recent selection of a media firm representing Shell to promote the upcoming UN Cl",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\HealthOrganizations.docx",
+            "name": "HealthOrganizations.docx"
+        },
+        {
+            "summary": "\n\n\nContentsAbout the AuthorUsing this Book – At a GlanceIntroductionHow to Read EffectivelyThe Six-Step Reading ProcessCrazy PaellaA Very Unusual ExcursionThe KnightThe WatchThe ChestUnknown TerritoryLaura, the Invisible WomanThe CapsuleAnswer KeyGlossaryAcknowledgements\n\nAbout the Author\nOlly Richards, author of the Teach Yourself Foreign Language GradedReaders series, speaks eight languages and ",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\Short Stories.pdf",
+            "name": "Short Stories.pdf"
+        },
+        {
+            "summary": "投影片 1:\nSmall Changes in AI Models Can Produce Big Energy Savings\n投影片 2:\nSmall changes in the large language models (LLMs) at the heart of AI applications can result in substantial energy savings, according to a report released by the United Nations Educational, Scientific and Cultural Organization (UNESCO) on Monday.\nThe 35-page report titled “Smarter, smaller, stronger: resource-efficient generat",
+            "path": "D:\\QualcommHackathon\\test\\data\\textIO\\Small Changes in AI.pptx",
+            "name": "Small Changes in AI.pptx"
+        }
+    ]
+}
