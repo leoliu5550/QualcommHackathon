@@ -1,7 +1,11 @@
+"""
+主流程入口：依序執行掃描、解析、分類產出路徑
+"""
 import datetime
 import json
 import os
 import sys
+import shutil
 from typing import List
 
 # Add parent directory to path for imports
@@ -17,20 +21,25 @@ class Organizer:
         pass
 
     def start_organize(self,target_path:str):
+        self.target_path:str = target_path
+        """
+        主流程入口：依序執行掃描、解析、分類產出路徑
+        """
+        # step 1 掃描指定目錄下的檔案
+        scanner_result = self._file_scanner()
 
-        # step 1
-        scanner_result = self._file_scanner(target_path)
-
-        # step 2 
+        # step 2 使用 parser 對檔案內容進行分析與摘要
         file_parserd = self._file_parser(scanner_result = scanner_result,  save_result = True)
         
-        # step 3
+        # step 3 根據內容自動分類並生成新目錄結構
         generate_result =self._generate_folder(file_parserd, base_output_dir=target_path,  save_result = True)
         
-        return generate_result
+        # step 4 實際將檔案從原始位置搬移到新分類資料夾中
+        self._move_file(generate_result)
+        # return generate_result
     
-    def _file_scanner(self,target_path:str)->json:
-        file_scanner = FileScanner(target_path=target_path)
+    def _file_scanner(self)->json:
+        file_scanner = FileScanner(target_path=self.target_path)
         scanner_result = file_scanner.scan_with_details(save_result=False)
         scanner_result = [ file_path.get("path",None) for file_path in scanner_result.get("original_files",[])]
         return scanner_result
@@ -49,12 +58,14 @@ class Organizer:
             _temp["name"] = os.path.basename(_file_path)
             parser_results["summaries"].append(_temp)
         if save_result:
-            os.makedirs(".backup", exist_ok=True)
-            with open(".backup/summ_load.json", 'w', encoding='utf-8') as f:
+            
+            os.makedirs(os.path.join(self.target_path,".backup"), exist_ok=True)
+            with open(os.path.join(self.target_path,".backup/summ_load.json"), 'w', encoding='utf-8') as f:
                 json.dump(parser_results, f, ensure_ascii=False, indent=4)
         return parser_results
     
     def _generate_folder(self,file_parserd:json,base_output_dir:str, save_result=False)->json:
+
         file_paths_dict = create_name.process_files(summaries_data=file_parserd,base_output_dir=base_output_dir)
         
         # Convert file_paths to folder_mappings
@@ -62,7 +73,8 @@ class Organizer:
         for file_info in file_paths_dict.get("file_paths", []):
             # Extract folder name from new path
             new_path = file_info["new"]
-            folder_name = os.path.basename(os.path.dirname(new_path))
+            relative_path = os.path.relpath(new_path, base_output_dir)
+            folder_name = os.path.dirname(relative_path)
             file_name = os.path.basename(new_path)
             
             if folder_name not in folder_mappings:
@@ -76,7 +88,23 @@ class Organizer:
         }
 
         if save_result:
-            os.makedirs(".backup", exist_ok=True)
-            with open(".backup/file_paths.json", 'w', encoding='utf-8') as f:
+            backup_dir = os.path.join(self.target_path, ".backup")
+            os.makedirs(backup_dir, exist_ok=True)
+            with open(os.path.join(backup_dir, "file_paths.json"), 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=4)
         return result
+
+    def _move_file(self, generate_result:json):
+        for file_info in generate_result.get("file_paths", []):
+            original_path = file_info["original"]
+            new_path = file_info["new"]
+
+            # 建立新目錄（如果尚未存在）
+            os.makedirs(os.path.dirname(new_path), exist_ok=True)
+
+            # 搬移檔案
+            try:
+                shutil.move(original_path, new_path)
+                print(f"Moved: {original_path} -> {new_path}")
+            except Exception as e:
+                print(f"Failed to move {original_path} to {new_path}: {e}")
