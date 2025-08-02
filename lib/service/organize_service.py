@@ -24,7 +24,7 @@ class Organizer:
         # step 2 
         file_parserd = self._file_parser(scanner_result = scanner_result,  save_result = True)
         
-        # step 2
+        # step 3
         generate_result =self._generate_folder(file_parserd, base_output_dir=target_path,  save_result = True)
         
         return generate_result
@@ -80,39 +80,3 @@ class Organizer:
             with open(".backup/file_paths.json", 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=4)
         return result
-
-# 測試指令: python lib/service/organize_service.py test/data/textIO
-if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) < 2:
-        print("Usage: python organize_service.py <target_path>")
-        sys.exit(1)
-    
-    target_path = sys.argv[1]
-    
-    if not os.path.exists(target_path):
-        print(f"Error: Path '{target_path}' does not exist")
-        sys.exit(1)
-    
-    print(f"Starting organization for: {target_path}")
-    
-    organizer = Organizer()
-    
-    try:
-        os.makedirs(".backup", exist_ok=True)
-        
-        result = organizer.start_organize(target_path)
-        
-        print("\nOrganization completed!")
-        print(f"Classification time: {result.get('classification_time', 'N/A')}")
-        print(f"\nFolder mappings:")
-        
-        for folder, files in result.get("folder_mappings", {}).items():
-            print(f"\n{folder}:")
-            for file in files:
-                print(f"  - {file}")
-                
-    except Exception as e:
-        print(f"Error during organization: {str(e)}")
-        sys.exit(1)
