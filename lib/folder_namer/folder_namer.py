@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 import json
-import re
+import re, os
 
 from lib.llm_model.llm_interface import get_llm
 from lib.llm_model.mode_config import config
@@ -100,11 +100,11 @@ class CreateFolderNamer:
             {
             "file_paths": [
                 {
-                    "original": "./documents/Accounting/CH04account.pdf", 
+                    "original": "./documents/CH04account.pdf", 
                     "new": "./documents/AcademicSubjects/CH04account.pdf"
                 },
                 {
-                    "original": "./documents/Statistics/Ch4  Principles component analysis(2)(1).pdf",
+                    "original": "./documents/Ch4  Principles component analysis(2)(1).pdf",
                     "new": "./documents/AcademicSubjects/Ch4  Principles component analysis(2)(1).pdf"
                 }
             ]
@@ -155,7 +155,7 @@ class CreateFolderNamer:
             
             # 構建路徑
             old_path = file_info["original_path"]
-            new_path = f"{base_output_dir}/{group_name}/{file_name}"
+            new_path = os.path.join(base_output_dir, group_name, file_name)
             
             file_paths.append({
                 "original": old_path,
