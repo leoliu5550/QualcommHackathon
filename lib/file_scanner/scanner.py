@@ -18,6 +18,9 @@ class FileScanner:
         self.target_path = Path(target_path)
         self.max_depth = max_depth
         self.scanned_files = []
+        # 忽略的資料夾名稱
+        self.ignore_dirs = {'.git', '__pycache__', 'node_modules', '.venv', 'venv', 
+                           '.idea', '.vscode', 'tidy_report', '.backup', 'Organized_Files_*'}
         
         # 基本路徑驗證
         if not self.target_path.exists():
@@ -53,6 +56,14 @@ class FileScanner:
             for item in current_path.iterdir():
                 # 跳過隱藏檔案和資料夾
                 if item.name.startswith('.'):
+                    continue
+                
+                # 跳過忽略清單中的資料夾
+                if item.is_dir() and item.name in self.ignore_dirs:
+                    continue
+                
+                # 跳過符合特定模式的資料夾 (如 Organized_Files_*)
+                if item.is_dir() and item.name.startswith('Organized_Files_'):
                     continue
                     
                 if item.is_file():
