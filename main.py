@@ -4,7 +4,6 @@ import json
 import argparse
 import shutil
 from datetime import datetime
-from lib.report_generator import ReportGenerator
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -39,7 +38,7 @@ def load_backup_data(target_path):
         print(f"Error loading backup data: {e}")
         return None
 
-def apply_backup_structure(target_path, backup_data):
+def apply_backup_structure(backup_data):
     """Apply the folder structure from backup JSON"""
     file_paths = backup_data.get("file_paths", [])
     moved_count = 0
@@ -63,15 +62,6 @@ def apply_backup_structure(target_path, backup_data):
             print(f"Warning: File not found at original location: {original_path}")
     
     print(f"\nMoved {moved_count}/{len(file_paths)} files based on backup structure")
-    
-    # 生成報告
-    try:
-        report_generator = ReportGenerator(target_path)
-        report_files = report_generator.generate_reports()
-        print("\n已生成報告:")
-        print(f"  報告儲存於: {report_files['report_folder']}")
-    except Exception as e:
-        print(f"生成報告時發生錯誤: {e}")
 
 def run_preview_mode(target_path):
     """Run organization in preview mode (no file movement)"""
@@ -99,7 +89,7 @@ def run_preview_mode(target_path):
     
     # Step 3: Generate folder structure (but don't move files)
     print("\nGenerating folder structure...")
-    generate_result = organizer._generate_folder(file_parsed, base_output_dir=target_path, save_result=True, generate_report=True)
+    generate_result = organizer._generate_folder(file_parsed, base_output_dir=target_path, save_result=True)
     
     # Display preview results
     print("\n" + "="*60)
@@ -178,7 +168,9 @@ def main():
 
 if __name__ == "__main__":
     """
-    測試指令: 
-    python main.py test/data/textIO
-    python main.py test/data/textIO --restore"""
+    Usage examples:
+    - Preview mode: python main.py test/data/textIO --preview
+    - Standard mode: python main.py test/data/textIO
+    - Restore mode: python main.py test/data/textIO --restore
+    """
     main()
