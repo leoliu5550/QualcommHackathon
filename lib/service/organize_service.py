@@ -40,7 +40,11 @@ class Organizer:
     
     def _file_scanner(self)->json:
         file_scanner = FileScanner(target_path=self.target_path)
-        scanner_result = file_scanner.scan_with_details(save_result=False)
+        # Suppress output that may cause encoding issues
+        import io
+        import contextlib
+        with contextlib.redirect_stdout(io.StringIO()):
+            scanner_result = file_scanner.scan_with_details(save_result=False)
         scanner_result = [ file_path.get("path",None) for file_path in scanner_result.get("original_files",[])]
         return scanner_result
     
@@ -81,9 +85,18 @@ class Organizer:
                 folder_mappings[folder_name] = []
             folder_mappings[folder_name].append(file_name)
         
+        # Fix the new paths to be absolute paths
+        fixed_file_paths = []
+        for file_info in file_paths_dict.get("file_paths", []):
+            fixed_info = {
+                "original": file_info["original"],
+                "new": os.path.abspath(file_info["new"])
+            }
+            fixed_file_paths.append(fixed_info)
+        
         result = {
             "folder_mappings": folder_mappings,
-            "file_paths": file_paths_dict.get("file_paths", []),
+            "file_paths": fixed_file_paths,
             "classification_time": datetime.datetime.now().isoformat()
         }
 
