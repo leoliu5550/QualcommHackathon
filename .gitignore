@@ -6,3 +6,4 @@ show_content.py
 lib/llm_model/model*
 .backup/
 .claude/
+tidy_report/

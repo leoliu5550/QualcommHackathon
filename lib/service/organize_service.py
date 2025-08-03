@@ -15,6 +15,7 @@ from lib.file_scanner import FileScanner
 from lib.file_parser import parser_manager
 from lib.file_parser.base_parser import ParseResult
 from lib.folder_namer.folder_namer import create_name
+from lib.report_generator import ReportGenerator
 
 class Organizer:
     def __init__(self):
@@ -36,6 +37,9 @@ class Organizer:
         
         # step 4 實際將檔案從原始位置搬移到新分類資料夾中
         self._move_file(generate_result)
+        
+        # step 5 生成整理報告
+        self._generate_reports()
         # return generate_result
     
     def _file_scanner(self)->json:
@@ -68,7 +72,7 @@ class Organizer:
                 json.dump(parser_results, f, ensure_ascii=False, indent=4)
         return parser_results
     
-    def _generate_folder(self,file_parserd:json,base_output_dir:str, save_result=False)->json:
+    def _generate_folder(self,file_parserd:json,base_output_dir:str, save_result=False, generate_report=False)->json:
 
         file_paths_dict = create_name.process_files(summaries_data=file_parserd,base_output_dir=base_output_dir)
         
@@ -105,6 +109,11 @@ class Organizer:
             os.makedirs(backup_dir, exist_ok=True)
             with open(os.path.join(backup_dir, "file_paths.json"), 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=4)
+            
+            # 如果需要生成報告
+            if generate_report:
+                self._generate_reports()
+        
         return result
 
     def _move_file(self, generate_result:json):
@@ -121,3 +130,17 @@ class Organizer:
                 print(f"Moved: {original_path} -> {new_path}")
             except Exception as e:
                 print(f"Failed to move {original_path} to {new_path}: {e}")
+    
+    def _generate_reports(self):
+        """生成整理報告"""
+        try:
+            report_generator = ReportGenerator(self.target_path)
+            report_files = report_generator.generate_reports()
+            
+            print("\n已生成報告:")
+            print(f"  - 樹狀結構: tree_structure.txt")
+            print(f"  - Markdown報告: organize_report.md")
+            print(f"  - 統計報告: statistics.txt")
+            print(f"  報告儲存於: {report_files['report_folder']}")
+        except Exception as e:
+            print(f"生成報告時發生錯誤: {e}")
