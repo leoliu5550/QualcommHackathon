@@ -1,9 +1,6 @@
-import sys,os 
-from lib.llm_model.llm_interface import get_llm
-from lib.llm_model.mode_config import config
-from lib.service.organize_service import Organizer
-from lib.folder_namer.folder_namer import create_name
-from lib.restore.restore_folder import restore_folder
+import sys
+import os
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python organize_service.py <target_path>")
@@ -15,15 +12,18 @@ def main():
         print(f"Error: Path '{target_path}' does not exist")
         sys.exit(1)
 
-    organizer = Organizer()
     restore_mode = "--restore" in sys.argv[2:]
 
     if restore_mode:
+        from lib.restore.restore_folder import restore_folder
         restore_folder(target_path)
     else:
         try:
+            from lib.service.organize_service import Organizer
+            
             os.makedirs(os.path.join(target_path,".backup"), exist_ok=True)
             
+            organizer = Organizer()
             organizer.start_organize(target_path)
             
             # print("\nOrganization completed!")
@@ -41,5 +41,8 @@ def main():
 
 
 if __name__=="__main__":
-    # 測試指令: python main.py test/data/textIO
+    """
+    測試指令: 
+    python main.py test/data/textIO
+    python main.py test/data/textIO --restore"""
     main()
