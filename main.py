@@ -38,7 +38,7 @@ def load_backup_data(target_path):
         print(f"Error loading backup data: {e}")
         return None
 
-def apply_backup_structure(target_path, backup_data):
+def apply_backup_structure(backup_data):
     """Apply the folder structure from backup JSON"""
     file_paths = backup_data.get("file_paths", [])
     moved_count = 0
