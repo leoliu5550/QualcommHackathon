@@ -3,7 +3,6 @@ import os
 import json
 import argparse
 import shutil
-from datetime import datetime
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -89,7 +88,7 @@ def run_preview_mode(target_path):
     
     # Step 3: Generate folder structure (but don't move files)
     print("\nGenerating folder structure...")
-    generate_result = organizer._generate_folder(file_parsed, base_output_dir=target_path, save_result=True)
+    generate_result = organizer._generate_folder(file_parsed, base_output_dir=target_path, save_result=True, generate_report=True)
     
     # Display preview results
     print("\n" + "="*60)
@@ -120,7 +119,7 @@ def run_standard_mode(target_path):
         
         if backup_data:
             print("Applying saved folder structure from backup...")
-            apply_backup_structure(target_path, backup_data)
+            apply_backup_structure(backup_data)
             return
         else:
             print("Backup file is corrupted or empty, running full organization...")
