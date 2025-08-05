@@ -60,7 +60,7 @@ class ReportGenerator:
         report_files = {}
         
         # 1. 生成樹狀結構報告
-        tree_file = os.path.join(report_subfolder, "tree_structure.txt")
+        tree_file = os.path.join(report_subfolder, "tree_structure.html")
         self._generate_tree_report(file_data["folder_mappings"], tree_file)
         report_files["tree"] = tree_file
         
@@ -81,14 +81,11 @@ class ReportGenerator:
     
     def _generate_tree_report(self, folder_mappings: Dict, output_file: str):
         """生成樹狀結構報告"""
-        tree_content = self.tree_visualizer.generate_tree(folder_mappings)
+        # 生成HTML格式的樹狀結構
+        html_content = self.tree_visualizer.generate_html_tree(folder_mappings)
         
         with open(output_file, 'w', encoding='utf-8') as f:
-            f.write("檔案整理樹狀結構圖\n")
-            f.write("=" * 60 + "\n")
-            f.write(f"生成時間: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-            f.write("=" * 60 + "\n\n")
-            f.write(tree_content)
+            f.write(html_content)
     
     def _generate_markdown_report(self, file_data: Dict, summaries: Dict, output_file: str):
         """生成Markdown格式報告"""

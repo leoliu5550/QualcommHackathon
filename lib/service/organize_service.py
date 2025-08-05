@@ -33,7 +33,7 @@ class Organizer:
         file_parserd = self._file_parser(scanner_result = scanner_result,  save_result = True)
         
         # step 3 根據內容自動分類並生成新目錄結構
-        generate_result =self._generate_folder(file_parserd, base_output_dir=target_path,  save_result = True)
+        generate_result =self._generate_folder(file_parserd, base_output_dir=target_path,  save_result = True, generate_report = True)
         
         # step 4 實際將檔案從原始位置搬移到新分類資料夾中
         self._move_file(generate_result)
