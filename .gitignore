@@ -7,3 +7,4 @@ lib/llm_model/model*
 .backup/
 .claude/
 tidy_report/
+*.mp4
