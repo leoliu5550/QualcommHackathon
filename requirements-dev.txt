@@ -2,7 +2,7 @@
 --extra-index-url https://download.pytorch.org/whl/cu121
 
 # AI/ML Dependencies
-torch==2.2.2+cu121
+torch==2.8.0
 torchvision==0.17.2+cu121  
 torchaudio==2.2.2+cu121
 transformers>=4.30.0
