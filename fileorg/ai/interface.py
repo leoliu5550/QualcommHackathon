@@ -9,9 +9,10 @@ Our vision is to make powerful AI accessible regardless of hardware constraints,
 whether you're using a high-end GPU, Snapdragon NPU, or just a CPU.
 """
 
-from typing import List
+from typing import List, TYPE_CHECKING
 
-import torch
+if TYPE_CHECKING:
+    import torch
 
 from fileorg.ai.config import config
 
@@ -73,6 +74,7 @@ class LocalTransformersLLM(BaseLLM):
         The initialization process intelligently handles hardware availability,
         ensuring the best possible performance on any system.
         """
+        import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
         model_dir = "./fileorg/ai/model"
 
