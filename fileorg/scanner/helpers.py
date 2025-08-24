@@ -23,6 +23,8 @@ def get_file_info(file_path: Path) -> Dict[str, Any]:
         
         # 修改時間格式化
         modified_time = datetime.fromtimestamp(stat_info.st_mtime).isoformat()
+        # 建立時間格式化
+        created_time = datetime.fromtimestamp(stat_info.st_ctime).isoformat()
         
         return {
             "path": str(file_path.absolute()),
@@ -30,6 +32,7 @@ def get_file_info(file_path: Path) -> Dict[str, Any]:
             "extension": file_path.suffix,
             "size": stat_info.st_size,
             "modified_time": modified_time,
+            "created_time": created_time,
             "is_readable": is_readable
         }
     except Exception as e:

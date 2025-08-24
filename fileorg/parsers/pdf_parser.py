@@ -1,18 +1,24 @@
 from fileorg.parsers.base import BaseParser, ParseResult
 from pathlib import Path
-import PyPDF2
+
+try:
+    from pypdf import PdfReader
+    PYPDF_AVAILABLE = True
+except ImportError:
+    PdfReader = None
+    PYPDF_AVAILABLE = False
 
 class PdfParser(BaseParser):
     """PDF 檔案解析器"""
     
     def parse(self, file_path: Path) -> ParseResult:
-        if PyPDF2 is None:
-            return ParseResult(success=False, error="需要安裝 PyPDF2 套件來解析 PDF 檔案")
+        if not PYPDF_AVAILABLE:
+            return ParseResult(success=False, error="需要安裝 pypdf 套件來解析 PDF 檔案")
         
         try:
             content = ""
             with open(file_path, 'rb') as file:
-                pdf_reader = PyPDF2.PdfReader(file)
+                pdf_reader = PdfReader(file)
                 max_pages = min(len(pdf_reader.pages), 10)
                 
                 for page_num in range(max_pages):
