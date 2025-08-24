@@ -9,58 +9,58 @@ An intelligent file organization system leveraging AI to analyze content and aut
 
 ## Installation
 
-### 📋 環境選擇指南
+### 📋 Environment Selection Guide
 
-| 環境類型 | 使用場景 | 特色功能 |
+| Environment Type | Use Case | Key Features |
 |----------|----------|----------|
-| **開發環境** | 本地開發、GPU 加速訓練 | 完整功能 + CUDA 支援 |
-| **CPU 環境** | 輕量部署、生產環境 | 僅 CPU 推理，體積小 |
-| **Qualcomm NPU** | Snapdragon 裝置加速 | NPU 硬體加速推理 |
+| **Development** | Local development, GPU-accelerated training | Full features + CUDA support |
+| **CPU-only** | Lightweight deployment, production | CPU-only inference, small footprint |
+| **Qualcomm NPU** | Snapdragon device acceleration | NPU hardware-accelerated inference |
 
-### 🚀 安裝步驟
+### 🚀 Installation Steps
 
-**步驟 1: 下載專案**
+**Step 1: Clone the repository**
 ```bash
 git clone https://github.com/leoliu5550/QualcommHackathon.git
 cd QualcommHackathon
 ```
 
-**步驟 2: 選擇並安裝環境依賴**
+**Step 2: Choose and install environment dependencies**
 
-*開發環境* (包含 CUDA 支援):
+*Development environment* (with CUDA support):
 ```bash
 pip install -r requirements-dev.txt
 ```
 
-*CPU 環境* (輕量化):
+*CPU environment* (lightweight):
 ```bash
 pip install -r requirements-cpu.txt
 ```
 
-*Qualcomm NPU 環境*:
+*Qualcomm NPU environment*:
 ```bash
 pip install -e ".[dev,qualcomm]"
 ```
 
-**步驟 3: 安裝專案本身**
+**Step 3: Install the project**
 ```bash
 pip install -e .
 ```
-> 💡 `-e` 代表開發模式安裝，修改程式碼後無需重新安裝，`fileorg` 命令將在系統中可用
+> 💡 `-e` means editable/development mode installation. Code changes take effect without reinstalling, and the `fileorg` command will be available system-wide
 
-### 🏃‍♂️ 快速安裝 (一鍵複製)
+### 🏃‍♂️ Quick Install (One-liner)
 
-**開發環境完整安裝:**
+**Development environment full installation:**
 ```bash
 git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-dev.txt && pip install -e .
 ```
 
-**CPU 環境完整安裝:**
+**CPU environment full installation:**
 ```bash
 git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-cpu.txt && pip install -e .
 ```
 
-### 📦 從 PyPI 安裝 (即將推出)
+### 📦 Install from PyPI (Coming Soon)
 ```bash
 pip install fileorg
 ```
@@ -88,15 +88,15 @@ fileorg /path/to/directory --restore
 
 ## System Requirements
 
-### 硬體需求
-- **最低需求**: Python 3.8+, 4GB RAM
-- **建議配置**: Python 3.10+, 8GB RAM, CUDA-compatible GPU
-- **Snapdragon NPU**: Qualcomm Snapdragon X 系列處理器
+### Hardware Requirements
+- **Minimum**: Python 3.8+, 4GB RAM
+- **Recommended**: Python 3.10+, 8GB RAM, CUDA-compatible GPU
+- **Snapdragon NPU**: Qualcomm Snapdragon X Series processors
 
-### 軟體相依性
-- **核心依賴**: PyTorch, Transformers, ONNX Runtime
-- **文件處理**: python-docx, openpyxl, pypdf, python-pptx
-- **開發工具**: pytest, black, ruff, mypy (開發環境)
+### Software Dependencies
+- **Core**: PyTorch, Transformers, ONNX Runtime
+- **File Processing**: python-docx, openpyxl, pypdf, python-pptx
+- **Development Tools**: pytest, black, ruff, mypy (dev environment)
 
 ## Documentation
 
