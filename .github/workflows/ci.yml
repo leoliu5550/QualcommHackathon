@@ -84,7 +84,7 @@ jobs:
     # 等候 lint 與所有 test matrix job 成功
     needs: [lint, test]
     # 明確只在 job 成功時才執行（預設 needs 就會，只是更顯式）
-    if: ${{ success() }}
+    if: always() 
     steps:
       - name: Trigger Cleanup Workflow
         uses: benc-uk/workflow-dispatch@v1
