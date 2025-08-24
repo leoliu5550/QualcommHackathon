@@ -147,7 +147,7 @@ class TestRestoreSingleFile:
         
         assert result is True
         # Verify the new_path was converted to absolute and joined with target_path
-        expected_new_path = str(tmp_path / "docs" / "file.txt")
+        # expected_new_path = str(tmp_path / "docs" / "file.txt")  # Removed unused variable
         mock_move.assert_called_once()
 
 

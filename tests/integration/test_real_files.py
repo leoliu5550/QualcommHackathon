@@ -215,7 +215,7 @@ class TestRealFileOrganization:
         
         # 測試解析效能
         benchmark_timer.start()
-        results = parser_manager.parse_multiple_files(test_files)
+        _ = parser_manager.parse_multiple_files(test_files)
         parse_time = benchmark_timer.stop()
         
         print(f"\n解析 {len(test_files)} 個檔案耗時: {parse_time:.2f} 秒")
@@ -243,7 +243,7 @@ class TestRealFileOrganization:
             
             # 執行部分流程
             scan_result = organizer._file_scanner()
-            parse_result = organizer._file_parser(scan_result, save_result=True)
+            _ = organizer._file_parser(scan_result, save_result=True)
             
             # 檢查備份檔案
             backup_dir = test_dir / ".backup"

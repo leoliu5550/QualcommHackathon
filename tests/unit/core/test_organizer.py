@@ -211,24 +211,16 @@ class TestOrganizer:
         organizer = Organizer()
         organizer.target_path = str(temp_dir)
         
-        # 包含特殊字元的資料
-        file_parsed = {
-            "summaries": [
-                {
-                    "summary": "內容包含特殊字元：\u2603 ☃ 😀",
-                    "path": "特殊.txt",
-                    "name": "特殊.txt"
-                }
-            ]
-        }
+        # 包含特殊字元的資料 - 移除未使用的變數
+        # file_parsed 變數已移除，因為未使用
         
-        result = organizer._file_parser([], save_result=True)
+        _ = organizer._file_parser([], save_result=True)
         
         # 驗證備份檔案存在且可讀取
         backup_file = temp_dir / ".backup" / "summ_load.json"
         if backup_file.exists():
             with open(backup_file, 'r', encoding='utf-8') as f:
-                data = json.load(f)
+                _ = json.load(f)
                 # JSON 應該正確處理特殊字元
     
     # ==================== 邊緣測試案例 ====================
@@ -772,7 +764,7 @@ class TestOrganizerEdgeCases:
         organizer = Organizer()
         organizer.target_path = str(temp_dir)
         
-        with patch('sys.stdout', new_callable=Mock) as mock_stdout:
+        with patch('sys.stdout', new_callable=Mock):
             result = organizer._file_scanner()
         
         # 驗證輸出被抑制（stdout.write 不應該被調用）
