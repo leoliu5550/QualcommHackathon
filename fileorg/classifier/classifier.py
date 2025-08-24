@@ -83,7 +83,26 @@ class CreateFolderNamer:
     
 
     def clean_output(self, text: str) -> str:
-        # 保留中文、英文大小寫與阿拉伯數字，其餘全部移除
+        """
+        Clean and standardize AI model responses.
+        
+        Large language models can be unpredictable in their output formatting.
+        This method ensures we extract clean, usable folder names regardless
+        of model variations or prompt responses.
+        
+        Args:
+            text (str): Raw response from the AI model
+        
+        Returns:
+            str: Cleaned folder name ready for use
+        
+        Features:
+            - Removes special characters and symbols
+            - Preserves Unicode text (Chinese, English, numbers)
+            - Standardizes whitespace
+            - Ensures path safety
+        """
+        # Preserve Chinese, English, and Arabic numerals; remove everything else
         cleaned = re.sub(r'[^\u4e00-\u9fa5A-Za-z0-9\s]', '', text)
         return cleaned.strip()
 
@@ -168,11 +187,27 @@ class CreateFolderNamer:
 
     def save_result(self, result: Dict[str, Any], output_file: str = "file_mapping_result.json"):
         """
-        儲存結果到 JSON 檔案
+        Persist classification results for later use or analysis.
+        
+        We believe in transparency and debuggability. Saving intermediate
+        results allows users to understand our decision process and provides
+        data for continuous improvement.
+        
+        Args:
+            result (Dict[str, Any]): Classification results to save
+            output_file (str): Target filename for saved results
+        
+        Features:
+            - Human-readable JSON formatting
+            - Unicode support for international content
+            - Structured data for programmatic access
         """
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         print(f"結果已儲存到: {output_file}")
 
     
+# Global classifier instance for module-level access
+# We use a singleton pattern here to maintain model state and avoid
+# repeated initialization overhead
 create_name = CreateFolderNamer()

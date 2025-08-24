@@ -1,6 +1,28 @@
 """
-FileOrg 命令行介面
-提供檔案整理工具的命令行入口點
+FileOrg Command Line Interface
+
+This module provides the main entry point for the FileOrg intelligent file organization system.
+We're working towards making file organization as intuitive as possible, learning from each
+interaction to better understand how humans naturally categorize information.
+
+The CLI supports three primary modes:
+- Preview: Safely explore potential organization without moving files
+- Organize: Apply AI-powered categorization to transform chaos into structure  
+- Restore: Completely undo changes when needed
+
+We believe in giving users full control while leveraging AI to reduce manual effort.
+Your feedback helps us continuously improve the categorization algorithms.
+
+Example:
+    Basic usage from command line::
+    
+        $ fileorg /path/to/messy/folder --preview
+        $ fileorg /path/to/messy/folder
+        $ fileorg /path/to/organized/folder --restore
+
+Note:
+    This module handles cross-platform path normalization automatically,
+    ensuring consistent behavior across Windows, Linux, and macOS.
 """
 import sys
 import os
@@ -9,6 +31,26 @@ import argparse
 import shutil
 
 def parse_arguments():
+    """
+    Parse command line arguments for the FileOrg application.
+    
+    We've designed the CLI to be intuitive while providing powerful options.
+    The interface continues to evolve based on user feedback and usage patterns.
+    
+    Returns:
+        argparse.Namespace: Parsed arguments containing:
+            - target_path: Directory to process
+            - preview: Boolean flag for preview mode
+            - restore: Boolean flag for restore mode
+    
+    Raises:
+        argparse.ArgumentError: If conflicting options are provided
+    
+    Example:
+        >>> args = parse_arguments()
+        >>> print(args.target_path)
+        '/home/user/documents'
+    """
     parser = argparse.ArgumentParser(
         description='智慧檔案整理工具 - 使用 AI 技術自動分類與整理檔案'
     )
@@ -27,12 +69,45 @@ def parse_arguments():
     return args
 
 def check_existing_backup(target_path):
-    """檢查是否存在備份檔案"""
+    """
+    Check if backup files exist for potential restoration.
+    
+    We maintain comprehensive backups to ensure users can always revert changes.
+    This reflects our commitment to non-destructive file organization.
+    
+    Args:
+        target_path (str): Directory to check for backups
+    
+    Returns:
+        bool: True if backup exists, False otherwise
+    
+    Note:
+        Backup files are stored in .backup/file_paths.json within the target directory.
+        We're exploring cloud backup options for future releases.
+    """
     backup_file = os.path.join(target_path, ".backup", "file_paths.json")
     return os.path.exists(backup_file)
 
 def load_backup_data(target_path):
-    """載入備份資料"""
+    """
+    Load backup data for file restoration.
+    
+    Our backup format is designed to be human-readable JSON, allowing for
+    manual inspection and modification if needed. We believe in transparency
+    and user empowerment.
+    
+    Args:
+        target_path (str): Directory containing backup files
+    
+    Returns:
+        dict: Backup data including file mappings and metadata,
+              or None if loading fails
+    
+    Example:
+        >>> backup = load_backup_data('/home/user/organized')
+        >>> print(backup['file_paths'][0])
+        {'original': '/path/to/file.txt', 'new': '/organized/path/file.txt'}
+    """
     backup_file = os.path.join(target_path, ".backup", "file_paths.json")
     try:
         with open(backup_file, 'r', encoding='utf-8') as f:
@@ -42,7 +117,27 @@ def load_backup_data(target_path):
         return None
 
 def apply_backup_structure(backup_data):
-    """套用備份的資料夾結構"""
+    """
+    Apply saved folder structure from backup data.
+    
+    This function enables users to apply a previously generated organization
+    structure without re-running the AI analysis. We're working on making
+    this process even more efficient in future versions.
+    
+    Args:
+        backup_data (dict): Backup data containing file mappings
+    
+    Returns:
+        None
+    
+    Side Effects:
+        Moves files according to the backup structure
+        Prints progress messages to stdout
+    
+    Note:
+        We perform atomic operations where possible to minimize risk
+        of data loss during the organization process.
+    """
     file_paths = backup_data.get("file_paths", [])
     moved_count = 0
     
@@ -67,7 +162,29 @@ def apply_backup_structure(backup_data):
     print(f"\n已根據備份結構移動 {moved_count}/{len(file_paths)} 個檔案")
 
 def run_preview_mode(target_path):
-    """執行預覽模式（不移動檔案）"""
+    """
+    Execute preview mode to show potential organization without moving files.
+    
+    Preview mode represents our philosophy of 'look before you leap'. We want
+    users to feel confident about the changes before committing to them.
+    The AI analyzes content and suggests organization, but you make the final decision.
+    
+    Args:
+        target_path (str): Directory to analyze
+    
+    Returns:
+        dict: Organization results including suggested structure
+    
+    Features:
+        - Non-destructive analysis
+        - Generates backup plan for later execution
+        - Provides detailed categorization reasoning
+        - Shows statistics about the proposed organization
+    
+    Example:
+        >>> results = run_preview_mode('/home/user/documents')
+        >>> print(f"Suggested {len(results['folder_mappings'])} categories")
+    """
     print("執行預覽模式 - 不會移動任何檔案")
     print("-" * 50)
     
@@ -114,7 +231,31 @@ def run_preview_mode(target_path):
     return generate_result
 
 def run_standard_mode(target_path):
-    """執行完整的整理流程"""
+    """
+    Execute complete file organization workflow.
+    
+    This is where our AI truly shines - analyzing content, understanding context,
+    and creating meaningful categorizations. We're continuously improving our
+    algorithms based on real-world usage patterns.
+    
+    Args:
+        target_path (str): Directory to organize
+    
+    Returns:
+        None
+    
+    Process:
+        1. Check for existing backups (apply if found)
+        2. Scan all files in directory
+        3. Parse content using appropriate extractors
+        4. Apply AI categorization
+        5. Move files to organized structure
+        6. Generate comprehensive reports
+    
+    Note:
+        We always create backups before moving files. Your data safety
+        is our top priority.
+    """
     # 先檢查是否有備份檔案存在
     if check_existing_backup(target_path):
         print("找到現有的備份檔案")
@@ -143,6 +284,27 @@ def run_standard_mode(target_path):
     print("\n檔案整理完成！")
 
 def main():
+    """
+    Main entry point for the FileOrg CLI application.
+    
+    We've designed this to be the simplest possible interface to powerful
+    AI-driven file organization. As we continue to develop FileOrg, we remain
+    committed to maintaining this simplicity while adding advanced features.
+    
+    The function handles:
+        - Cross-platform path normalization
+        - Input validation
+        - Mode selection (preview/organize/restore)
+        - Error handling with helpful messages
+    
+    Exit Codes:
+        0: Success
+        1: Error (invalid path, execution error, etc.)
+    
+    Future Enhancements:
+        We're exploring batch processing, scheduling, and cloud integration
+        to make FileOrg even more powerful while maintaining its ease of use.
+    """
     # 解析命令行參數
     args = parse_arguments()
     

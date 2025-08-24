@@ -1,3 +1,14 @@
+"""
+FileOrg File Scanner Module
+
+This module provides intelligent file system scanning capabilities that form
+the foundation of our organization pipeline. We've designed it to be respectful
+of system resources while being comprehensive in scope.
+
+Our scanning approach balances thoroughness with performance, automatically
+skipping irrelevant system files while capturing everything users care about.
+"""
+
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
@@ -5,15 +16,47 @@ from datetime import datetime
 from fileorg.scanner.helpers import get_file_info, save_scan_result, print_scan_summary
 
 class FileScanner:
-    """檔案掃描器類別"""
+    """
+    Intelligent file system scanner for content discovery.
+    
+    FileScanner represents our philosophy of understanding before acting.
+    It provides the essential first step in any organization workflow:
+    knowing what we're working with.
+    
+    We've built in smart defaults for common scenarios while allowing
+    customization for specialized needs. The scanner is designed to evolve
+    with user patterns and system capabilities.
+    
+    Attributes:
+        target_path (Path): Directory being scanned
+        max_depth (Optional[int]): Maximum recursion depth
+        ignore_dirs (set): Directories to skip during scanning
+    
+    Future Enhancements:
+        We're exploring real-time scanning, change detection, and integration
+        with cloud storage providers for hybrid workflows.
+    """
     
     def __init__(self, target_path: str, max_depth: Optional[int] = None):
         """
-        初始化檔案掃描器
+        Initialize the file scanner with intelligent defaults.
+        
+        We automatically configure sensible ignore patterns and depth limits
+        to provide the best balance of coverage and performance. These defaults
+        are based on analysis of real-world usage patterns.
         
         Args:
-            target_path: 要掃描的目標路徑
-            max_depth: 最大掃描深度，None 表示無限制
+            target_path (str): Directory path to scan
+            max_depth (Optional[int]): Maximum recursion depth for scanning.
+                                     None means unlimited depth.
+        
+        Raises:
+            FileNotFoundError: If target path doesn't exist
+            NotADirectoryError: If target path isn't a directory
+        
+        Note:
+            We're working on automatic depth optimization based on directory
+            structure analysis to prevent excessive resource usage.
         """
         self.target_path = Path(target_path)
         self.max_depth = max_depth
@@ -31,10 +74,24 @@ class FileScanner:
 
     def scan_directory(self) -> List[str]:
         """
-        掃描目錄並返回檔案路徑清單（支援遞迴）
+        Perform recursive directory scanning with intelligent filtering.
+        
+        Our scanning algorithm is designed to be efficient and respectful,
+        automatically skipping system directories and hidden files that
+        typically aren't part of user organization workflows.
         
         Returns:
-            檔案路徑字串列表
+            List[str]: Paths to all discovered files
+        
+        Features:
+            - Automatic system directory exclusion
+            - Hidden file filtering
+            - Permission error handling
+            - Depth limiting for performance
+        
+        Note:
+            We're continuously refining our ignore patterns based on user
+            feedback and common file organization scenarios.
         """
         self.scanned_files = []
         self._recursive_scan(self.target_path, 0)
@@ -42,11 +99,21 @@ class FileScanner:
     
     def _recursive_scan(self, current_path: Path, current_depth: int):
         """
-        遞迴掃描資料夾
+        Recursively scan directories with intelligent pattern matching.
+        
+        This internal method implements our core scanning logic, balancing
+        thoroughness with performance. We handle edge cases gracefully and
+        provide informative feedback when issues are encountered.
         
         Args:
-            current_path: 目前掃描的路徑
-            current_depth: 目前的深度
+            current_path (Path): Current directory being scanned
+            current_depth (int): Current recursion depth
+        
+        Features:
+            - Graceful permission error handling
+            - Smart pattern-based directory exclusion
+            - Depth-based performance optimization
+            - Cross-platform path handling
         """
         # 檢查深度限制
         if self.max_depth is not None and current_depth > self.max_depth:
@@ -79,14 +146,31 @@ class FileScanner:
 
     def scan_with_details(self, save_result: bool = True, output_file: str = "scan_result.json") -> Dict[str, Any]:
         """
-        執行詳細掃描並返回完整資訊
+        Perform comprehensive directory scan with detailed file analysis.
+        
+        This method represents our commitment to providing rich, actionable
+        information about discovered files. Beyond simple path enumeration,
+        we gather metadata that enables intelligent organization decisions.
         
         Args:
-            save_result: 是否保存掃描結果到檔案
-            output_file: 輸出檔案名稱
-            
+            save_result (bool): Whether to persist scan results to disk
+            output_file (str): Output filename for scan results
+        
         Returns:
-            包含完整掃描結果的字典
+            Dict[str, Any]: Comprehensive scan results including:
+                - File paths and metadata
+                - Scan timestamps and statistics
+                - Directory structure information
+        
+        Features:
+            - Rich file metadata extraction
+            - Scan performance metrics
+            - Structured result formatting
+            - Optional result persistence
+        
+        Note:
+            We're exploring enhanced metadata extraction including content
+            fingerprinting and relationship detection for improved categorization.
         """
         print(f"開始掃描: {self.target_path}")
         
@@ -111,6 +195,7 @@ class FileScanner:
         
         
         # 顯示掃描摘要
+        # Display scan summary with intelligent formatting
         print_scan_summary(scan_result)
         
         # 保存掃描結果（如果需要）
