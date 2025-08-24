@@ -1,9 +1,14 @@
 name: Cleanup Branches
 
 on:
-  workflow_dispatch:  # 手動觸發
+  workflow_dispatch:  # 可被其他 workflow 或手動觸發
   # schedule:
   #   - cron: '0 3 * * *'  # 每天凌晨 3 點執行，測試無誤後再打開
+
+# 需要可以刪除 ref / 修改 PR 的權限
+permissions:
+  contents: write         # 用於刪除 git refs（分支）
+  pull-requests: write    # 用於關閉 PR
 
 jobs:
   cleanup:
@@ -32,17 +37,20 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               state: 'open',
+              per_page: 100
             });
 
             for (const pr of pulls) {
               // 只針對 dependabot 分支
               if (!pr.head.ref.startsWith('dependabot/')) continue;
 
-              // 取得 PR 的狀態
+              // 取得 PR 的狀態（使用合併後的 commit sha）
+              const ref = pr.head.sha;
+
               const { data: combined } = await github.rest.repos.getCombinedStatusForRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
-                ref: pr.head.ref,
+                ref: ref,
               });
 
               // 如果 Check 失敗，關閉 PR 並刪分支
@@ -54,12 +62,16 @@ jobs:
                   state: 'closed'
                 });
 
-                await github.rest.git.deleteRef({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: `heads/${pr.head.ref}`
-                });
+                try {
+                  await github.rest.git.deleteRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `heads/${pr.head.ref}`
+                  });
 
-                console.log(`Deleted failed Dependabot branch: ${pr.head.ref}`);
+                  console.log(`Deleted failed Dependabot branch: ${pr.head.ref}`);
+                } catch (err) {
+                  console.log(`Failed to delete branch ${pr.head.ref}: ${err}`);
+                }
               }
             }
