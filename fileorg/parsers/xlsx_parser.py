@@ -2,6 +2,7 @@ from pathlib import Path
 import openpyxl
 from fileorg.parsers.base import BaseParser, ParseResult
 
+
 class XlsxParser(BaseParser):
     """XLSX 檔案解析器"""
 
@@ -18,7 +19,9 @@ class XlsxParser(BaseParser):
 
                 sheet = workbook[sheet_name]
                 for row in sheet.iter_rows(values_only=True):
-                    row_text = ', '.join([str(cell) if cell is not None else '' for cell in row]) + '\n'
+                    row_text = (
+                        ", ".join([str(cell) if cell is not None else "" for cell in row]) + "\n"
+                    )
                     if char_count + len(row_text) > self.char_limit:
                         remaining = self.char_limit - char_count
                         text_content.append(row_text[:remaining])
@@ -30,21 +33,19 @@ class XlsxParser(BaseParser):
                 if char_count >= self.char_limit:
                     break
 
-            content = ''.join(text_content)
+            content = "".join(text_content)
             truncated_content, is_truncated = self._truncate_content(content)
 
             return ParseResult(
                 success=True,
                 content=truncated_content,
-                file_type='xlsx',
+                file_type="xlsx",
                 original_length=len(content),
                 truncated=is_truncated,
-                file_path=str(file_path)
+                file_path=str(file_path),
             )
 
         except Exception as e:
             return ParseResult(
-                success=False,
-                error=f"無法解析XLSX檔案: {str(e)}",
-                file_path=str(file_path)
+                success=False, error=f"無法解析XLSX檔案: {str(e)}", file_path=str(file_path)
             )

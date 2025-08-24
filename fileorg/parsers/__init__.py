@@ -1,4 +1,5 @@
 """提供檔案解析功能, 目前支援 txt、pdf、docx、md、json、csv、html、pptx、xlsx、xml 格式文件"""
+
 from fileorg.parsers.manager import FileParserManager
 from fileorg.parsers.txt_parser import TxtParser
 from fileorg.parsers.pdf_parser import PdfParser
@@ -13,17 +14,17 @@ from fileorg.parsers.xml_parser import XmlParser
 
 # 創建管理器
 parser_manager = FileParserManager(char_limit=400)
-parser_manager.register_custom_parser('.csv', CsvParser)
-parser_manager.register_custom_parser('.docx', DocxParser)
-parser_manager.register_custom_parser('.pdf', PdfParser)
-parser_manager.register_custom_parser('.md', MarkdownParser)
-parser_manager.register_custom_parser('.json', JsonParser)
-parser_manager.register_custom_parser('.txt', TxtParser)
-parser_manager.register_custom_parser('.html', HtmlParser)
-parser_manager.register_custom_parser('.htm', HtmlParser)
-parser_manager.register_custom_parser('.pptx', PptxParser)
-parser_manager.register_custom_parser('.xlsx', XlsxParser)
-parser_manager.register_custom_parser('.xml', XmlParser)
+parser_manager.register_custom_parser(".csv", CsvParser)
+parser_manager.register_custom_parser(".docx", DocxParser)
+parser_manager.register_custom_parser(".pdf", PdfParser)
+parser_manager.register_custom_parser(".md", MarkdownParser)
+parser_manager.register_custom_parser(".json", JsonParser)
+parser_manager.register_custom_parser(".txt", TxtParser)
+parser_manager.register_custom_parser(".html", HtmlParser)
+parser_manager.register_custom_parser(".htm", HtmlParser)
+parser_manager.register_custom_parser(".pptx", PptxParser)
+parser_manager.register_custom_parser(".xlsx", XlsxParser)
+parser_manager.register_custom_parser(".xml", XmlParser)
 
 # 用法範例
 

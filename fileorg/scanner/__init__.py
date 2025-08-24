@@ -9,11 +9,6 @@
 from fileorg.scanner.core import FileScanner
 from fileorg.scanner.helpers import get_file_info, save_scan_result, print_scan_summary
 
-__all__ = [
-    'FileScanner',
-    'get_file_info', 
-    'save_scan_result',
-    'print_scan_summary'
-]
+__all__ = ["FileScanner", "get_file_info", "save_scan_result", "print_scan_summary"]
 
-__version__ = '1.0.0'
+__version__ = "1.0.0"

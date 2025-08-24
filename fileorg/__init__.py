@@ -8,6 +8,6 @@ __author__ = "Your Team"
 
 __all__ = [
     "Organizer",
-    "FileScanner", 
+    "FileScanner",
     "parser_manager",
 ]

@@ -2,8 +2,10 @@
 樹狀結構視覺化工具
 生成檔案分類的樹狀圖
 """
+
 from typing import Dict, List
 from datetime import datetime
+
 
 class TreeVisualizer:
     def __init__(self):
@@ -12,36 +14,38 @@ class TreeVisualizer:
         self.LAST_BRANCH = "└── "
         self.VERTICAL = "│   "
         self.EMPTY = "    "
-        
-    def generate_tree(self, folder_mappings: Dict[str, List[str]], title: str = "整理後結構") -> str:
+
+    def generate_tree(
+        self, folder_mappings: Dict[str, List[str]], title: str = "整理後結構"
+    ) -> str:
         """
         生成樹狀結構圖
-        
+
         Args:
             folder_mappings: 資料夾映射字典
             title: 樹狀圖標題
-            
+
         Returns:
             樹狀結構字串
         """
         tree_lines = [f"📁 {title}"]
-        
+
         # 排序資料夾
         sorted_folders = sorted(folder_mappings.items())
         total_folders = len(sorted_folders)
-        
+
         for idx, (folder_name, files) in enumerate(sorted_folders):
             is_last_folder = idx == total_folders - 1
-            
+
             # 資料夾行
             folder_prefix = self.LAST_BRANCH if is_last_folder else self.BRANCH
             file_count = len(files)
             tree_lines.append(f"{folder_prefix}📁 {folder_name} ({file_count}個檔案)")
-            
+
             # 檔案行（只顯示前2個和最後1個作為範例）
             if files:
                 file_prefix = self.EMPTY if is_last_folder else self.VERTICAL
-                
+
                 if len(files) <= 3:
                     # 顯示所有檔案
                     for file_idx, file_name in enumerate(files):
@@ -53,42 +57,47 @@ class TreeVisualizer:
                     tree_lines.append(f"{file_prefix}{self.BRANCH}📄 {files[0]}")
                     tree_lines.append(f"{file_prefix}{self.BRANCH}📄 {files[1]}")
                     if len(files) > 3:
-                        tree_lines.append(f"{file_prefix}{self.BRANCH}... ({len(files) - 3} 個其他檔案)")
+                        tree_lines.append(
+                            f"{file_prefix}{self.BRANCH}... ({len(files) - 3} 個其他檔案)"
+                        )
                     tree_lines.append(f"{file_prefix}{self.LAST_BRANCH}📄 {files[-1]}")
-        
+
         return "\n".join(tree_lines)
-    
+
     def generate_simple_tree(self, folder_mappings: Dict[str, List[str]]) -> str:
         """
         生成簡單樹狀結構（不含檔案細節）
         """
         tree_lines = ["📁 整理後結構"]
-        
+
         sorted_folders = sorted(folder_mappings.items())
         total_folders = len(sorted_folders)
-        
+
         for idx, (folder_name, files) in enumerate(sorted_folders):
             is_last = idx == total_folders - 1
             prefix = self.LAST_BRANCH if is_last else self.BRANCH
             tree_lines.append(f"{prefix}📁 {folder_name} ({len(files)}個檔案)")
-        
+
         return "\n".join(tree_lines)
-    
-    def generate_html_tree(self, folder_mappings: Dict[str, List[str]], title: str = "整理後結構") -> str:
+
+    def generate_html_tree(
+        self, folder_mappings: Dict[str, List[str]], title: str = "整理後結構"
+    ) -> str:
         """
         生成HTML格式的樹狀結構圖，使用顏色區分層級
-        
+
         Args:
             folder_mappings: 資料夾映射字典
             title: 樹狀圖標題
-            
+
         Returns:
             HTML格式的樹狀結構
         """
         html_parts = []
-        
+
         # HTML頭部和CSS樣式
-        html_parts.append("""<!DOCTYPE html>
+        html_parts.append(
+            """<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -268,53 +277,74 @@ class TreeVisualizer:
     <div class="tree-container">
         <div class="tree-header">
             <h1 class="tree-title">檔案整理樹狀結構圖</h1>
-            <div class="tree-timestamp">生成時間: """ + f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}" + """</div>
+            <div class="tree-timestamp">生成時間: """
+            + f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            + """</div>
         </div>
         <ul class="tree">
-""")
-        
+"""
+        )
+
         # 根目錄
-        html_parts.append(f'            <li class="level-0"><span class="icon">📁</span>{title}</li>\n')
-        html_parts.append('            <li>\n                <ul>\n')
-        
+        html_parts.append(
+            f'            <li class="level-0"><span class="icon">📁</span>{title}</li>\n'
+        )
+        html_parts.append("            <li>\n                <ul>\n")
+
         # 排序資料夾
         sorted_folders = sorted(folder_mappings.items())
-        
+
         for folder_name, files in sorted_folders:
             # 資料夾項目
             file_count = len(files)
-            html_parts.append('                    <li>\n')
+            html_parts.append("                    <li>\n")
             html_parts.append('                        <div class="folder-level-1">\n')
-            html_parts.append(f'                            <span class="icon">📁</span>{folder_name}\n')
-            html_parts.append(f'                            <span class="file-count">{file_count}個檔案</span>\n')
-            html_parts.append('                        </div>\n')
-            
+            html_parts.append(
+                f'                            <span class="icon">📁</span>{folder_name}\n'
+            )
+            html_parts.append(
+                f'                            <span class="file-count">{file_count}個檔案</span>\n'
+            )
+            html_parts.append("                        </div>\n")
+
             # 檔案列表
             if files:
-                html_parts.append('                        <ul>\n')
-                
+                html_parts.append("                        <ul>\n")
+
                 if len(files) <= 3:
                     # 顯示所有檔案
                     for file_name in files:
-                        html_parts.append(f'                            <li><div class="file"><span class="icon">📄</span>{file_name}</div></li>\n')
+                        html_parts.append(
+                            f'                            <li><div class="file"><span class="icon">📄</span>{file_name}</div></li>\n'
+                        )
                 else:
                     # 顯示前2個和最後1個
-                    html_parts.append(f'                            <li><div class="file"><span class="icon">📄</span>{files[0]}</div></li>\n')
-                    html_parts.append(f'                            <li><div class="file"><span class="icon">📄</span>{files[1]}</div></li>\n')
+                    html_parts.append(
+                        f'                            <li><div class="file"><span class="icon">📄</span>{files[0]}</div></li>\n'
+                    )
+                    html_parts.append(
+                        f'                            <li><div class="file"><span class="icon">📄</span>{files[1]}</div></li>\n'
+                    )
                     if len(files) > 3:
-                        html_parts.append(f'                            <li><div class="ellipsis">... ({len(files) - 3} 個其他檔案)</div></li>\n')
-                    html_parts.append(f'                            <li><div class="file"><span class="icon">📄</span>{files[-1]}</div></li>\n')
-                
-                html_parts.append('                        </ul>\n')
-            
-            html_parts.append('                    </li>\n')
-        
+                        html_parts.append(
+                            f'                            <li><div class="ellipsis">... ({len(files) - 3} 個其他檔案)</div></li>\n'
+                        )
+                    html_parts.append(
+                        f'                            <li><div class="file"><span class="icon">📄</span>{files[-1]}</div></li>\n'
+                    )
+
+                html_parts.append("                        </ul>\n")
+
+            html_parts.append("                    </li>\n")
+
         # HTML結尾
-        html_parts.append("""                </ul>
+        html_parts.append(
+            """                </ul>
             </li>
         </ul>
     </div>
 </body>
-</html>""")
-        
-        return ''.join(html_parts)
+</html>"""
+        )
+
+        return "".join(html_parts)

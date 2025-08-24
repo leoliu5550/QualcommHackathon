@@ -7,7 +7,6 @@ from fileorg.ai.interface import get_llm
 from fileorg.ai.config import config
 
 
-
 class CreateFolderNamer:
     def __init__(self) -> None:
         self.llm = get_llm(
@@ -35,10 +34,12 @@ class CreateFolderNamer:
             {"role": "user", "content": cnt},
             {"role": "assistant", "content": '{"foldername": "'},
         ]
-        create_folder = self.llm.inference(prompt = messages,max_new_tokens= 200) ## 這部分可能會有問題，plpeline有點限制太多，我想用generate方式使用
+        create_folder = self.llm.inference(
+            prompt=messages, max_new_tokens=200
+        )  ## 這部分可能會有問題，plpeline有點限制太多，我想用generate方式使用
         return self.clean_output(create_folder)
 
-    def remapping_folder(self, candidate_folder:List[str]):
+    def remapping_folder(self, candidate_folder: List[str]):
         """
         INPUT: ["account", ""]
         create_folder_name會每一個檔案都建立一個檔案夾名稱，此函數用意是將相同的意義的檔案夾名稱聚合在一起
@@ -52,23 +53,26 @@ class CreateFolderNamer:
         """
         pmt = "categorize the foldername into several groups if they are related or similar and give each group a name, must in json format:"
         txt = "[" + ", ".join(candidate_folder) + "]"
-        cnt = pmt+txt
+        cnt = pmt + txt
         messages = [
-            {"role": "system", "content": 'you are a master of categorizing folder names and give it a new group name in json format, eg. {"foldername":"/foldername", "groupname":"/groupname"]}'},
+            {
+                "role": "system",
+                "content": 'you are a master of categorizing folder names and give it a new group name in json format, eg. {"foldername":"/foldername", "groupname":"/groupname"]}',
+            },
             {"role": "user", "content": cnt},
             {"role": "assistant", "content": '{"groups": ["'},
         ]
-        
+
         # 推論 (你可以自行切換 generate / pipeline)
         mapp_folder = self.llm.inference(prompt=messages, max_new_tokens=400)
 
         try:
             # 嘗試解析 JSON，如果失敗則手動修復
-            if not mapp_folder.startswith('['):
+            if not mapp_folder.startswith("["):
                 mapp_folder = '[{"foldername":"' + mapp_folder
-            if not mapp_folder.endswith(']'):
-                mapp_folder = mapp_folder.rstrip(',') + ']'
-            
+            if not mapp_folder.endswith("]"):
+                mapp_folder = mapp_folder.rstrip(",") + "]"
+
             data = json.loads(mapp_folder)
         except json.JSONDecodeError as e:
             print(f"JSON decode failed: {e}\nOutput: {mapp_folder}")
@@ -77,26 +81,25 @@ class CreateFolderNamer:
 
         # 清理資料夾名稱與群組名稱
         for item in data:
-            item["foldername"] = item["foldername"].lstrip('/')
+            item["foldername"] = item["foldername"].lstrip("/")
             item["groupname"] = self.clean_output(item["groupname"])
 
         return data
-    
 
     def clean_output(self, text: str) -> str:
         """
         Clean and standardize AI model responses.
-        
+
         Large language models can be unpredictable in their output formatting.
         This method ensures we extract clean, usable folder names regardless
         of model variations or prompt responses.
-        
+
         Args:
             text (str): Raw response from the AI model
-        
+
         Returns:
             str: Cleaned folder name ready for use
-        
+
         Features:
             - Removes special characters and symbols
             - Preserves Unicode text (Chinese, English, numbers)
@@ -104,23 +107,25 @@ class CreateFolderNamer:
             - Ensures path safety
         """
         # Preserve Chinese, English, and Arabic numerals; remove everything else
-        cleaned = re.sub(r'[^\u4e00-\u9fa5A-Za-z0-9\s]', '', text)
+        cleaned = re.sub(r"[^\u4e00-\u9fa5A-Za-z0-9\s]", "", text)
         return cleaned.strip()
 
-    def process_files(self, summaries_data: Dict[str, Any], base_output_dir: str = "./") -> Dict[str, List[Dict[str, str]]]:
+    def process_files(
+        self, summaries_data: Dict[str, Any], base_output_dir: str = "./"
+    ) -> Dict[str, List[Dict[str, str]]]:
         """
         主要處理函數，整合所有步驟
-        
+
         Args:
             summaries_data: 包含 summaries 列表的字典，每個元素包含 summary, path, name
             base_output_dir: 輸出目錄的基礎路徑(使用者輸入的路徑)
-            
+
         Returns:
             包含 file_paths 列表的字典
             {
             "file_paths": [
                 {
-                    "original": "./documents/CH04account.pdf", 
+                    "original": "./documents/CH04account.pdf",
                     "new": "./documents/AcademicSubjects/CH04account.pdf"
                 },
                 {
@@ -131,57 +136,60 @@ class CreateFolderNamer:
         }
         """
         summaries = summaries_data.get("summaries", [])
-        
+
         # 步驟 1: 為每個檔案創建資料夾名稱
         print("步驟 1: 為每個檔案創建資料夾名稱...")
         file_folder_mapping = []
         candidate_folders = []
-        
+
         for summary_item in summaries:
             content = summary_item["summary"][:500]  # 限制內容長度避免 token 過多
             folder_name = self.create_folder_name(content)
-            
-            file_folder_mapping.append({
-                "original_path": summary_item["path"],
-                "name": summary_item["name"],
-                "initial_folder": folder_name
-            })
+
+            file_folder_mapping.append(
+                {
+                    "original_path": summary_item["path"],
+                    "name": summary_item["name"],
+                    "initial_folder": folder_name,
+                }
+            )
             candidate_folders.append(folder_name)
-        
+
         print(f"初始資料夾名稱: {candidate_folders}")
-        
+
         # 步驟 2: 合併相似的資料夾名稱
         print("步驟 2: 合併相似的資料夾名稱...")
         if len(candidate_folders) > 1:
             folder_mappings = self.remapping_folder(candidate_folders)
         else:
             # 如果只有一個檔案，不需要合併
-            folder_mappings = [{"foldername": candidate_folders[0], "groupname": candidate_folders[0]}] if candidate_folders else []
-        
+            folder_mappings = (
+                [{"foldername": candidate_folders[0], "groupname": candidate_folders[0]}]
+                if candidate_folders
+                else []
+            )
+
         # 創建 folder_name -> group_name 的映射
         folder_to_group = {}
         for mapping in folder_mappings:
             folder_to_group[mapping["foldername"]] = mapping["groupname"]
-        
+
         # 步驟 3: 生成最終的檔案路徑映射
         file_paths = []
-        
+
         for file_info in file_folder_mapping:
             file_name = file_info["name"]
             initial_folder = file_info["initial_folder"]
-            
+
             # 查找對應的群組名稱
             group_name = folder_to_group.get(initial_folder, initial_folder)
-            
+
             # 構建路徑
             old_path = file_info["original_path"]
             new_path = os.path.join(base_output_dir, group_name, file_name)
-            
-            file_paths.append({
-                "original": old_path,
-                "new": new_path
-            })
-        
+
+            file_paths.append({"original": old_path, "new": new_path})
+
         result = {"file_paths": file_paths}
 
         return result
@@ -189,25 +197,25 @@ class CreateFolderNamer:
     def save_result(self, result: Dict[str, Any], output_file: str = "file_mapping_result.json"):
         """
         Persist classification results for later use or analysis.
-        
+
         We believe in transparency and debuggability. Saving intermediate
         results allows users to understand our decision process and provides
         data for continuous improvement.
-        
+
         Args:
             result (Dict[str, Any]): Classification results to save
             output_file (str): Target filename for saved results
-        
+
         Features:
             - Human-readable JSON formatting
             - Unicode support for international content
             - Structured data for programmatic access
         """
-        with open(output_file, 'w', encoding='utf-8') as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         print(f"結果已儲存到: {output_file}")
 
-    
+
 # Global classifier instance for module-level access
 # We use a singleton pattern here to maintain model state and avoid
 # repeated initialization overhead
