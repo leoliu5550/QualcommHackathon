@@ -34,7 +34,7 @@ setup(
         "python-docx>=0.8.11",
         "openpyxl>=3.0.0",
         "python-pptx>=0.6.21",
-        "PyPDF2>=3.0.0",
+        "pypdf>=3.0.0",
         "tqdm>=4.65.0",
         "bitsandbytes>=0.40.0",
         "optimum>=1.8.0",

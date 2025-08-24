@@ -10,10 +10,16 @@ readme = "README.md"
 requires-python = ">=3.8"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Team", email = "your.email@example.com"},
+    {name = "Leo", email = "leoliu5550@gmail.com"},
+    {name = "Yide", email = "lin.yide.doris@gmail.com"},
+    {name = "Joel", email = "jieyao.hsu.efef31016@gmail.com"},
+    {name = "Steven", email = "bingjunye4@gmail.com"}
 ]
 maintainers = [
-    {name = "Your Team", email = "your.email@example.com"},
+    {name = "Leo", email = "leoliu5550@gmail.com"},
+    {name = "Yide", email = "lin.yide.doris@gmail.com"},
+    {name = "Joel", email = "jieyao.hsu.efef31016@gmail.com"},
+    {name = "Steven", email = "bingjunye4@gmail.com"}
 ]
 keywords = ["file organization", "AI", "automation", "document management"]
 classifiers = [
@@ -31,15 +37,15 @@ classifiers = [
 
 dependencies = [
     "torch>=2.2.2",
-    "transformers>=4.30.0",
+    "transformers>=4.30.0", 
     "onnx>=1.14.0",
-    "onnxruntime-gpu>=1.15.0",
+    "onnxruntime>=1.15.0",  # CPU version by default
     "python-docx>=0.8.11",
     "openpyxl>=3.0.0",
     "python-pptx>=0.6.21",
-    "PyPDF2>=3.0.0",
+    "pypdf>=3.0.0",  # Modern replacement for PyPDF2
     "tqdm>=4.65.0",
-    "bitsandbytes>=0.40.0",
+    "charset-normalizer>=3.0.0",
     "optimum>=1.8.0",
     "accelerate>=0.20.0",
 ]
@@ -47,12 +53,19 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
+    "pytest-cov>=4.0.0", 
     "pytest-mock>=3.10.0",
     "pytest-asyncio>=0.21.0",
     "black>=23.0.0",
-    "flake8>=6.0.0",
+    "ruff>=0.1.0",  # Modern linter replacing flake8
     "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
+]
+gpu = [
+    "onnxruntime-gpu>=1.15.0",
+    "bitsandbytes>=0.40.0",
 ]
 qualcomm = [
     "qai-hub",
