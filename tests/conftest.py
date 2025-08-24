@@ -7,6 +7,7 @@ import tempfile
 import os
 import json
 from pathlib import Path
+from unittest.mock import Mock, patch
 
 # ==================== 基礎 Fixtures ====================
 
@@ -306,6 +307,88 @@ def real_test_files(filetype_samples):
     return test_files
 
 
+# ==================== 新目錄結構支援 ====================
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_environment_paths():
+    """
+    設定新目錄結構的測試環境
+    確保所有層級的測試都能存取共用的 fixtures
+    """
+    import sys
+    from pathlib import Path
+    
+    # 確保測試根目錄在 Python 路徑中
+    test_root = Path(__file__).parent
+    if str(test_root) not in sys.path:
+        sys.path.insert(0, str(test_root))
+    
+    # 確保專案根目錄在 Python 路徑中
+    project_root = test_root.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
+
+
+# ==================== 模組專用 Fixtures ====================
+
+@pytest.fixture
+def ai_test_config():
+    """AI 模組測試專用配置"""
+    return {
+        "backend": "local",
+        "model_id": "test-model",
+        "device": "cpu",
+        "max_new_tokens": 100
+    }
+
+
+@pytest.fixture
+def parser_test_config():
+    """Parser 模組測試專用配置"""
+    return {
+        "char_limit": 1000,
+        "encoding_fallback": ["utf-8", "cp1252", "latin-1"]
+    }
+
+
+@pytest.fixture
+def classifier_test_data():
+    """Classifier 模組測試資料"""
+    return {
+        "summaries": [
+            {
+                "summary": "This is a machine learning document about neural networks",
+                "path": "/test/ml_document.pdf",
+                "name": "ml_document.pdf"
+            },
+            {
+                "summary": "Financial report with revenue analysis",
+                "path": "/test/financial_report.xlsx", 
+                "name": "financial_report.xlsx"
+            }
+        ]
+    }
+
+
+@pytest.fixture
+def reporter_test_data():
+    """Reporter 模組測試資料"""
+    return {
+        "file_paths": [
+            {"original": "/test/file1.txt", "new": "/test/organized/docs/file1.txt"},
+            {"original": "/test/file2.pdf", "new": "/test/organized/docs/file2.pdf"}
+        ],
+        "folder_mappings": {
+            "docs": ["file1.txt", "file2.pdf"]
+        },
+        "statistics": {
+            "total_files": 2,
+            "total_folders": 1,
+            "success_rate": 100.0
+        }
+    }
+
+
 # ==================== 清理和設定 ====================
 
 @pytest.fixture(autouse=True)
@@ -339,3 +422,84 @@ def capture_logs():
     yield log_capture
     
     logger.removeHandler(handler)
+
+
+# ==================== AI Mocking Fixtures ====================
+
+@pytest.fixture(autouse=True)
+def mock_torch():
+    """自動模擬 torch 依賴，避免導入錯誤"""
+    with patch('torch.cuda.is_available', return_value=False):
+        yield
+
+
+@pytest.fixture
+def mock_llm():
+    """模擬 LLM 實例"""
+    mock = Mock()
+    mock.inference.return_value = "Mocked AI response"
+    return mock
+
+
+@pytest.fixture
+def mock_ai_interface():
+    """模擬完整的 AI 接口"""
+    with patch('fileorg.ai.interface.get_llm') as mock_get_llm:
+        mock_llm_instance = Mock()
+        mock_llm_instance.inference.return_value = '{"foldername": "Documents"}'
+        mock_get_llm.return_value = mock_llm_instance
+        yield mock_get_llm
+
+
+@pytest.fixture
+def mock_classifier():
+    """模擬文件分類器"""
+    with patch('fileorg.classifier.classifier.create_name') as mock_classifier:
+        mock_classifier.process_files.return_value = {
+            "file_paths": [
+                {"original": "/test/file1.txt", "new": "/test/docs/file1.txt"},
+                {"original": "/test/file2.pdf", "new": "/test/docs/file2.pdf"}
+            ]
+        }
+        yield mock_classifier
+
+
+@pytest.fixture  
+def mock_organizer_dependencies():
+    """模擬 Organizer 所有依賴"""
+    with patch('fileorg.scanner.core.FileScanner') as mock_scanner, \
+         patch('fileorg.parsers.manager.parser_manager') as mock_parser, \
+         patch('fileorg.classifier.classifier.create_name') as mock_classifier, \
+         patch('fileorg.reporter.generator.ReportGenerator') as mock_reporter:
+        
+        # Setup scanner mock
+        mock_scanner_instance = Mock()
+        mock_scanner_instance.scan_with_details.return_value = {
+            'original_files': [{'path': '/test/file1.txt'}, {'path': '/test/file2.pdf'}]
+        }
+        mock_scanner.return_value = mock_scanner_instance
+        
+        # Setup parser mock
+        mock_parser.parse_multiple_files.return_value = [
+            Mock(content='Content 1'),
+            Mock(content='Content 2')
+        ]
+        
+        # Setup classifier mock
+        mock_classifier.process_files.return_value = {
+            'file_paths': [
+                {'original': '/test/file1.txt', 'new': '/test/docs/file1.txt'}
+            ]
+        }
+        
+        # Setup reporter mock
+        mock_reporter_instance = Mock()
+        mock_reporter_instance.generate_reports.return_value = ['report.html']
+        mock_reporter.return_value = mock_reporter_instance
+        
+        yield {
+            'scanner': mock_scanner,
+            'parser': mock_parser, 
+            'classifier': mock_classifier,
+            'reporter': mock_reporter
+        }

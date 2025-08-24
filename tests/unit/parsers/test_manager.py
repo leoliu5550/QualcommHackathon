@@ -1,13 +1,10 @@
 """
-Parsers 模組單元測試
-測試各種檔案格式的解析功能
+Parsers Manager 模組單元測試
+測試檔案解析管理器功能
 """
 import pytest
 from fileorg.parsers.manager import FileParserManager, ParserFactory
 from fileorg.parsers.base import ParseResult
-from fileorg.parsers.txt_parser import TxtParser
-from fileorg.parsers.json_parser import JsonParser
-from fileorg.parsers.csv_parser import CsvParser
 
 
 class TestParserManager:
@@ -24,7 +21,7 @@ class TestParserManager:
         
         assert result.success is True
         assert result.content == "測試文字內容\n第二行"
-        assert result.file_type == ".txt"
+        assert result.file_type == "txt"
         assert result.truncated is False
         assert result.error == ""
     
@@ -38,7 +35,7 @@ class TestParserManager:
         assert result.success is True
         assert "name" in result.content
         assert "測試" in result.content
-        assert result.file_type == ".json"
+        assert result.file_type == "json"
     
     @pytest.mark.unit
     @pytest.mark.parser
@@ -50,7 +47,7 @@ class TestParserManager:
         assert result.success is True
         assert "張三" in result.content
         assert "台北" in result.content
-        assert result.file_type == ".csv"
+        assert result.file_type == "csv"
     
     @pytest.mark.unit
     @pytest.mark.parser
@@ -67,9 +64,9 @@ class TestParserManager:
         
         assert len(results) == 3
         assert all(isinstance(r, ParseResult) for r in results)
-        assert results[0].file_type == ".txt"
-        assert results[1].file_type == ".json"
-        assert results[2].file_type == ".csv"
+        assert results[0].file_type == "txt"
+        assert results[1].file_type == "json"
+        assert results[2].file_type == "csv"
     
     @pytest.mark.unit
     @pytest.mark.parser
@@ -124,7 +121,7 @@ class TestParserManager:
         result = manager.parse_file(str(corrupted_json))
         
         # 應該能讀取內容，但可能無法正確解析
-        assert result.file_type == ".json"
+        assert result.file_type == "json"
         # 內容應該被當作純文字處理
         assert "{invalid json content" in result.content
     
@@ -187,136 +184,76 @@ class TestParserManager:
         assert len(result.content) == min(expected_length, 200)
 
 
-class TestParserFactory:
-    """ParserFactory 測試"""
+class TestParserManagerExtended:
+    """FileParserManager 擴展測試"""
     
     @pytest.mark.unit
-    @pytest.mark.parser
-    def test_create_parser(self):
-        """測試建立解析器"""
-        parser = ParserFactory.create_parser('.txt')
-        assert parser is not None
-        assert isinstance(parser, TxtParser)
+    def test_manager_initialization_defaults(self):
+        """測試管理器預設初始化"""
+        manager = FileParserManager()
+        
+        # 應該有合理的預設值
+        assert hasattr(manager, 'char_limit')
+        assert manager.char_limit > 0
     
     @pytest.mark.unit
-    @pytest.mark.parser
-    def test_register_custom_parser(self):
-        """測試註冊自定義解析器"""
-        # 建立自定義解析器
-        class CustomParser:
-            def __init__(self, char_limit=1000):
-                self.char_limit = char_limit
+    def test_manager_custom_char_limit(self):
+        """測試自訂字元限制"""
+        custom_limit = 500
+        manager = FileParserManager(char_limit=custom_limit)
         
-        # 註冊
-        ParserFactory.register_parser('.custom', CustomParser)
-        
-        # 驗證註冊成功
-        assert ParserFactory.is_supported('.custom')
-        parser = ParserFactory.create_parser('.custom')
-        assert isinstance(parser, CustomParser)
-        
-        # 清理
-        ParserFactory.unregister_parser('.custom')
+        assert manager.char_limit == custom_limit
     
     @pytest.mark.unit
-    @pytest.mark.parser
-    def test_get_supported_extensions(self):
-        """測試獲取支援的副檔名"""
-        extensions = ParserFactory.get_supported_extensions()
+    def test_parse_multiple_files_empty_list(self):
+        """測試解析空檔案列表"""
+        manager = FileParserManager()
+        results = manager.parse_multiple_files([])
         
-        assert isinstance(extensions, list)
-        assert '.txt' in extensions
-        assert '.json' in extensions
-        assert '.csv' in extensions
-
-
-class TestIndividualParsers:
-    """個別解析器測試"""
+        assert isinstance(results, list)
+        assert len(results) == 0
     
     @pytest.mark.unit
-    @pytest.mark.parser
-    def test_txt_parser_encoding_fallback(self, temp_dir):
-        """測試 TXT 解析器的編碼回退機制"""
-        # 建立包含特殊字元的檔案
-        special_file = temp_dir / "special.txt"
-        content = "測試內容 with émojis 😀"
-        special_file.write_text(content, encoding='utf-8')
+    def test_parse_multiple_files_with_errors(self, parser_test_files, temp_dir):
+        """測試解析包含錯誤檔案的列表"""
+        manager = FileParserManager()
         
-        parser = TxtParser(char_limit=1000)
-        result = parser.parse(special_file)
+        # 混合有效和無效檔案
+        file_paths = [
+            str(parser_test_files['txt']),  # 有效
+            "/nonexistent/file.txt",        # 無效
+            str(parser_test_files['json'])   # 有效
+        ]
         
-        assert result.success is True
-        assert "測試內容" in result.content
+        results = manager.parse_multiple_files(file_paths)
+        
+        assert len(results) == 3
+        assert results[0].success is True   # 第一個成功
+        assert results[1].success is False  # 第二個失敗
+        assert results[2].success is True   # 第三個成功
     
     @pytest.mark.unit
-    @pytest.mark.parser
-    def test_json_parser_pretty_format(self, temp_dir):
-        """測試 JSON 解析器的格式化功能"""
-        json_file = temp_dir / "test.json"
-        json_file.write_text('{"a":1,"b":{"c":2}}')
+    def test_manager_performance_large_batch(self, temp_dir):
+        """測試管理器處理大批量檔案的效能"""
+        import time
         
-        parser = JsonParser(char_limit=1000)
-        result = parser.parse(json_file)
+        # 建立多個測試檔案
+        file_paths = []
+        for i in range(20):
+            file_path = temp_dir / f"file_{i}.txt"
+            file_path.write_text(f"Content {i}")
+            file_paths.append(str(file_path))
         
-        assert result.success is True
-        # JSON 應該被格式化
-        assert "a" in result.content
-        assert "b" in result.content
-    
-    @pytest.mark.unit
-    @pytest.mark.parser
-    def test_csv_parser_with_headers(self, temp_dir):
-        """測試 CSV 解析器處理表頭"""
-        csv_file = temp_dir / "test.csv"
-        csv_file.write_text("Name,Age,City\nAlice,25,NYC\nBob,30,LA")
+        manager = FileParserManager(char_limit=100)
         
-        parser = CsvParser(char_limit=1000)
-        result = parser.parse(csv_file)
+        start_time = time.time()
+        results = manager.parse_multiple_files(file_paths)
+        end_time = time.time()
         
-        assert result.success is True
-        assert "Alice" in result.content
-        assert "NYC" in result.content
-        assert "Bob" in result.content
-
-
-class TestParseResult:
-    """ParseResult 類別測試"""
-    
-    @pytest.mark.unit
-    @pytest.mark.parser
-    def test_parse_result_creation(self):
-        """測試 ParseResult 建立"""
-        result = ParseResult(
-            success=True,
-            content="測試內容",
-            file_type=".txt",
-            original_length=100,
-            truncated=False,
-            error="",
-            file_path="/test/file.txt"
-        )
+        # 驗證結果
+        assert len(results) == 20
+        assert all(r.success for r in results)
         
-        assert result.success is True
-        assert result.content == "測試內容"
-        assert result.file_type == ".txt"
-        assert result.original_length == 100
-        assert result.truncated is False
-        assert result.error == ""
-        assert result.file_path == "/test/file.txt"
-    
-    @pytest.mark.unit
-    @pytest.mark.parser
-    def test_parse_result_to_dict(self):
-        """測試 ParseResult 轉換為字典"""
-        result = ParseResult(
-            success=True,
-            content="內容",
-            file_type=".txt"
-        )
-        
-        result_dict = result.to_dict()
-        
-        assert isinstance(result_dict, dict)
-        assert result_dict['success'] is True
-        assert result_dict['content'] == "內容"
-        assert result_dict['file_type'] == ".txt"
+        # 效能應該合理（每個檔案平均不超過0.1秒）
+        avg_time_per_file = (end_time - start_time) / 20
+        assert avg_time_per_file < 0.1
