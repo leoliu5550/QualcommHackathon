@@ -1,0 +1,65 @@
+name: Cleanup Branches
+
+on:
+  workflow_dispatch:  # 手動觸發
+  # schedule:
+  #   - cron: '0 3 * * *'  # 每天凌晨 3 點執行，測試無誤後再打開
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 1: 刪除已經合併的分支
+      - name: Delete merged branches
+        uses: peter-evans/delete-branches@v3
+        with:
+          only-merged: true
+          # 排除 main / master
+          ignore-branches: |
+            main
+            master
+
+      # Step 2: 刪除失敗的 Dependabot 分支
+      - name: Delete failed Dependabot branches
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data: pulls } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+            });
+
+            for (const pr of pulls) {
+              // 只針對 dependabot 分支
+              if (!pr.head.ref.startsWith('dependabot/')) continue;
+
+              // 取得 PR 的狀態
+              const { data: combined } = await github.rest.repos.getCombinedStatusForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: pr.head.ref,
+              });
+
+              // 如果 Check 失敗，關閉 PR 並刪分支
+              if (combined.state === 'failure') {
+                await github.rest.pulls.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: pr.number,
+                  state: 'closed'
+                });
+
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${pr.head.ref}`
+                });
+
+                console.log(`Deleted failed Dependabot branch: ${pr.head.ref}`);
+              }
+            }

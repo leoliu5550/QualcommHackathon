@@ -72,3 +72,18 @@ jobs:
       - name: Run tests
         run: |
           pytest tests/unit/ -v --tb=short
+          
+  trigger_cleanup:
+    name: Trigger Cleanup Workflow
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    # 新增這行來設定權限
+    permissions:
+      actions: write
+    steps:
+      - name: Trigger Cleanup Workflow
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: 'cleanup_branches.yml' # 將 cleanup.yml 改為正確的檔案名稱
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
