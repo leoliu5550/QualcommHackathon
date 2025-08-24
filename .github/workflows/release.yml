@@ -1,0 +1,247 @@
+name: Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Trigger: v1.0.0, v2.1.3, etc.
+  workflow_dispatch:  # Manual trigger
+    inputs:
+      version:
+        description: 'Release version (e.g., 1.0.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write  # Required for release creation
+  id-token: write  # For OIDC auth (optional)
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # ============== Build & Test ==============
+  build-and-test:
+    name: Build and Test Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get all tags and history
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine setuptools wheel
+          pip install -e .[dev]
+
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=${GITHUB_REF_NAME#v}
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+          
+          # Update version
+          sed -i "s/version = \".*\"/version = \"$VERSION\"/" pyproject.toml
+          sed -i "s/__version__ = \".*\"/__version__ = \"$VERSION\"/" fileorg/__init__.py || true
+
+      - name: Run tests
+        run: |
+          echo "::group::Running critical tests before release"
+          pytest tests/unit/ -v --tb=short -x  # -x: stop on first error
+          echo "::endgroup::"
+
+      - name: Build distribution packages
+        run: |
+          echo "::group::Building wheel and source distribution"
+          python -m build
+          ls -la dist/
+          echo "::endgroup::"
+
+      - name: Check package quality
+        run: |
+          echo "::group::Validating package with twine"
+          twine check --strict dist/*
+          echo "::endgroup::"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          echo "::group::Generating release notes"
+          cat > release_notes.md << 'EOF'
+          ## 🎉 FileOrg v${{ steps.version.outputs.version }}
+          
+          ### 📋 What's Changed
+          - Improved test performance with lazy loading
+          - Enhanced cross-platform compatibility
+          - Better error handling and logging
+          - Updated dependencies for security
+          
+          ### 📦 Installation
+          
+          ```bash
+          # Install from GitHub
+          pip install git+https://github.com/${{ github.repository }}@v${{ steps.version.outputs.version }}
+          
+          # Or download wheel from release assets
+          pip install fileorg-${{ steps.version.outputs.version }}-py3-none-any.whl
+          ```
+          
+          ### 🔧 Requirements
+          - Python 3.8+
+          - See requirements-cpu.txt for CPU-only installation
+          - See requirements-dev.txt for development
+          
+          ### 📝 Full Changelog
+          https://github.com/${{ github.repository }}/compare/v${{ steps.version.outputs.prev_version }}...v${{ steps.version.outputs.version }}
+          EOF
+          echo "::endgroup::"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ steps.version.outputs.version }}
+          path: dist/
+          retention-days: 30
+
+  # ============== Create GitHub Release ==============
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-and-test]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ needs.build-and-test.outputs.version }}
+          path: dist/
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ needs.build-and-test.outputs.version }}
+          release_name: Release v${{ needs.build-and-test.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: ${{ contains(needs.build-and-test.outputs.version, 'rc') || contains(needs.build-and-test.outputs.version, 'beta') || contains(needs.build-and-test.outputs.version, 'alpha') }}
+
+      - name: Upload wheel to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/fileorg-${{ needs.build-and-test.outputs.version }}-py3-none-any.whl
+          asset_name: fileorg-${{ needs.build-and-test.outputs.version }}-py3-none-any.whl
+          asset_content_type: application/zip
+
+      - name: Upload source distribution to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/fileorg-${{ needs.build-and-test.outputs.version }}.tar.gz
+          asset_name: fileorg-${{ needs.build-and-test.outputs.version }}.tar.gz
+          asset_content_type: application/gzip
+
+  # ============== Publish to TestPyPI (Optional) ==============
+  publish-test-pypi:
+    name: Publish to TestPyPI
+    runs-on: ubuntu-latest
+    needs: [build-and-test, create-release]
+    if: github.event_name == 'push' && contains(github.ref, 'tags')
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/fileorg/
+    
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-${{ needs.build-and-test.outputs.version }}
+          path: dist/
+
+      - name: Publish to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          skip-existing: true
+        continue-on-error: true  # TestPyPI may fail
+
+  # ============== Publish to PyPI (Enable when needed) ==============
+  # publish-pypi:
+  #   name: Publish to PyPI
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-test, create-release, publish-test-pypi]
+  #   if: github.event_name == 'push' && contains(github.ref, 'tags') && !contains(needs.build-and-test.outputs.version, 'rc')
+  #   environment:
+  #     name: pypi
+  #     url: https://pypi.org/project/fileorg/
+  #   
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist-${{ needs.build-and-test.outputs.version }}
+  #         path: dist/
+  #
+  #     - name: Publish to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         password: ${{ secrets.PYPI_API_TOKEN }}
+
+  # ============== Notifications ==============
+  notify:
+    name: Release Notification
+    runs-on: ubuntu-latest
+    needs: [build-and-test, create-release]
+    if: always()
+    
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🚀 Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Version: v${{ needs.build-and-test.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.create-release.result }}" == "success" ]; then
+            echo "✅ **Release created successfully!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 📦 Assets" >> $GITHUB_STEP_SUMMARY
+            echo "- fileorg-${{ needs.build-and-test.outputs.version }}-py3-none-any.whl" >> $GITHUB_STEP_SUMMARY
+            echo "- fileorg-${{ needs.build-and-test.outputs.version }}.tar.gz" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
+            echo "- [Release Page](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.build-and-test.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+            echo "- [Download Wheel](https://github.com/${{ github.repository }}/releases/download/v${{ needs.build-and-test.outputs.version }}/fileorg-${{ needs.build-and-test.outputs.version }}-py3-none-any.whl)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Release failed!**" >> $GITHUB_STEP_SUMMARY
+            echo "Please check the logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "_Released at $(date -u '+%Y-%m-%d %H:%M:%S UTC')_" >> $GITHUB_STEP_SUMMARY

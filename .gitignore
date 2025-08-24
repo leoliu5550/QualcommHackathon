@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+.claude
 
 # PyInstaller
 *.manifest
@@ -165,3 +166,20 @@ Organized_Files_*/
 *.bak
 *.swp
 *~
+
+# Test files
+test_real_flow.py
+run_real_tests.bat
+
+# Coverage reports
+coverage.json
+junit/
+
+# Ruff cache
+.ruff_cache/
+
+# Docs build
+compete_report/
+
+# Test outputs
+test-results*/
