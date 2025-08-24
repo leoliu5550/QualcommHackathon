@@ -18,8 +18,8 @@ on:
 # 允許此 workflow 使用 GITHUB_TOKEN 觸發其他 workflow
 permissions:
   contents: read
-  workflows: write
-
+  actions: write
+  
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
