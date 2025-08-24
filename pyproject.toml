@@ -1,0 +1,118 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fileorg"
+version = "1.0.0"
+description = "智慧檔案整理工具 - 使用 AI 技術自動分類與整理檔案"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Team", email = "your.email@example.com"},
+]
+maintainers = [
+    {name = "Your Team", email = "your.email@example.com"},
+]
+keywords = ["file organization", "AI", "automation", "document management"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "torch>=2.2.2",
+    "transformers>=4.30.0",
+    "onnx>=1.14.0",
+    "onnxruntime-gpu>=1.15.0",
+    "python-docx>=0.8.11",
+    "openpyxl>=3.0.0",
+    "python-pptx>=0.6.21",
+    "PyPDF2>=3.0.0",
+    "tqdm>=4.65.0",
+    "bitsandbytes>=0.40.0",
+    "optimum>=1.8.0",
+    "accelerate>=0.20.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+qualcomm = [
+    "qai-hub",
+]
+
+[project.urls]
+Homepage = "https://github.com/leoliu5550/QualcommHackathon"
+Documentation = "https://github.com/leoliu5550/QualcommHackathon/blob/main/README.md"
+Repository = "https://github.com/leoliu5550/QualcommHackathon.git"
+Issues = "https://github.com/leoliu5550/QualcommHackathon/issues"
+
+[project.scripts]
+fileorg = "fileorg.cli:main"
+
+[tool.setuptools]
+packages = ["fileorg"]
+
+[tool.setuptools.package-data]
+fileorg = ["**/*.json", "**/*.yaml", "**/*.md"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--cov=fileorg",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+]
+markers = [
+    "unit: 單元測試",
+    "integration: 整合測試",
+    "slow: 執行時間較長的測試",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["fileorg"]
+omit = ["*/tests/*", "*/test_*.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
