@@ -9,16 +9,60 @@ An intelligent file organization system leveraging AI to analyze content and aut
 
 ## Installation
 
-### From PyPI
+### 📋 環境選擇指南
+
+| 環境類型 | 使用場景 | 特色功能 |
+|----------|----------|----------|
+| **開發環境** | 本地開發、GPU 加速訓練 | 完整功能 + CUDA 支援 |
+| **CPU 環境** | 輕量部署、生產環境 | 僅 CPU 推理，體積小 |
+| **Qualcomm NPU** | Snapdragon 裝置加速 | NPU 硬體加速推理 |
+
+### 🚀 安裝步驟
+
+**步驟 1: 下載專案**
 ```bash
-pip install fileorg
+git clone https://github.com/leoliu5550/QualcommHackathon.git
+cd QualcommHackathon
 ```
 
-### From Source
+**步驟 2: 選擇並安裝環境依賴**
+
+*開發環境* (包含 CUDA 支援):
 ```bash
-git clone https://github.com/yourusername/fileorg.git
-cd fileorg
+pip install -r requirements-dev.txt
+```
+
+*CPU 環境* (輕量化):
+```bash
+pip install -r requirements-cpu.txt
+```
+
+*Qualcomm NPU 環境*:
+```bash
+pip install -e ".[dev,qualcomm]"
+```
+
+**步驟 3: 安裝專案本身**
+```bash
 pip install -e .
+```
+> 💡 `-e` 代表開發模式安裝，修改程式碼後無需重新安裝，`fileorg` 命令將在系統中可用
+
+### 🏃‍♂️ 快速安裝 (一鍵複製)
+
+**開發環境完整安裝:**
+```bash
+git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-dev.txt && pip install -e .
+```
+
+**CPU 環境完整安裝:**
+```bash
+git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-cpu.txt && pip install -e .
+```
+
+### 📦 從 PyPI 安裝 (即將推出)
+```bash
+pip install fileorg
 ```
 
 ## Quick Start
@@ -42,11 +86,17 @@ fileorg /path/to/directory --restore
 - **Comprehensive reports** in HTML and Markdown formats
 - **Snapdragon NPU support** for accelerated inference
 
-## Requirements
+## System Requirements
 
-- Python 3.8+
-- 8GB RAM recommended
-- CUDA-compatible GPU (optional)
+### 硬體需求
+- **最低需求**: Python 3.8+, 4GB RAM
+- **建議配置**: Python 3.10+, 8GB RAM, CUDA-compatible GPU
+- **Snapdragon NPU**: Qualcomm Snapdragon X 系列處理器
+
+### 軟體相依性
+- **核心依賴**: PyTorch, Transformers, ONNX Runtime
+- **文件處理**: python-docx, openpyxl, pypdf, python-pptx
+- **開發工具**: pytest, black, ruff, mypy (開發環境)
 
 ## Documentation
 
