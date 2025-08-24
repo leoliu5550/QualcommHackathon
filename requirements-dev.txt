@@ -4,7 +4,7 @@
 # AI/ML Dependencies
 torch==2.2.2+cu121
 torchvision==0.17.2+cu121  
-torchaudio==2.2.2+cu121
+torchaudio==2.8.0
 transformers>=4.30.0
 optimum>=1.8.0
 accelerate>=0.20.0
