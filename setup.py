@@ -6,8 +6,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
 setup(
     name="fileorg",
     version="1.0.0",
-    author="Your Team",
-    author_email="your.email@example.com",
+    author="NameByLeader",
+    author_email="leoliu5550@gmail.com",
     description="智慧檔案整理工具 - 使用 AI 技術自動分類與整理檔案",
     long_description=long_description,
     long_description_content_type="text/markdown",

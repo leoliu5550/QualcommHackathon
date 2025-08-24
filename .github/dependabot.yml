@@ -1,67 +1,30 @@
-# Dependabot configuration for automatic dependency updates
-# This helps keep dependencies secure and up-to-date
-
 version: 2
 updates:
-  # Python dependencies (pip)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:00"
-    open-pull-requests-limit: 5
-    reviewers:
-      - "leoliu5550"
-    assignees:
-      - "leoliu5550"
+      interval: "monthly"
+    open-pull-requests-limit: 3
     labels:
       - "dependencies"
-      - "python"
     commit-message:
       prefix: "chore"
-      prefix-development: "chore"
       include: "scope"
-    # Group updates to reduce PR noise
     groups:
-      development-dependencies:
+      development:
         patterns:
           - "pytest*"
           - "black"
           - "ruff"
-          - "mypy"
-          - "sphinx*"
         update-types:
           - "minor"
           - "patch"
-      ai-dependencies:
-        patterns:
-          - "torch*"
-          - "transformers"
-          - "onnx*"
-          - "accelerate"
-          - "optimum"
-        update-types:
-          - "minor"
-          - "patch"
-    ignore:
-      # Don't update major versions automatically
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
-      # Specific packages to ignore (if any)
-      # - dependency-name: "torch"
-      #   versions: ["2.3.x", "2.4.x"]  # Example: skip certain versions
 
-  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:00"
-    open-pull-requests-limit: 3
-    reviewers:
-      - "leoliu5550"
+      interval: "monthly"
+    open-pull-requests-limit: 2
     labels:
       - "dependencies"
       - "github-actions"
