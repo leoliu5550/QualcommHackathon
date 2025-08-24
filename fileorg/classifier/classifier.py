@@ -219,4 +219,18 @@ class CreateFolderNamer:
 # Global classifier instance for module-level access
 # We use a singleton pattern here to maintain model state and avoid
 # repeated initialization overhead
-create_name = CreateFolderNamer()
+_create_name_instance = None
+
+def get_create_name():
+    """Get or create the singleton CreateFolderNamer instance.
+    
+    This lazy initialization prevents model loading during import,
+    which is especially important for testing.
+    """
+    global _create_name_instance
+    if _create_name_instance is None:
+        _create_name_instance = CreateFolderNamer()
+    return _create_name_instance
+
+# For backward compatibility
+create_name = get_create_name

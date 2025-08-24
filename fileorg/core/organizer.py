@@ -166,7 +166,7 @@ class Organizer:
             accuracy over time.
         """
 
-        file_paths_dict = create_name.process_files(
+        file_paths_dict = create_name().process_files(
             summaries_data=file_parserd, base_output_dir=base_output_dir
         )
 
