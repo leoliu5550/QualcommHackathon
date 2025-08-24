@@ -15,6 +15,11 @@ on:
       - 'docs/**'
   workflow_dispatch:
 
+# 允許此 workflow 使用 GITHUB_TOKEN 觸發其他 workflow
+permissions:
+  contents: read
+  workflows: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -76,14 +81,15 @@ jobs:
   trigger_cleanup:
     name: Trigger Cleanup Workflow
     runs-on: ubuntu-latest
+    # 等候 lint 與所有 test matrix job 成功
     needs: [lint, test]
-    # 新增這行來設定權限
-    permissions:
-      actions: write
+    # 明確只在 job 成功時才執行（預設 needs 就會，只是更顯式）
+    if: ${{ success() }}
     steps:
       - name: Trigger Cleanup Workflow
         uses: benc-uk/workflow-dispatch@v1
         with:
-          workflow: 'cleanup_branches.yml' # 將 cleanup.yml 改為正確的檔案名稱
+          # 這裡要填寫 workflow 的檔名（在 .github/workflows/ 下）
+          workflow: 'cleanup_branches.yml'
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
