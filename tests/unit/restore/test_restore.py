@@ -3,10 +3,7 @@ Test suite for FileOrg Restore module
 """
 
 import pytest
-import json
-import os
-from unittest.mock import Mock, patch, mock_open
-from pathlib import Path
+from unittest.mock import patch, mock_open
 
 from fileorg.restore.restore_folder import FileRestorer, restore_folder
 

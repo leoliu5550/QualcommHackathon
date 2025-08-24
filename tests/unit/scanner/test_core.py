@@ -5,7 +5,7 @@ Scanner 模組單元測試
 import pytest
 from pathlib import Path
 from fileorg.scanner.core import FileScanner
-from fileorg.scanner.helpers import get_file_info, save_scan_result, print_scan_summary
+from fileorg.scanner.helpers import get_file_info, save_scan_result
 
 
 class TestFileScanner:

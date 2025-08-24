@@ -3,7 +3,7 @@ Parsers Manager 模組單元測試
 測試檔案解析管理器功能
 """
 import pytest
-from fileorg.parsers.manager import FileParserManager, ParserFactory
+from fileorg.parsers.manager import FileParserManager
 from fileorg.parsers.base import ParseResult
 
 

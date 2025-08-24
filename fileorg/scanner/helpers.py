@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 
 def get_file_info(file_path: Path) -> Dict[str, Any]:
@@ -73,7 +73,7 @@ def print_scan_summary(scan_data: Dict[str, Any]):
     total_files = len(files)
     total_size = sum(f.get('size', 0) for f in files)
     
-    print(f"\n📊 掃描摘要:")
+    print("\n📊 掃描摘要:")
     print(f"掃描時間: {scan_data.get('scan_time', 'N/A')}")
     print(f"目標路徑: {scan_data.get('target_path', 'N/A')}")
     print(f"檔案總數: {total_files}")
@@ -88,6 +88,6 @@ def print_scan_summary(scan_data: Dict[str, Any]):
         extensions[ext] = extensions.get(ext, 0) + 1
     
     if extensions:
-        print(f"\n📋 檔案類型統計:")
+        print("\n📋 檔案類型統計:")
         for ext, count in sorted(extensions.items(), key=lambda x: x[1], reverse=True)[:5]:
             print(f"  {ext}: {count} 個檔案")

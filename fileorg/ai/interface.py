@@ -9,10 +9,7 @@ Our vision is to make powerful AI accessible regardless of hardware constraints,
 whether you're using a high-end GPU, Snapdragon NPU, or just a CPU.
 """
 
-from typing import List, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    import torch
+from typing import List
 
 from fileorg.ai.config import config
 
@@ -85,13 +82,10 @@ class LocalTransformersLLM(BaseLLM):
         else:
             self.device = device  # "cuda" or "cpu"
 
-        # pipeline 需要的 device_idx，CPU 用 -1，CUDA 用 0
-        device_idx = 0 if self.device == "cuda" else -1
-        
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=model_dir)
         self.model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=model_dir).to(self.device)
-        self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer , #device=device_idx,
-    return_full_text=False)
+        self.llm = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer,
+                           return_full_text=False)
 
     def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
         """

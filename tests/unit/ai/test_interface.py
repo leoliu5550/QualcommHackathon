@@ -3,7 +3,7 @@ Test suite for FileOrg AI Interface module (mocked)
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 
 class TestBaseLLM:

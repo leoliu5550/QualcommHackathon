@@ -41,7 +41,7 @@ class ModelPipeline:
         model_id = model_id or self.config["model_id"]
         export_config = self.config.get("onnx_export", {})
         
-        self.log(f"=== 步驟 1: 導出 ONNX 模型 ===")
+        self.log("=== 步驟 1: 導出 ONNX 模型 ===")
         self.log(f"模型 ID: {model_id}")
         
         try:
@@ -111,7 +111,7 @@ class ModelPipeline:
         """
         aihub_config = self.config.get("aihub", {})
         
-        self.log(f"=== 步驟 2: 上傳到 Qualcomm AI Hub ===")
+        self.log("=== 步驟 2: 上傳到 Qualcomm AI Hub ===")
         self.log(f"模型路徑: {onnx_path}")
         
         # 檢查連線狀態
@@ -129,7 +129,7 @@ class ModelPipeline:
                 )
             )
             
-            self.log(f"✓ 上傳成功")
+            self.log("✓ 上傳成功")
             return result
             
         except Exception as e:
@@ -203,7 +203,7 @@ class ModelPipeline:
         Returns:
             測試是否成功
         """
-        self.log(f"=== 測試 ONNX 推理 ===")
+        self.log("=== 測試 ONNX 推理 ===")
         
         try:
             from llm_interface import get_llm
@@ -308,15 +308,19 @@ if __name__ == "__main__":
         print("\n正在檢查系統狀態...")
         
         # 檢查依賴
-        try:
-            import torch
-            import onnx
-            import onnxruntime
-            import qai_hub
-            from transformers import AutoTokenizer
+        import importlib.util
+        missing_deps = []
+        for module in ['torch', 'onnx', 'onnxruntime', 'qai_hub', 'transformers']:
+            if importlib.util.find_spec(module) is None:
+                missing_deps.append(module)
+                print(f"✗ 缺少依賴: {module}")
+            else:
+                print(f"✓ {module} 已安裝")
+        
+        if not missing_deps:
             print("✓ 所有依賴已安裝")
-        except ImportError as e:
-            print(f"✗ 缺少依賴: {e}")
+        else:
+            print(f"✗ 缺少 {len(missing_deps)} 個依賴")
         
         # 檢查 AI Hub 連線
         check_aihub_status()

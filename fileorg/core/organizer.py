@@ -15,7 +15,6 @@ data safety and user control at every step.
 import datetime
 import json
 import os
-import sys
 import shutil
 from typing import List
 
@@ -253,9 +252,9 @@ class Organizer:
             report_files = report_generator.generate_reports()
             
             print("\n已生成報告:")
-            print(f"  - 樹狀結構: tree_structure.txt")
-            print(f"  - Markdown報告: organize_report.md")
-            print(f"  - 統計報告: statistics.txt")
+            print("  - 樹狀結構: tree_structure.txt")
+            print("  - Markdown報告: organize_report.md")
+            print("  - 統計報告: statistics.txt")
             print(f"  報告儲存於: {report_files['report_folder']}")
         except Exception as e:
             print(f"生成報告時發生錯誤: {e}")

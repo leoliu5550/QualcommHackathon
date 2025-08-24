@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 import json
-import re, os
+import re
+import os
 
 from fileorg.ai.interface import get_llm
 from fileorg.ai.config import config

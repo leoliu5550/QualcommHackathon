@@ -4,10 +4,7 @@ Test suite for FileOrg CLI module
 
 import pytest
 import os
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
-import tempfile
-import sys
+from unittest.mock import Mock, patch
 
 from fileorg import cli
 

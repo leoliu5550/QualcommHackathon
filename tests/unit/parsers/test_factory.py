@@ -63,7 +63,7 @@ class TestParserFactory:
         # 應該都能建立解析器
         assert parser_lower is not None
         assert parser_upper is not None
-        assert type(parser_lower) == type(parser_upper)
+        assert type(parser_lower) is type(parser_upper)
     
     @pytest.mark.unit
     def test_factory_with_dot_prefix(self):
@@ -74,7 +74,7 @@ class TestParserFactory:
         # 應該都能建立解析器
         assert parser_with_dot is not None
         assert parser_without_dot is not None
-        assert type(parser_with_dot) == type(parser_without_dot)
+        assert type(parser_with_dot) is type(parser_without_dot)
     
     @pytest.mark.unit
     def test_factory_register_duplicate(self):

@@ -107,7 +107,6 @@ class TestPipelineUtilities:
     @pytest.mark.unit
     def test_file_path_validation_logic(self):
         """Test file path validation logic"""
-        import os
         
         # Test valid paths
         valid_paths = [

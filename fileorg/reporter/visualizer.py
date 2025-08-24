@@ -283,11 +283,11 @@ class TreeVisualizer:
         for folder_name, files in sorted_folders:
             # 資料夾項目
             file_count = len(files)
-            html_parts.append(f'                    <li>\n')
-            html_parts.append(f'                        <div class="folder-level-1">\n')
+            html_parts.append('                    <li>\n')
+            html_parts.append('                        <div class="folder-level-1">\n')
             html_parts.append(f'                            <span class="icon">📁</span>{folder_name}\n')
             html_parts.append(f'                            <span class="file-count">{file_count}個檔案</span>\n')
-            html_parts.append(f'                        </div>\n')
+            html_parts.append('                        </div>\n')
             
             # 檔案列表
             if files:
