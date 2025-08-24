@@ -1,145 +1,115 @@
-# AI-Powered Intelligent File Organizer
+# FileOrg - AI-Powered File Organization
 
-An intelligent file organization system that uses AI to analyze document content and automatically organize files into meaningful folders.
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests/)
+[![PyPI](https://img.shields.io/badge/pypi-v1.0.0-orange)](https://pypi.org/project/fileorg/)
 
-## 🚀 Quick Start
+An intelligent file organization system leveraging AI to analyze content and automatically categorize files into meaningful structures.
 
-### Installation
+## Installation
+
+### 📋 Environment Selection Guide
+
+| Environment Type | Use Case | Key Features |
+|----------|----------|----------|
+| **Development** | Local development, GPU-accelerated training | Full features + CUDA support |
+| **CPU-only** | Lightweight deployment, production | CPU-only inference, small footprint |
+| **Qualcomm NPU** | Snapdragon device acceleration | NPU hardware-accelerated inference |
+
+### 🚀 Installation Steps
+
+**Step 1: Clone the repository**
 ```bash
-# Clone the repository
-git clone <repository-url>
+git clone https://github.com/leoliu5550/QualcommHackathon.git
 cd QualcommHackathon
-
-# Install dependencies
-pip install -r requirements.txt
 ```
 
-### Basic Usage
+**Step 2: Choose and install environment dependencies**
+
+*Development environment* (with CUDA support):
 ```bash
-# Preview organization (recommended first step)
-python main.py /path/to/messy/folder --preview
+pip install -r requirements-dev.txt
+```
+
+*CPU environment* (lightweight):
+```bash
+pip install -r requirements-cpu.txt
+```
+
+*Qualcomm NPU environment*:
+```bash
+pip install -e ".[dev,qualcomm]"
+```
+
+**Step 3: Install the project**
+```bash
+pip install -e .
+```
+> 💡 `-e` means editable/development mode installation. Code changes take effect without reinstalling, and the `fileorg` command will be available system-wide
+
+### 🏃‍♂️ Quick Install (One-liner)
+
+**Development environment full installation:**
+```bash
+git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-dev.txt && pip install -e .
+```
+
+**CPU environment full installation:**
+```bash
+git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-cpu.txt && pip install -e .
+```
+
+### 📦 Install from PyPI (Coming Soon)
+```bash
+pip install fileorg
+```
+
+## Quick Start
+
+```bash
+# Preview organization structure without moving files
+fileorg /path/to/directory --preview
 
 # Organize files
-python main.py /path/to/messy/folder
+fileorg /path/to/directory
 
 # Restore original structure
-python main.py /path/to/organized/folder --restore
+fileorg /path/to/directory --restore
 ```
 
-## ✨ Key Features
+## Features
 
-- **Content-Based Organization**: Analyzes actual file content, not just filenames
-- **AI-Powered Categorization**: Uses LLMs to create meaningful folder names
-- **Smart Grouping**: Prevents redundant folders by intelligently grouping similar categories
-- **Preview Mode**: See proposed changes before applying them
-- **Full Restore**: Complete backup and restore functionality
-- **Comprehensive Reports**: Detailed HTML visualizations and statistics
+- **Content-based classification** using local LLM models
+- **Safe preview mode** to review changes before execution
+- **Complete restore capability** with automatic backup
+- **Comprehensive reports** in HTML and Markdown formats
+- **Snapdragon NPU support** for accelerated inference
 
-## 📖 Usage Modes
+## System Requirements
 
-### 1. Preview Mode (Safe Exploration)
-```bash
-python main.py ./test/data/textIO --preview
-```
-- Shows proposed organization without moving files
-- Creates backup plan for later execution
-- Perfect for testing on important directories
+### Hardware Requirements
+- **Minimum**: Python 3.8+, 4GB RAM
+- **Recommended**: Python 3.10+, 8GB RAM, CUDA-compatible GPU
+- **Snapdragon NPU**: Qualcomm Snapdragon X Series processors
 
-### 2. Standard Mode (Actual Organization)
-```bash
-python main.py ./test/data/textIO
-```
-- Performs actual file organization
-- Creates backup before moving files
-- Generates detailed reports
+### Software Dependencies
+- **Core**: PyTorch, Transformers, ONNX Runtime
+- **File Processing**: python-docx, openpyxl, pypdf, python-pptx
+- **Development Tools**: pytest, black, ruff, mypy (dev environment)
 
-### 3. Restore Mode (Undo Changes)
-```bash
-python main.py ./test/data/textIO --restore
-```
-- Restores all files to original locations
-- Uses backup data from `.backup/file_paths.json`
+## Documentation
 
-## 📋 System Requirements
+For detailed documentation, API reference, and advanced configuration options, visit our [GitHub Pages](https://yourusername.github.io/fileorg).
 
-- Python 3.8+
-- CUDA 12.1 compatible GPU (optional, for acceleration)
-- 8GB+ RAM recommended
-- Windows/Linux/macOS
+## Contributing
 
-## 📊 Generated Reports
+We welcome contributions. Please see our [contributing guidelines](CONTRIBUTING.md) for details.
 
-After organization, find reports in `tidy_report/[timestamp]/`:
+## Acknowledgments
 
-| File | Description |
-|------|-------------|
-| `organize_report.md` | Detailed file summaries and categories |
-| `tree_structure.html` | Interactive folder visualization |
-| `statistics.txt` | Organization statistics and charts |
+Originally developed for the Qualcomm Hackathon, FileOrg continues to evolve with community contributions.
 
-## 🔧 Supported File Types
+## License
 
-- **Documents**: PDF, Word (.docx), PowerPoint (.pptx), Excel (.xlsx)
-- **Text**: TXT, Markdown (.md), JSON, XML, CSV
-- **Web**: HTML
-- **And more**: Automatically detects and processes various text formats
-
-## ⚙️ Configuration
-
-The system uses TinyLlama/Llama3.2 models locally by default. For Qualcomm hardware acceleration, modify `lib/llm_model/mode_config.py`:
-
-```python
-config = {
-    "backend": "local",  # or "qualcomm" for SNPE
-    "model": "iFaz/llama32_3B_en_emo_2000_stp"
-}
-```
-
-### 🚀 Snapdragon X Series Laptop NPU Support
-
-For laptops with Snapdragon X series processors (NPU acceleration):
-
-1. **Enable NPU Mode**: Set `backend: "qualcomm"` in `lib/llm_model/mode_config.py`
-2. **Install Qualcomm AI Stack**: Ensure SNPE (Snapdragon Neural Processing Engine) is installed
-3. **Model Optimization**: The system automatically uses ONNX-optimized models for NPU inference
-4. **Performance**: Expect 3-5x faster inference compared to CPU-only processing
-
-Note: NPU mode automatically falls back to CPU if SNPE is unavailable.
-
-## 🛡️ Safety Features
-
-- **Automatic Backups**: Always creates backups before moving files
-- **Ignored Directories**: Skips system folders (`.git`, `node_modules`, etc.)
-- **Error Handling**: Gracefully handles corrupted or unreadable files
-- **Encoding Detection**: Supports multiple encodings (UTF-8, Big5, GBK, etc.)
-
-## 📁 Project Structure
-
-```
-QualcommHackathon/
-├── main.py                 # Entry point
-├── lib/
-│   ├── service/           # Core orchestration
-│   ├── file_scanner/      # Directory scanning
-│   ├── file_parser/       # File content extraction
-│   ├── llm_model/         # AI model interface
-│   ├── folder_namer/      # Intelligent naming
-│   ├── report_generator/  # Report creation
-│   └── restore/           # Backup & restore
-├── models/                # Local AI models
-└── test/                  # Test data
-```
-
-## 💡 Example Use Cases
-
-- **Research Papers**: Organize by topic, methodology, or year
-- **Project Files**: Group by project phase, client, or technology
-- **Mixed Documents**: Intelligently sort invoices, contracts, reports
-- **Media Libraries**: Categorize by content themes, not just file types
-
-## ⚠️ Important Notes
-
-- First run may download AI models (~2GB)
-- Processing time depends on file count and content complexity
-- Preview mode is always recommended before organizing important data
-- Keep the `.backup` folder safe for restore capability
+MIT License - see [LICENSE](LICENSE) for details.
