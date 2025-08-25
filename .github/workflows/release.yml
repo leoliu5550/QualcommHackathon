@@ -1,4 +1,4 @@
-# 這是修正過的 GitHub Actions 工作流程，針對 URL 錯誤進行修正。
+# 修正過的 GitHub Actions 工作流程，發布到 GitHub Packages
 name: Publish to GitHub Packages
 
 on:
@@ -40,18 +40,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine
 
-      # 建立套件，生成 dist/ 目錄下的 .whl 和 .tar.gz 文件
+      # 建立套件
       - name: Build package
         run: python -m build
 
       # 發布到 GitHub Packages
       - name: Publish to GitHub Packages
         env:
-          TWINE_USERNAME: ${{ github.actor }}
-          # GITHUB_TOKEN 是由 GitHub Actions 自動提供的密碼
+          TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
           twine upload \
-            --repository-url https://pypi.python.org/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/ \
+            --repository-url https://upload.pypi.org/legacy/ \
+            --verbose \
             dist/*
-        continue-on-error: false
