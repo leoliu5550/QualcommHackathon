@@ -1,0 +1,48 @@
+name: Publish to GitHub Packages
+
+on:
+  push:
+    branches: [ main, release* ]
+      paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+      - 'LICENSE'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write   # 發布到 GitHub Packages 需要這個權限
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Publish to GitHub Packages
+        env:
+          TWINE_USERNAME: ${{ github.actor }}
+          TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          twine upload \
+            --repository-url https://upload.pypi.pkg.github.com/${{ github.repository_owner }} \
+            dist/*
+        continue-on-error: true  # 無論單元測試是否通過都要建立

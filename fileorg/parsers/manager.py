@@ -9,6 +9,21 @@ class ParserFactory:
 
     # 空的解析器映射，所有解析器都需要註冊
     _parsers = {}
+    _initialized = False
+
+    @classmethod
+    def _initialize_default_parsers(cls):
+        """初始化預設的解析器"""
+        if not cls._initialized:
+            # 延遲導入以避免循環依賴
+            from fileorg.parsers.txt_parser import TxtParser
+            from fileorg.parsers.json_parser import JsonParser
+            from fileorg.parsers.csv_parser import CsvParser
+
+            cls._parsers[".txt"] = TxtParser
+            cls._parsers[".json"] = JsonParser
+            cls._parsers[".csv"] = CsvParser
+            cls._initialized = True
 
     @classmethod
     def create_parser(cls, file_extension: str, char_limit: int = 1000) -> Optional[BaseParser]:
@@ -22,6 +37,12 @@ class ParserFactory:
         Returns:
             BaseParser: 對應的解析器實例，如果不支援則返回 None
         """
+        cls._initialize_default_parsers()
+
+        # 處理可能沒有點號的副檔名
+        if file_extension and not file_extension.startswith("."):
+            file_extension = "." + file_extension
+
         parser_class = cls._parsers.get(file_extension.lower())
         if parser_class:
             return parser_class(char_limit)
@@ -51,11 +72,16 @@ class ParserFactory:
     @classmethod
     def get_supported_extensions(cls) -> List[str]:
         """獲取支援的檔案副檔名列表"""
+        cls._initialize_default_parsers()
         return list(cls._parsers.keys())
 
     @classmethod
     def is_supported(cls, file_extension: str) -> bool:
         """檢查是否支援指定的檔案格式"""
+        cls._initialize_default_parsers()
+        # 處理可能沒有點號的副檔名
+        if file_extension and not file_extension.startswith("."):
+            file_extension = "." + file_extension
         return file_extension.lower() in cls._parsers
 
 

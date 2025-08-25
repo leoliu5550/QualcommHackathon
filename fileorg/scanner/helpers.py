@@ -2,19 +2,23 @@ import os
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Union
 
 
-def get_file_info(file_path: Path) -> Dict[str, Any]:
+def get_file_info(file_path: Union[str, Path]) -> Dict[str, Any]:
     """
     獲取檔案詳細資訊
 
     Args:
-        file_path: 檔案路徑物件
+        file_path: 檔案路徑物件或字串
 
     Returns:
         包含檔案資訊的字典
     """
+    # 如果是字串，轉換為 Path 物件
+    if isinstance(file_path, str):
+        file_path = Path(file_path)
+
     try:
         stat_info = file_path.stat()
 

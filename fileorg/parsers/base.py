@@ -11,7 +11,7 @@ class ParseResult:
 
     def __init__(
         self,
-        success: bool,
+        success: bool = False,  # 添加預設值
         content: str = "",
         file_type: str = "",
         original_length: int = 0,
@@ -45,6 +45,24 @@ class ParseResult:
             "error": self.error,
             "file_path": self.file_path,
         }
+
+    def __str__(self) -> str:
+        """返回 ParseResult 的字串表示"""
+        return f"ParseResult(success={self.success}, file_type={self.file_type}, content_length={len(self.content)})"
+
+    def __eq__(self, other) -> bool:
+        """比較兩個 ParseResult 是否相等"""
+        if not isinstance(other, ParseResult):
+            return False
+        return (
+            self.success == other.success
+            and self.content == other.content
+            and self.file_type == other.file_type
+            and self.original_length == other.original_length
+            and self.truncated == other.truncated
+            and self.error == other.error
+            and self.file_path == other.file_path
+        )
 
 
 # 抽象解析器基類，所有解析器需繼承此類別

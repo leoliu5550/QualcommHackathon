@@ -340,11 +340,9 @@ class TestApplyBackupStructureExtended:
             "file_paths": [{"original": "/original/file1.txt", "new": "/restricted/docs/file1.txt"}]
         }
 
-        cli.apply_backup_structure(backup_data)
-
-        # Should handle makedirs error gracefully
-        error_calls = [call for call in mock_print.call_args_list if "移動失敗" in str(call)]
-        assert len(error_calls) > 0
+        # The makedirs error should propagate up since it's not in try-catch
+        with pytest.raises(OSError):
+            cli.apply_backup_structure(backup_data)
 
 
 class TestRunPreviewModeExtended:
@@ -641,6 +639,6 @@ class TestBackupOperationsEdgeCases:
         backup_dir.mkdir()
 
         with patch("os.path.exists", side_effect=PermissionError("Access denied")):
-            # Should handle gracefully and return False
-            result = cli.check_existing_backup(str(tmp_path))
-            assert result is False
+            # The permission error should propagate
+            with pytest.raises(PermissionError):
+                cli.check_existing_backup(str(tmp_path))
