@@ -89,7 +89,12 @@ def check_existing_backup(target_path):
         We're exploring cloud backup options for future releases.
     """
     backup_file = os.path.join(target_path, ".backup", "file_paths.json")
-    return os.path.exists(backup_file)
+
+    try:
+        return os.path.exists(backup_file)
+    except PermissionError:
+        # Handle the permission error gracefully
+        return False
 
 
 def load_backup_data(target_path):
