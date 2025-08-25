@@ -19,10 +19,8 @@ env:
   PYTHON_VERSION: "3.11"
 
 jobs:
-  build-and-publish:
+  build-and-release:
     runs-on: ubuntu-latest
-    
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
       # 檢查程式碼
@@ -34,23 +32,30 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      # 安裝建置與發布工具
+      # 安裝建置工具
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip
-          pip install build twine
+          pip install build setuptools wheel
 
       # 建立套件
       - name: Build package
         run: python -m build
 
-      # 發布到 GitHub Packages
-      - name: Publish to GitHub Packages
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+      # 驗證套件
+      - name: Verify package
         run: |
-          twine upload \
-            --repository-url https://upload.pypi.org/legacy/ \
-            --verbose \
-            dist/*
+          ls -la dist/
+          python -m zipfile -l dist/*.whl
+
+      # 建立 GitHub Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: dist/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
