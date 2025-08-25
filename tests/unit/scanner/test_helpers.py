@@ -25,5 +25,7 @@ class TestScannerHelpers:
         """測試獲取不存在檔案的資訊"""
         file_info = get_file_info("/nonexistent/file.txt")
 
-        # 應該優雅處理不存在的檔案
-        assert file_info is None or file_info == {}
+        # 應該優雅處理不存在的檔案，返回包含錯誤資訊的字典
+        assert file_info is not None
+        assert "error" in file_info
+        assert file_info["is_readable"] is False

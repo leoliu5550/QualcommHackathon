@@ -22,4 +22,22 @@ class JsonParser(BaseParser):
                 truncated=is_truncated,
             )
         except Exception as e:
-            return ParseResult(success=False, error=str(e))
+            # Try to read as plain text if JSON parsing fails
+            try:
+                with open(file_path, "r", encoding="utf-8") as file:
+                    content = file.read()
+                truncated_content, is_truncated = self._truncate_content(content)
+                return ParseResult(
+                    success=True,
+                    content=truncated_content,
+                    file_type="json",
+                    original_length=len(content),
+                    truncated=is_truncated,
+                    error=f"JSON parsing error: {str(e)}"
+                )
+            except Exception as read_error:
+                return ParseResult(
+                    success=False, 
+                    file_type="json",
+                    error=str(read_error)
+                )

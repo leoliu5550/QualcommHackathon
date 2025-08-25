@@ -373,7 +373,9 @@ class TestOrganizerWorkflowIntegration:
         mock_parse_result.content = "Parsed content"
         mock_parser.parse_multiple_files.return_value = [mock_parse_result, mock_parse_result]
 
-        mock_create_name.process_files.return_value = {
+        # Create mock instance that will be returned by create_name()
+        mock_create_name_instance = Mock()
+        mock_create_name_instance.process_files.return_value = {
             "file_paths": [
                 {
                     "original": str(temp_dir / "file1.txt"),
@@ -385,6 +387,7 @@ class TestOrganizerWorkflowIntegration:
                 },
             ]
         }
+        mock_create_name.return_value = mock_create_name_instance
 
         mock_report = Mock()
         mock_report.generate_reports.return_value = {"report_folder": str(temp_dir / "reports")}
@@ -400,7 +403,7 @@ class TestOrganizerWorkflowIntegration:
         # 驗證所有步驟都被調用
         mock_scanner.scan_with_details.assert_called_once()
         mock_parser.parse_multiple_files.assert_called_once()
-        mock_create_name.process_files.assert_called_once()
+        mock_create_name_instance.process_files.assert_called_once()
         mock_report.generate_reports.assert_called()
 
         # 驗證檔案被移動到正確位置
@@ -437,9 +440,11 @@ class TestOrganizerWorkflowIntegration:
 
     @pytest.mark.unit
     @patch("fileorg.core.organizer.create_name")
-    def test_generate_folder_error_handling(self, mock_create_name, temp_dir):
+    def test_generate_folder_error_handling(self, mock_create_name_func, temp_dir):
         """測試資料夾生成錯誤處理"""
-        mock_create_name.process_files.side_effect = Exception("Classification failed")
+        mock_instance = Mock()
+        mock_instance.process_files.side_effect = Exception("Classification failed")
+        mock_create_name_func.return_value = mock_instance
 
         organizer = Organizer()
         organizer.target_path = str(temp_dir)
@@ -478,7 +483,7 @@ class TestOrganizerFileHandling:
     def test_move_file_with_unicode_paths(self, temp_dir):
         """測試移動包含 Unicode 字元的檔案"""
         source = temp_dir / "測試檔案.txt"
-        source.write_text("測試內容")
+        source.write_text("測試內容", encoding="utf-8")
 
         target_path = temp_dir / "分類資料夾" / "測試檔案.txt"
 
@@ -577,7 +582,8 @@ class TestOrganizerDataPersistence:
         organizer.target_path = str(temp_dir)
 
         with patch("fileorg.core.organizer.create_name") as mock_create_name:
-            mock_create_name.process_files.return_value = {
+            mock_instance = Mock()
+            mock_instance.process_files.return_value = {
                 "file_paths": [
                     {
                         "original": str(temp_dir / "file.txt"),
@@ -585,6 +591,7 @@ class TestOrganizerDataPersistence:
                     }
                 ]
             }
+            mock_create_name.return_value = mock_instance
 
             file_parsed = {"summaries": []}
             organizer._generate_folder(file_parsed, str(temp_dir), save_result=True)
@@ -744,7 +751,8 @@ class TestOrganizerEdgeCases:
         organizer.target_path = str(temp_dir)
 
         with patch("fileorg.core.organizer.create_name") as mock_create_name:
-            mock_create_name.process_files.return_value = {
+            mock_instance = Mock()
+            mock_instance.process_files.return_value = {
                 "file_paths": [
                     {
                         "original": str(temp_dir / "file1.txt"),
@@ -760,6 +768,7 @@ class TestOrganizerEdgeCases:
                     },
                 ]
             }
+            mock_create_name.return_value = mock_instance
 
             file_parsed = {"summaries": []}
             result = organizer._generate_folder(file_parsed, str(temp_dir))

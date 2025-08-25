@@ -173,10 +173,18 @@ class Organizer:
         # Convert file_paths to folder_mappings
         folder_mappings = {}
         for file_info in file_paths_dict.get("file_paths", []):
+            # Validate file_info structure
+            if not isinstance(file_info, dict) or "new" not in file_info:
+                continue
+                
             # Extract folder name from new path
             new_path = file_info["new"]
             relative_path = os.path.relpath(new_path, base_output_dir)
             folder_name = os.path.dirname(relative_path)
+            if folder_name == '':
+                folder_name = '.'
+            # Normalize path separators for Windows
+            folder_name = folder_name.replace('\\', '/')
             file_name = os.path.basename(new_path)
 
             if folder_name not in folder_mappings:
@@ -230,6 +238,15 @@ class Organizer:
             Future versions will support undo/redo and partial organization.
         """
         for file_info in generate_result.get("file_paths", []):
+            # 驗證必要的鍵存在
+            if not isinstance(file_info, dict):
+                print(f"Invalid file info format: {file_info}")
+                continue
+                
+            if "original" not in file_info or "new" not in file_info:
+                print(f"Missing required keys in file info: {file_info}")
+                continue
+                
             original_path = file_info["original"]
             new_path = file_info["new"]
 
