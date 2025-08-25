@@ -1,4 +1,4 @@
-# 這是修正過的 GitHub Actions 工作流程
+# 這是修正過的 GitHub Actions 工作流程，針對 URL 錯誤進行修正。
 name: Publish to GitHub Packages
 
 on:
@@ -22,7 +22,6 @@ jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     
-    # 這裡可以加上一個條件，確保只有在特定事件發生時才執行
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -53,7 +52,6 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
           twine upload \
-            --repository-url https://pypi.github.com/${{ github.repository }} \
+            --repository-url https://pypi.python.org/repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/ \
             dist/*
-        # continue-on-error 應該放在這裡，與 run 平級
         continue-on-error: false
