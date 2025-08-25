@@ -19,7 +19,7 @@ class ParserFactory:
             from fileorg.parsers.txt_parser import TxtParser
             from fileorg.parsers.json_parser import JsonParser
             from fileorg.parsers.csv_parser import CsvParser
-            
+
             cls._parsers[".txt"] = TxtParser
             cls._parsers[".json"] = JsonParser
             cls._parsers[".csv"] = CsvParser
@@ -38,11 +38,11 @@ class ParserFactory:
             BaseParser: 對應的解析器實例，如果不支援則返回 None
         """
         cls._initialize_default_parsers()
-        
+
         # 處理可能沒有點號的副檔名
-        if file_extension and not file_extension.startswith('.'):
-            file_extension = '.' + file_extension
-            
+        if file_extension and not file_extension.startswith("."):
+            file_extension = "." + file_extension
+
         parser_class = cls._parsers.get(file_extension.lower())
         if parser_class:
             return parser_class(char_limit)
@@ -80,8 +80,8 @@ class ParserFactory:
         """檢查是否支援指定的檔案格式"""
         cls._initialize_default_parsers()
         # 處理可能沒有點號的副檔名
-        if file_extension and not file_extension.startswith('.'):
-            file_extension = '.' + file_extension
+        if file_extension and not file_extension.startswith("."):
+            file_extension = "." + file_extension
         return file_extension.lower() in cls._parsers
 
 

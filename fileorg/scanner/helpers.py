@@ -18,7 +18,7 @@ def get_file_info(file_path: Union[str, Path]) -> Dict[str, Any]:
     # 如果是字串，轉換為 Path 物件
     if isinstance(file_path, str):
         file_path = Path(file_path)
-    
+
     try:
         stat_info = file_path.stat()
 

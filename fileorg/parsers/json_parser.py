@@ -33,11 +33,7 @@ class JsonParser(BaseParser):
                     file_type="json",
                     original_length=len(content),
                     truncated=is_truncated,
-                    error=f"JSON parsing error: {str(e)}"
+                    error=f"JSON parsing error: {str(e)}",
                 )
             except Exception as read_error:
-                return ParseResult(
-                    success=False, 
-                    file_type="json",
-                    error=str(read_error)
-                )
+                return ParseResult(success=False, file_type="json", error=str(read_error))

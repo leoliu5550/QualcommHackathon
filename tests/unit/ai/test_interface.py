@@ -22,19 +22,19 @@ class TestBaseLLM:
 class TestLocalTransformersLLM:
     """Test LocalTransformersLLM with mocked dependencies"""
 
-    @pytest.mark.unit  
+    @pytest.mark.unit
     @patch("fileorg.ai.interface.LocalTransformersLLM.__init__", return_value=None)
     def test_local_llm_initialization_cpu(self, mock_init):
         """Test LocalTransformersLLM initialization on CPU"""
         from fileorg.ai.interface import LocalTransformersLLM
-        
+
         # Create instance without actually initializing
         llm = LocalTransformersLLM.__new__(LocalTransformersLLM)
         llm.device = "cpu"
         llm.tokenizer = Mock()
         llm.model = Mock()
         llm.llm = Mock()
-        
+
         # Test that device is set correctly
         assert llm.device == "cpu"
 
@@ -43,7 +43,7 @@ class TestLocalTransformersLLM:
     def test_local_llm_initialization_cuda(self, mock_init):
         """Test LocalTransformersLLM initialization on CUDA"""
         from fileorg.ai.interface import LocalTransformersLLM
-        
+
         # Create instance without actually initializing
         llm = LocalTransformersLLM.__new__(LocalTransformersLLM)
         llm.device = "cuda"
@@ -52,7 +52,7 @@ class TestLocalTransformersLLM:
         mock_model.to = Mock(return_value=mock_model)
         llm.model = mock_model
         llm.llm = Mock()
-        
+
         # Test that device is set correctly
         assert llm.device == "cuda"
 
@@ -67,15 +67,15 @@ class TestLocalTransformersLLM:
         llm.device = "cuda"
         llm.tokenizer = Mock()
         llm.model = Mock()
-        
+
         # Setup pipeline mock
         mock_pipeline = Mock()
         mock_pipeline.return_value = [{"generated_text": "Generated response"}]
         llm.llm = mock_pipeline
-        
+
         # Call inference
         result = llm.inference("test prompt", max_new_tokens=64)
-        
+
         assert result == "Generated response"
         mock_pipeline.assert_called_once_with(
             "test prompt", max_new_tokens=64, do_sample=True, temperature=0.1
