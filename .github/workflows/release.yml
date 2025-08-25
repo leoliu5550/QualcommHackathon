@@ -1,3 +1,4 @@
+# 這是修正過的 GitHub Actions 工作流程
 name: Publish to GitHub Packages
 
 on:
@@ -12,7 +13,7 @@ on:
 
 permissions:
   contents: read
-  packages: write   # 發布到 GitHub Packages 需要這個權限
+  packages: write  # 發布到 GitHub Packages 需要這個權限
 
 env:
   PYTHON_VERSION: "3.11"
@@ -20,29 +21,39 @@ env:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
+    
+    # 這裡可以加上一個條件，確保只有在特定事件發生時才執行
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
+      # 檢查程式碼
       - uses: actions/checkout@v4
 
+      # 設定 Python 環境
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      # 安裝建置與發布工具
       - name: Install build tools
         run: |
           python -m pip install --upgrade pip
           pip install build twine
 
+      # 建立套件，生成 dist/ 目錄下的 .whl 和 .tar.gz 文件
       - name: Build package
         run: python -m build
 
+      # 發布到 GitHub Packages
       - name: Publish to GitHub Packages
         env:
           TWINE_USERNAME: ${{ github.actor }}
+          # GITHUB_TOKEN 是由 GitHub Actions 自動提供的密碼
           TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
           twine upload \
-            --repository-url https://upload.pypi.pkg.github.com/${{ github.repository_owner }} \
+            --repository-url https://pypi.github.com/${{ github.repository }} \
             dist/*
-        continue-on-error: true  # 無論單元測試是否通過都要建立
+        # continue-on-error 應該放在這裡，與 run 平級
+        continue-on-error: false
