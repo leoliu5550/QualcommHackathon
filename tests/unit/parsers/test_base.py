@@ -85,11 +85,12 @@ class TestBaseParser:
     @pytest.mark.unit
     def test_base_parser_initialization(self):
         """測試 BaseParser 初始化"""
+
         # Create a concrete implementation for testing
         class ConcreteParser(BaseParser):
             def parse(self, file_path):
                 return ParseResult(success=True)
-        
+
         parser = ConcreteParser(char_limit=1000)
 
         assert parser.char_limit == 1000
@@ -97,10 +98,11 @@ class TestBaseParser:
     @pytest.mark.unit
     def test_base_parser_default_char_limit(self):
         """測試 BaseParser 預設字元限制"""
+
         class ConcreteParser(BaseParser):
             def parse(self, file_path):
                 return ParseResult(success=True)
-        
+
         parser = ConcreteParser()
 
         # 應該有合理的預設值
@@ -110,22 +112,24 @@ class TestBaseParser:
     @pytest.mark.unit
     def test_base_parser_parse_not_implemented(self):
         """測試 BaseParser parse 方法必須被實作"""
+
         # BaseParser is abstract, so we can't instantiate it directly
         # Instead, verify that a concrete class must implement parse
         class IncompleteParser(BaseParser):
             pass
-        
+
         # This should raise TypeError when trying to instantiate
         with pytest.raises(TypeError):
-            parser = IncompleteParser()
+            IncompleteParser()
 
     @pytest.mark.unit
     def test_base_parser_custom_char_limit(self):
         """測試 BaseParser 自訂字元限制"""
+
         class ConcreteParser(BaseParser):
             def parse(self, file_path):
                 return ParseResult(success=True)
-        
+
         custom_limits = [100, 500, 1500, 5000]
 
         for limit in custom_limits:
@@ -135,20 +139,22 @@ class TestBaseParser:
     @pytest.mark.unit
     def test_base_parser_zero_char_limit(self):
         """測試 BaseParser 零字元限制"""
+
         class ConcreteParser(BaseParser):
             def parse(self, file_path):
                 return ParseResult(success=True)
-        
+
         parser = ConcreteParser(char_limit=0)
         assert parser.char_limit == 0
 
     @pytest.mark.unit
     def test_base_parser_negative_char_limit(self):
         """測試 BaseParser 負數字元限制"""
+
         class ConcreteParser(BaseParser):
             def parse(self, file_path):
                 return ParseResult(success=True)
-        
+
         # 應該接受負數但可能在實際使用時有特殊處理
         parser = ConcreteParser(char_limit=-1)
         assert parser.char_limit == -1
