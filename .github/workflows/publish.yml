@@ -3,11 +3,6 @@ name: Publish to GitHub Packages
 on:
   push:
     branches: [ main, release* ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
   workflow_dispatch:
 
 permissions:
