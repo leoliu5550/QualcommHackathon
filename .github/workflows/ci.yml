@@ -91,7 +91,7 @@ jobs:
     name: Trigger Cleanup Workflow
     runs-on: ubuntu-latest
     # 等候 lint 與所有 test matrix job 成功
-    needs: [lint, test]
+    needs: [lint] #[lint, test]
     # 明確只在 job 成功時才執行（預設 needs 就會，只是更顯式）
     if: always() 
     steps:
