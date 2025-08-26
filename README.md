@@ -59,15 +59,25 @@ git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHack
 ```bash
 git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-cpu.txt && pip install -e .
 ```
+### 📦 Install from Github PyPI by pipx (recommended)
+```bash
+# Install pipx if you don't have it yet
+python -m pip install --user pipx
+python -m pipx ensurepath
+
+pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
+```
+
+### 📦 Install from Github PyPI by pip
+```bash
+pip install git+https://github.com/leoliu5550/QualcommHackathon.git
+```
 
 ### 📦 Install from PyPI (Coming Soon)
 ```bash
 pip install fileorg
 ```
-### 📦 Install from Github PyPI
-```bash
-pip install git+https://github.com/leoliu5550/QualcommHackathon.git
-```
+
 
 ## Quick Start
 
