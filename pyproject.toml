@@ -80,8 +80,8 @@ Issues = "https://github.com/leoliu5550/QualcommHackathon/issues"
 [project.scripts]
 fileorg = "fileorg.cli:main"
 
-[tool.setuptools]
-packages = ["fileorg"]
+[tool.setuptools.packages.find]
+include = ["fileorg*"] 
 
 [tool.setuptools.package-data]
 fileorg = ["**/*.json", "**/*.yaml", "**/*.md"]
