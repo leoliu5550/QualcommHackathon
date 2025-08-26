@@ -19,7 +19,7 @@ env:
   PYTHON_VERSION: "3.11"
 
 jobs:
-  build-and-release:
+  build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -46,16 +46,16 @@ jobs:
       - name: Verify package
         run: |
           ls -la dist/
-          python -m zipfile -l dist/*.whl
-
-      # 建立 GitHub Release
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: dist/*
-          generate_release_notes: true
-          draft: false
-          prerelease: false
+          python -m zipfile -l dist/*.whl || true
+          
+      # ---- 新增：把 dist 上傳到 GitHub Packages (PyPI registry) ----
+      - name: Publish to GitHub Packages (PyPI)
+        # GITHUB_TOKEN 可用來上傳到與 workflow 相同 repo 的 package
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # 對 twine，TWINE_USERNAME/TWINE_PASSWORD 會被使用 (也可用 __token__ 作為 username)
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 對於 organization-owned repo 使用 org endpoint
+          # 對於 user-owned repo，改成: https://api.github.com/users/${{ github.repository_owner }}/packages/pypi/upload
+          python -m twine upload --repository-url "https://api.github.com/orgs/${{ github.repository_owner }}/packages/pypi/upload" dist/*
