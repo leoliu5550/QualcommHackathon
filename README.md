@@ -64,6 +64,10 @@ git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHack
 ```bash
 pip install fileorg
 ```
+### 📦 Install from Github PyPI
+```bash
+pip install git+https://github.com/leoliu5550/QualcommHackathon.git
+```
 
 ## Quick Start
 
