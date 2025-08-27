@@ -404,47 +404,5 @@ class CreateFolderNamer:
         return {}
 
 
-# Singleton pattern for model state management
-_create_name_instance = None
-
-
-def get_create_name():
-    """Get or create the singleton CreateFolderNamer instance.
-    
-    This lazy initialization prevents model loading during import,
-    which is especially important for testing.
-    
-    Returns:
-        CreateFolderNamer: Singleton instance with v2 features enabled by default
-    """
-    global _create_name_instance
-    if _create_name_instance is None:
-        # Default to v2 with enhanced features
-        from fileorg.ai.config import Config
-        cfg = Config()
-        
-        # Check if config specifies to use v1
-        use_v2 = cfg.get("classifier_version", "v2") == "v2"
-        
-        if use_v2:
-            # Use v2 with advanced features
-            _create_name_instance = CreateFolderNamer(
-                use_advanced_prompt=True,
-                prompt_version="v2",
-                use_few_shot=cfg.get("use_few_shot", True),
-                use_domain_detection=cfg.get("use_domain_detection", False)
-            )
-        else:
-            # Fallback to v1 compatibility mode
-            _create_name_instance = CreateFolderNamer(use_advanced_prompt=False)
-    
-    return _create_name_instance
-
-
-# For backward compatibility - create_name is a function that returns the instance
-def create_name():
-    """Backward compatible function interface.
-    
-    Returns the singleton instance for use in existing code.
-    """
-    return get_create_name()
+# 為了相容舊版 - 建立一個使用傳統行為的預設實例
+create_name = CreateFolderNamer(use_advanced_prompt=False)
