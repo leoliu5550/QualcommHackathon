@@ -1,4 +1,5 @@
 """
+cli.py
 FileOrg Command Line Interface
 
 This module provides the main entry point for the FileOrg intelligent file organization system.
@@ -19,6 +20,7 @@ Example:
         $ fileorg /path/to/messy/folder --preview
         $ fileorg /path/to/messy/folder
         $ fileorg /path/to/organized/folder --restore
+        $ fileorg start  # 啟動GUI模式
 
 Note:
     This module handles cross-platform path normalization automatically,
@@ -56,7 +58,9 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="智慧檔案整理工具 - 使用 AI 技術自動分類與整理檔案"
     )
-    parser.add_argument("target_path", help="要整理的目標目錄")
+    
+    # 讓 target_path 變為可選參數，以支援 GUI 模式
+    parser.add_argument("target_path", nargs='?', help="要整理的目標目錄 (GUI 模式時可省略)")
     parser.add_argument(
         "--preview", action="store_true", help="預覽模式 - 不移動檔案，只顯示整理計畫"
     )
@@ -64,9 +68,17 @@ def parse_arguments():
 
     args = parser.parse_args()
 
+    # 檢查 GUI 模式
+    if args.target_path == "start":
+        return args
+
     # 驗證參數組合
     if args.preview and args.restore:
         parser.error("--preview 和 --restore 不能同時使用")
+        
+    # 對於非 GUI 模式，target_path 是必需的
+    if not args.target_path and not (len(sys.argv) == 2 and sys.argv[1] == "start"):
+        parser.error("必須提供目標路徑或使用 'start' 啟動 GUI 模式")
 
     return args
 
@@ -311,6 +323,7 @@ def main():
         - Input validation
         - Mode selection (preview/organize/restore)
         - Error handling with helpful messages
+        - GUI mode integration
 
     Exit Codes:
         0: Success
@@ -322,6 +335,23 @@ def main():
     """
     # 解析命令行參數
     args = parse_arguments()
+    
+    # 檢查是否為 GUI 模式
+    if args.target_path == "start" or (len(sys.argv) == 2 and sys.argv[1] == "start"):
+        try:
+            # 修正導入路徑
+            from fileorg.gui.usercli import start_gui
+            start_gui()
+            return
+        except ImportError as e:
+            print(f"錯誤: 無法載入 GUI 模組: {e}")
+            print("請確認 GUI 模組已正確安裝在 fileorg.gui.usercli")
+            sys.exit(1)
+
+    # 確保非 GUI 模式有 target_path
+    if not args.target_path:
+        print("錯誤: 必須提供目標路徑")
+        sys.exit(1)
 
     # 正規化路徑處理 - 支援 Windows/Linux/macOS
     target_path = os.path.normpath(os.path.abspath(args.target_path))
@@ -354,6 +384,7 @@ def main():
 if __name__ == "__main__":
     """
     使用範例:
+    - GUI 模式: fileorg start
     - 預覽模式: fileorg test/data/textIO --preview
     - 標準模式: fileorg test/data/textIO
     - 還原模式: fileorg test/data/textIO --restore
