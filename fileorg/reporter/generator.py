@@ -16,7 +16,7 @@ class ReportGenerator:
         self.target_path = target_path
         self.tree_visualizer = TreeVisualizer()
         self.stats_calculator = StatisticsCalculator()
-        self.report_dir = os.path.join(target_path, "tidy_report")
+        self.report_dir = os.path.join(target_path, ".tidy_report")
 
     def generate_reports(self, backup_path: Optional[str] = None) -> Dict[str, str]:
         """
