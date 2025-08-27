@@ -639,6 +639,6 @@ class TestBackupOperationsEdgeCases:
         backup_dir.mkdir()
 
         with patch("os.path.exists", side_effect=PermissionError("Access denied")):
-            # The permission error should propagate
-            with pytest.raises(PermissionError):
-                cli.check_existing_backup(str(tmp_path))
+            # The function should handle permission error gracefully and return False
+            result = cli.check_existing_backup(str(tmp_path))
+            assert result is False

@@ -87,9 +87,29 @@ class LocalTransformersLLM(BaseLLM):
             self.device = device  # "cuda" or "cpu"
 
         self.tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=model_dir)
-        self.model = AutoModelForCausalLM.from_pretrained(model_id, cache_dir=model_dir).to(
-            self.device
-        )
+        
+        # Try to load model with quantization if available, fallback to non-quantized if bitsandbytes is not available
+        try:
+            # First attempt: load with original configuration (may include quantization)
+            self.model = AutoModelForCausalLM.from_pretrained(
+                model_id, 
+                cache_dir=model_dir
+            ).to(self.device)
+        except (ImportError, Exception) as e:
+            # If loading fails due to bitsandbytes, load without quantization
+            error_str = str(e)
+            if "bitsandbytes" in error_str or "quantization" in error_str or "No package metadata was found" in error_str:
+                print(f"Note: Loading model without quantization (bitsandbytes not available)")
+                self.model = AutoModelForCausalLM.from_pretrained(
+                    model_id, 
+                    cache_dir=model_dir,
+                    quantization_config=None,  # Ignore quantization config
+                    load_in_4bit=False,  # Disable 4bit loading
+                    load_in_8bit=False   # Disable 8bit loading
+                ).to(self.device)
+            else:
+                # Re-raise if it's not a bitsandbytes related error
+                raise
         self.llm = pipeline(
             "text-generation", model=self.model, tokenizer=self.tokenizer, return_full_text=False
         )
