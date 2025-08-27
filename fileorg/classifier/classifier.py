@@ -273,7 +273,7 @@ class CreateFolderNamer:
         """Clean and sanitize output text from LLM.
         
         Removes unwanted characters while preserving Chinese characters, English
-        letters, digits, spaces, and forward slashes.
+        letters, digits, and spaces. Removes forward slashes for path safety.
         
         Args:
             text (str): Raw text output from LLM.
@@ -281,8 +281,8 @@ class CreateFolderNamer:
         Returns:
             str: Cleaned text suitable for use as a folder name.
         """
-        # 保留中文、英文大小寫與阿拉伯數字，其餘全部移除
-        cleaned = re.sub(r'[^\u4e00-\u9fa5A-Za-z0-9\s/]', '', text)
+        # 保留中文、英文大小寫與阿拉伯數字、空格，其餘全部移除（包括斜線）
+        cleaned = re.sub(r'[^\u4e00-\u9fa5A-Za-z0-9\s]', '', text)
         return cleaned.strip()
     
     def process_files(self, summaries_data: Dict[str, Any], base_output_dir: str = "./") -> Dict[str, List[Dict[str, str]]]:
