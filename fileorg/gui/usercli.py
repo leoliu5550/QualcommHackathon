@@ -352,8 +352,8 @@ def start_gui():
     gui = TerminalGUI()
     
     # 延遲載入主要模組
-    # from fileorg.core.organizer import Organizer
-    from fileorg.core.mock_organizer import MockOrganizer
+    from fileorg.core.organizer import Organizer
+    # from fileorg.core.mock_organizer import MockOrganizer
     from fileorg.restore.restore_folder import restore_folder
     
     while True:
@@ -416,8 +416,8 @@ def start_gui():
                 print("掃描和分析檔案中，請稍候...")
                 
                 # 執行預覽
-                # organizer = Organizer()
-                organizer = MockOrganizer()
+                organizer = Organizer()
+                # organizer = MockOrganizer()
                 organizer.target_path = target_path
                 os.makedirs(os.path.join(target_path, ".backup"), exist_ok=True)
                 
@@ -492,8 +492,8 @@ def start_gui():
                     print("\n正在執行檔案整理...")
 
                     
-                    # organizer = Organizer()
-                    organizer = MockOrganizer()
+                    organizer = Organizer()
+                    # organizer = MockOrganizer()
                     organizer.start_organize(target_path)
                     
                     print("\n✅ 檔案整理完成！")

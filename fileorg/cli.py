@@ -212,15 +212,15 @@ def run_preview_mode(target_path):
     print("-" * 50)
 
     # 延遲載入，只在需要時載入
-    # from fileorg.core.organizer import Organizer
-    from fileorg.core.mock_organizer import MockOrganizer
+    from fileorg.core.organizer import Organizer
+    # from fileorg.core.mock_organizer import MockOrganizer
 
     # 建立備份目錄
     os.makedirs(os.path.join(target_path, ".backup"), exist_ok=True)
 
     # 初始化整理器
-    # organizer = Organizer()
-    organizer = MockOrganizer()
+    organizer = Organizer()
+    # organizer = MockOrganizer()
     organizer.target_path = target_path
 
     # 步驟 1: 掃描檔案
@@ -297,8 +297,8 @@ def run_standard_mode(target_path):
             print("備份檔案損壞或空白，執行完整整理流程...")
 
     # 只在真正需要時才載入 Organizer
-    # from fileorg.core.organizer import Organizer
-    from fileorg.core.mock_organizer import MockOrganizer
+    from fileorg.core.organizer import Organizer
+    # from fileorg.core.mock_organizer import MockOrganizer
 
     # 執行完整的整理流程
     print("執行完整整理流程...")
@@ -307,8 +307,8 @@ def run_standard_mode(target_path):
     os.makedirs(os.path.join(target_path, ".backup"), exist_ok=True)
 
     # 執行整理
-    # organizer = Organizer()
-    organizer = MockOrganizer()
+    organizer = Organizer()
+    # organizer = MockOrganizer()
     organizer.start_organize(target_path)
 
     print("\n檔案整理完成！")
