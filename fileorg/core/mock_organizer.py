@@ -316,10 +316,10 @@ class MockOrganizer:
         Mock report generation that simulates creating organization reports.
         """
         report_files = {
-            'tree_structure': os.path.join(self.target_path, '.reports', 'tree_structure.txt'),
-            'markdown_report': os.path.join(self.target_path, '.reports', 'organize_report.md'),
-            'statistics': os.path.join(self.target_path, '.reports', 'statistics.txt'),
-            'report_folder': os.path.join(self.target_path, '.reports')
+            'tree_structure': os.path.join(self.target_path, '.tidy_report', 'tree_structure.html'),
+            'markdown_report': os.path.join(self.target_path, '.tidy_report', 'organize_report.md'),
+            'statistics': os.path.join(self.target_path, '.tidy_report', 'statistics.txt'),
+            'report_folder': os.path.join(self.target_path, '.tidy_report')
         }
         
         print("\n[MOCK] Generated reports:")
