@@ -160,9 +160,9 @@ class TerminalGUI:
         
         if not history:
             self.clear_screen()
-            print("\n歷史記錄")
+            print("\n歷史路徑")
             print("=" * 8)
-            print("\n尚無歷史記錄")
+            print("\n尚無歷史路徑")
             input("\n按 Enter 繼續...")
             return None
         
@@ -182,7 +182,7 @@ class TerminalGUI:
         options.append("返回主選單")
         
         self.selected_index = 0
-        choice = self.show_menu("歷史記錄", options)
+        choice = self.show_menu("歷史路徑", options)
         
         if choice is None or choice == len(options) - 1:
             return None
@@ -364,7 +364,7 @@ def start_gui():
         has_history = len(history) > 0
         
         # 主選單 - 根據歷史記錄動態調整選項
-        main_options = ["輸入檔案路徑"]
+        main_options = ["輸入資料夾路徑"]
         
         if has_history:
             main_options.append("選擇歷史路徑")
