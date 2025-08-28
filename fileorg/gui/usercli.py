@@ -253,7 +253,7 @@ class TerminalGUI:
                 print("\n📂 最新整理報告")
                 print("=" * 16)
                 print(f"\n報告資料夾: {os.path.basename(report_folder)}")
-                print("找不到 tree_structure.txt 檔案")
+                print("找不到 tree_structure.html 檔案")
             
             options = ["返回主選單", "退出程式"]
             self.selected_index = 0
@@ -433,28 +433,28 @@ def start_gui():
                 
                 # 顯示預覽結果並確認
                 if gui.show_preview_results(generate_result):
-                    if gui.show_preview_results(generate_result):
-                        gui.clear_screen()
-                        print("\n正在執行檔案整理...")
-                        
-                        # 創建備份目錄和文件
-                        backup_dir = os.path.join(target_path, ".backup")
-                        os.makedirs(backup_dir, exist_ok=True)
-                        
-                        backup_file = os.path.join(backup_dir, "file_paths.json")
-                        backup_data = {
-                            "timestamp": datetime.now().isoformat(),
-                            "file_paths": generate_result.get("file_paths", [])
-                        }
-                        
-                        # 保存備份數據
-                        try:
-                            with open(backup_file, "w", encoding="utf-8") as f:
-                                json.dump(backup_data, f, ensure_ascii=False, indent=2)
-                        except Exception as e:
-                            print(f"創建備份文件失敗: {e}")
-                            input("\n按 Enter 繼續...")
-                            continue
+
+                    gui.clear_screen()
+                    print("\n正在執行檔案整理...")
+                    
+                    # 創建備份目錄和文件
+                    backup_dir = os.path.join(target_path, ".backup")
+                    os.makedirs(backup_dir, exist_ok=True)
+                    
+                    backup_file = os.path.join(backup_dir, "file_paths.json")
+                    backup_data = {
+                        "timestamp": datetime.now().isoformat(),
+                        "file_paths": generate_result.get("file_paths", [])
+                    }
+                    
+                    # 保存備份數據
+                    try:
+                        with open(backup_file, "w", encoding="utf-8") as f:
+                            json.dump(backup_data, f, ensure_ascii=False, indent=2)
+                    except Exception as e:
+                        print(f"創建備份文件失敗: {e}")
+                        input("\n按 Enter 繼續...")
+                        continue
                     
                     if backup_data:
                         file_paths = backup_data.get("file_paths", [])

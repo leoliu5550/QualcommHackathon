@@ -236,6 +236,7 @@ class MockOrganizer:
         for folder, files in folder_mappings.items():
             print(f"  - {folder}: {len(files)} files")
         
+        self.mock_results = result 
         return result
 
     def _mock_categorize_file(self, extension: str, summary: str) -> str:
@@ -315,31 +316,54 @@ class MockOrganizer:
         """
         Mock report generation that simulates creating organization reports.
         """
+        # 建立時間戳記格式的報告資料夾
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        report_base_dir = os.path.join(self.target_path, '.tidy_report')
+        report_dir = os.path.join(report_base_dir, timestamp)
+        
+        # 確保報告目錄存在
+        os.makedirs(report_dir, exist_ok=True)
+        
         report_files = {
-            'tree_structure': os.path.join(self.target_path, '.tidy_report', 'tree_structure.html'),
-            'markdown_report': os.path.join(self.target_path, '.tidy_report', 'organize_report.md'),
-            'statistics': os.path.join(self.target_path, '.tidy_report', 'statistics.txt'),
-            'report_folder': os.path.join(self.target_path, '.tidy_report')
+            'tree_structure': os.path.join(report_dir, 'tree_structure.html'),
+            'markdown_report': os.path.join(report_dir, 'organize_report.md'),
+            'statistics': os.path.join(report_dir, 'statistics.txt')
         }
         
-        print("\n[MOCK] Generated reports:")
-        print("  - 樹狀結構: tree_structure.txt")
-        print("  - Markdown報告: organize_report.md") 
-        print("  - 統計報告: statistics.txt")
-        print(f"  報告儲存於: {report_files['.tidy_report']}")
-        
-        if not self.mock_mode:
-            # In non-mock mode, actually create some basic report files
-            os.makedirs(report_files['.tidy_report'], exist_ok=True)
-            
-            # Create a simple tree structure report
+        # if not self.mock_mode:
+        try:
+            # 生成樹狀結構報告
             with open(report_files['tree_structure'], 'w', encoding='utf-8') as f:
-                f.write("Mock Organization Tree Structure\n")
-                f.write("="*40 + "\n")
-                for category in self.mock_categories:
-                    f.write(f"{category}/\n")
-                    f.write(f"  └── (mock files organized here)\n")
-
+                f.write("<html><body><pre>\n")
+                f.write("File Organization Structure\n")
+                f.write("="*30 + "\n\n")
+                for category, files in self.mock_results.get("folder_mappings", {}).items():
+                    f.write(f"📁 {category}/\n")
+                    for file in files:
+                        f.write(f"  └── 📄 {file}\n")
+                f.write("</pre></body></html>")
+            
+            # 生成 Markdown 報告
+            with open(report_files['markdown_report'], 'w', encoding='utf-8') as f:
+                f.write("# File Organization Report\n\n")
+                f.write(f"Generated at: {datetime.datetime.now().isoformat()}\n\n")
+                f.write(f"Target directory: {self.target_path}\n\n")
+                
+            # 生成統計報告
+            with open(report_files['statistics'], 'w', encoding='utf-8') as f:
+                f.write("File Organization Statistics\n")
+                f.write("="*30 + "\n\n")
+                f.write(f"Total files processed: {len(self.mock_files)}\n")
+                
+        except Exception as e:
+            print(f"[ERROR] Failed to generate reports: {e}")
+            return
+        
+        print("\n[MOCK] Generated reports:")
+        print(f"  - 樹狀結構: {report_files['tree_structure']}")
+        print(f"  - Markdown報告: {report_files['markdown_report']}")
+        print(f"  - 統計報告: {report_files['statistics']}")
+        print(f"  報告儲存於: {report_dir}")
     def get_mock_status(self) -> Dict[str, Any]:
         """
         Get current mock status and results for testing.
