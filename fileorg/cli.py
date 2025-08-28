@@ -389,8 +389,8 @@ if __name__ == "__main__":
     """
     使用範例:
     - GUI 模式: fileorg start
-    - 預覽模式: fileorg test/data/textIO --preview
-    - 標準模式: fileorg test/data/textIO
-    - 還原模式: fileorg test/data/textIO --restore
+    - 預覽模式: fileorg tests/fixtures/textIO --preview
+    - 標準模式: fileorg tests/fixtures/textIO
+    - 還原模式: fileorg tests/fixtures/textIO --restore
     """
     main()
