@@ -373,7 +373,7 @@ def start_gui():
         main_choice = gui.show_menu("FileOrg 智慧檔案整理工具", main_options)
         
         if main_choice is None or main_choice == len(main_options) - 1:  # 退出
-            # gui.clear_screen()
+            gui.clear_screen()
             print("\n感謝使用 FileOrg！")
             break
         
@@ -411,7 +411,7 @@ def start_gui():
         
         try:
             if mode_choice == 0:  # 預覽模式
-                # gui.clear_screen()
+                gui.clear_screen()
                 print("\n正在執行預覽模式...")
                 print("掃描和分析檔案中，請稍候...")
                 
@@ -436,7 +436,7 @@ def start_gui():
                 # 顯示預覽結果並確認
                 if gui.show_preview_results(generate_result):
 
-                    # gui.clear_screen()
+                    gui.clear_screen()
                     print("\n正在執行檔案整理...")
                     
                     # 創建備份目錄和文件
@@ -488,7 +488,7 @@ def start_gui():
             elif mode_choice == 1:  # 直接執行
 
                 if gui.confirm_action("確認執行檔案整理", f"路徑: {target_path}\n\n這將會移動檔案到新的資料夾結構中"):
-                    # gui.clear_screen()
+                    gui.clear_screen()
                     print("\n正在執行檔案整理...")
 
                     
@@ -508,7 +508,7 @@ def start_gui():
             
             elif mode_choice == 2 and backup_exists:  # 還原
                 if gui.confirm_action("確認還原檔案", f"路徑: {target_path}\n\n這將會把檔案還原到整理前的位置"):
-                    # gui.clear_screen()
+                    gui.clear_screen()
                     print("\n正在還原檔案...")
                     
                     restore_folder(target_path)
@@ -521,7 +521,7 @@ def start_gui():
                     input("\n按 Enter 繼續...")
         
         except Exception as e:
-            # gui.clear_screen()
+            gui.clear_screen()
             print(f"\n❌ 執行過程中發生錯誤: {str(e)}")
             input("\n按 Enter 繼續...")
 
