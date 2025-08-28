@@ -163,11 +163,11 @@ class MockOrganizer:
         
         if save_result:
             backup_dir = os.path.join(self.target_path, ".backup")
-            print(f"[MOCK] Would save parsing results to: {backup_dir}/summ_load.json")
+            print(f"[MOCK] Would save parsing results to: {backup_dir}/file_paths.json")
             # In real mode, we would create the directory and file here
             if not self.mock_mode:
                 os.makedirs(backup_dir, exist_ok=True)
-                with open(os.path.join(backup_dir, "summ_load.json"), "w", encoding="utf-8") as f:
+                with open(os.path.join(backup_dir, "file_paths.json"), "w", encoding="utf-8") as f:
                     json.dump(parser_results, f, ensure_ascii=False, indent=4)
         
         print(f"[MOCK] Parsed {len(parser_results['summaries'])} files")
@@ -326,11 +326,11 @@ class MockOrganizer:
         print("  - 樹狀結構: tree_structure.txt")
         print("  - Markdown報告: organize_report.md") 
         print("  - 統計報告: statistics.txt")
-        print(f"  報告儲存於: {report_files['report_folder']}")
+        print(f"  報告儲存於: {report_files['.tidy_report']}")
         
         if not self.mock_mode:
             # In non-mock mode, actually create some basic report files
-            os.makedirs(report_files['report_folder'], exist_ok=True)
+            os.makedirs(report_files['.tidy_report'], exist_ok=True)
             
             # Create a simple tree structure report
             with open(report_files['tree_structure'], 'w', encoding='utf-8') as f:
