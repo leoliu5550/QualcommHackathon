@@ -165,10 +165,10 @@ class MockOrganizer:
             backup_dir = os.path.join(self.target_path, ".backup")
             print(f"[MOCK] Would save parsing results to: {backup_dir}/file_paths.json")
             # In real mode, we would create the directory and file here
-            if not self.mock_mode:
-                os.makedirs(backup_dir, exist_ok=True)
-                with open(os.path.join(backup_dir, "file_paths.json"), "w", encoding="utf-8") as f:
-                    json.dump(parser_results, f, ensure_ascii=False, indent=4)
+            # if not self.mock_mode:
+            os.makedirs(backup_dir, exist_ok=True)
+            with open(os.path.join(backup_dir, "file_paths.json"), "w", encoding="utf-8") as f:
+                json.dump(parser_results, f, ensure_ascii=False, indent=4)
         
         print(f"[MOCK] Parsed {len(parser_results['summaries'])} files")
         return parser_results
@@ -226,10 +226,10 @@ class MockOrganizer:
         if save_result:
             backup_dir = os.path.join(self.target_path, ".backup")
             print(f"[MOCK] Would save classification results to: {backup_dir}/file_paths.json")
-            if not self.mock_mode:
-                os.makedirs(backup_dir, exist_ok=True)
-                with open(os.path.join(backup_dir, "file_paths.json"), "w", encoding="utf-8") as f:
-                    json.dump(result, f, ensure_ascii=False, indent=4)
+            # if not self.mock_mode:
+            os.makedirs(backup_dir, exist_ok=True)
+            with open(os.path.join(backup_dir, "file_paths.json"), "w", encoding="utf-8") as f:
+                json.dump(result, f, ensure_ascii=False, indent=4)
         
         # Print categorization summary
         print(f"[MOCK] Categorized files into {len(folder_mappings)} folders:")
