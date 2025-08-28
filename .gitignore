@@ -158,7 +158,7 @@ test_onnx_simple/
 test_output/
 *.log
 .backup/
-tidy_report/
+.tidy_report/
 Organized_Files_*/
 
 # Temporary files
