@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+from pathlib import Path
 from typing import Dict
 
 
@@ -104,18 +105,36 @@ class FileRestorer:
     def _cleanup_empty_directories(self, backup_data: Dict):
         """Remove empty directories after restore"""
         try:
+            # Get or rebuild folder mappings for backward compatibility
             folder_mappings = backup_data.get("folder_mappings", {})
-
-            for folder_name in folder_mappings.keys():
-                folder_path = os.path.join(self.target_path, folder_name)
-
-                if os.path.exists(folder_path) and os.path.isdir(folder_path):
-                    try:
-                        if not os.listdir(folder_path):
-                            os.rmdir(folder_path)
-                            print(f"Removed empty directory: {folder_path}")
-                    except OSError:
-                        pass
+            if not folder_mappings:
+                # Rebuild from file_paths if needed
+                for file_info in backup_data.get("file_paths", []):
+                    if new_path := file_info.get("new"):
+                        folder_path = Path(new_path).relative_to(self.target_path).parent
+                        if folder_path != Path("."):
+                            folder_mappings[str(folder_path).replace("\\", "/")] = []
+            
+            # Collect all directories to check (including parent directories)
+            dirs_to_check = set()
+            for folder_name in folder_mappings:
+                if folder_name == ".":
+                    continue
+                path = Path(folder_name)
+                # Add this folder and all parent folders
+                while path != Path("."):
+                    dirs_to_check.add(path)
+                    path = path.parent
+            
+            # Remove empty directories from deepest to shallowest
+            for folder_path in sorted(dirs_to_check, key=lambda p: len(p.parts), reverse=True):
+                full_path = Path(self.target_path) / folder_path
+                try:
+                    if full_path.exists() and full_path.is_dir() and not any(full_path.iterdir()):
+                        full_path.rmdir()
+                        print(f"Removed empty directory: {full_path}")
+                except OSError:
+                    pass  # Directory not empty or permission issue
 
         except Exception as e:
             print(f"Error during directory cleanup: {e}")
