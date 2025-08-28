@@ -135,14 +135,13 @@ class TerminalGUI:
             pass
         return []
     
-    def save_history(self, path, report_path=None):
+    def save_history(self, path):
         """儲存歷史記錄"""
         try:
             history = self.load_history()
             record = {
                 "timestamp": datetime.now().isoformat(),
-                "path": path,
-                "report_path": report_path
+                "path": path
             }
             history.insert(0, record)  # 最新的在前面
             
@@ -240,18 +239,15 @@ class TerminalGUI:
     def show_latest_report(self, report_folder):
         """顯示最新報告內容"""
         try:
-            # 優先查找 tree_structure.txt
-            tree_file = os.path.join(report_folder, "tree_structure.txt")
-            
+            # 優先查找 tree_structure.html
+            tree_file = os.path.join(report_folder, "tree_structure.html")
             if os.path.exists(tree_file):
-                with open(tree_file, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                
                 self.clear_screen()
                 print("\n📂 最新整理報告")
                 print("=" * 16)
-                print()
-                print(content)
+                print(f"\n報告資料夾: {os.path.basename(report_folder)}")
+                print(f"\n請使用瀏覽器打開以下檔案查看完整報告:\n{tree_file}")
+                input("\n按 Enter 繼續...")
             else:
                 self.clear_screen()
                 print("\n📂 最新整理報告")
@@ -443,6 +439,9 @@ def start_gui():
                     # 套用備份結構
                     backup_data = None
                     backup_file = os.path.join(target_path, ".backup", "file_paths.json")
+                    #若無資料夾則創建
+                    if not os.path.exists(os.path.dirname(backup_file)):
+                        os.makedirs(os.path.dirname(backup_file))
                     try:
                         with open(backup_file, "r", encoding="utf-8") as f:
                             backup_data = json.load(f)
@@ -473,15 +472,16 @@ def start_gui():
                         gui.show_completion_report(target_path)
                         
                         # 儲存歷史記錄
-                        report_path = os.path.join(target_path, ".backup", "organization_report.md")
-                        gui.save_history(target_path, report_path if os.path.exists(report_path) else None)
-                
+                        gui.save_history(target_path)
+
                 input("\n按 Enter 繼續...")
             
             elif mode_choice == 1:  # 直接執行
+
                 if gui.confirm_action("確認執行檔案整理", f"路徑: {target_path}\n\n這將會移動檔案到新的資料夾結構中"):
                     gui.clear_screen()
                     print("\n正在執行檔案整理...")
+
                     
                     # organizer = Organizer()
                     organizer = MockOrganizer()
@@ -493,8 +493,7 @@ def start_gui():
                     gui.show_completion_report(target_path)
                     
                     # 儲存歷史記錄
-                    report_path = os.path.join(target_path, ".backup", "organization_report.md")
-                    gui.save_history(target_path, report_path if os.path.exists(report_path) else None)
+                    gui.save_history(target_path)
                     
                     input("\n按 Enter 繼續...")
             
