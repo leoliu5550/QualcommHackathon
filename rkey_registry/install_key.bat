@@ -107,41 +107,54 @@ reg delete "HKCU\Software\Classes\Directory\shell\fileorg" /f >nul 2>&1
 reg delete "HKCU\Software\Classes\Directory\shell\FileOrg" /f >nul 2>&1
 reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /f >nul 2>&1
 
-:: Create cascading menu with 3 options
+:: Create cascading menu with 3 options using shell submenu structure
 echo Creating FileOrg cascading menu...
 
 :: Main menu entry with MUIVerb for cascading
 reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /ve /d "FileOrg Operations" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "MUIVerb" /d "FileOrg Operations" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "SubCommands" /d "FileOrg.Preview;FileOrg.Organize;FileOrg.Restore" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "SubCommands" /d "" /f >nul 2>&1
 
-:: Also add to background context menu (right-click on empty space)
+:: Option 1: Preview (子選單項目)
+echo Adding Preview option...
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\01preview" /ve /d "📋 Preview Organization" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\01preview" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\01preview\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" --preview && pause\"" /f >nul 2>&1
+
+:: Option 2: Organize (子選單項目)
+echo Adding Organize option...
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\02organize" /ve /d "🗂️ Start Organizing" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\02organize" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\02organize\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" && pause\"" /f >nul 2>&1
+
+:: Option 3: Restore (子選單項目)
+echo Adding Restore option...
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\03restore" /ve /d "↩️ Restore Original" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\03restore" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\03restore\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" --restore && pause\"" /f >nul 2>&1
+
+:: Also add to background context menu (right-click on empty space in folder)
+echo Adding background context menu...
 reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /ve /d "FileOrg Operations" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "MUIVerb" /d "FileOrg Operations" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "SubCommands" /d "FileOrg.Preview;FileOrg.Organize;FileOrg.Restore" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "SubCommands" /d "" /f >nul 2>&1
 
-:: Register sub-commands in CommandStore
-echo Adding sub-commands to CommandStore...
+:: Background menu - Option 1: Preview
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\01preview" /ve /d "📋 Preview Organization" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\01preview" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\01preview\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --preview && pause\"" /f >nul 2>&1
 
-:: Option 1: Preview
-reg add "HKCU\Software\Classes\Local Settings\MuiCache\1\52C64B7E" /v "FileOrg.Preview" /d "Preview Organization" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Preview" /ve /d "Preview Organization" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Preview" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Preview\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --preview && pause\"" /f >nul 2>&1
+:: Background menu - Option 2: Organize
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\02organize" /ve /d "🗂️ Start Organizing" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\02organize" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\02organize\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" && pause\"" /f >nul 2>&1
 
-:: Option 2: Organize  
-reg add "HKCU\Software\Classes\Local Settings\MuiCache\1\52C64B7E" /v "FileOrg.Organize" /d "Start Organizing" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Organize" /ve /d "Start Organizing" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Organize" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Organize\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" && pause\"" /f >nul 2>&1
-
-:: Option 3: Restore
-reg add "HKCU\Software\Classes\Local Settings\MuiCache\1\52C64B7E" /v "FileOrg.Restore" /d "Restore Original" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Restore" /ve /d "Restore Original" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Restore" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Restore\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --restore && pause\"" /f >nul 2>&1
+:: Background menu - Option 3: Restore
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\03restore" /ve /d "↩️ Restore Original" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\03restore" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\03restore\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --restore && pause\"" /f >nul 2>&1
 
 echo.
 echo ========= Installation Complete! =========
