@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [main, feat/optimize-dp]
+    branches: [main]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'

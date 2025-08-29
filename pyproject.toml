@@ -69,40 +69,17 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
 ]
-
-# Documentation tools
 docs = [
-    "mkdocs==1.5.3",
-    "mkdocs-material==9.5.3",
-    "mkdocstrings[python]==0.24.0",
-    "mkdocs-git-revision-date-localized-plugin==1.2.2",
-    "mkdocs-minify-plugin==0.7.2",
-    "pymdown-extensions==10.5",
-    "sphinx>=5.0.0",
-    "furo>=2023.3.27",
-    "myst-parser>=0.18.0",
+    "mkdocs>=1.5.3",
+    "mkdocs-material>=9.5.3",
+    "mkdocstrings[python]>=0.24.0",
+    "mkdocs-autorefs>=1.0.0",  # Updated to latest stable version
+    "mkdocs-git-revision-date-localized-plugin>=1.2.2",
+    "mkdocs-minify-plugin>=0.7.2",
+    "pymdown-extensions>=10.5",
 ]
-
-# Complete development environment
-all = [
-    # Non-NPU mode dependencies
-    "torch>=2.0.0",
-    "transformers>=4.35.0",
-    "accelerate>=0.24.0",
-    "sentencepiece>=0.1.99",
-    "protobuf>=3.20.0",
-    # Dev tools
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-mock>=3.10.0",
-    "pytest-asyncio>=0.21.0",
-    "black>=23.0.0",
-    "ruff>=0.1.0",
-    "mypy>=1.0.0",
-    "pre-commit>=3.0.0",
-    "build>=0.10.0",
-    "twine>=4.0.0",
-]
+gpu = []
+qualcomm = []
 
 [project.urls]
 Homepage = "https://github.com/leoliu5550/QualcommHackathon"
