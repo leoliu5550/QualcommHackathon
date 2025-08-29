@@ -206,15 +206,53 @@ class QualcommLLM(BaseLLM):
         The NPU inference path is optimized for Snapdragon X series laptops,
         delivering desktop-class AI performance in an ultraportable form factor.
         """
-        input_ids = self.tokenizer(prompt, return_tensors="np")["input_ids"][0].tolist()
-        output_ids = input_ids.copy()
-        for _ in range(max_new_tokens):
-            next_token_id = self._snpe_infer(output_ids)
-            # 如果遇到 EOS 結束
-            if next_token_id == self.tokenizer.eos_token_id or len(output_ids) > 2048:
-                break
-            output_ids.append(next_token_id)
-        return self.tokenizer.decode(output_ids, skip_special_tokens=True)
+        # input_ids = self.tokenizer(prompt, return_tensors="np")["input_ids"][0].tolist()
+        # output_ids = input_ids.copy()
+        # for _ in range(max_new_tokens):
+        #     next_token_id = self._snpe_infer(output_ids)
+        #     # 如果遇到 EOS 結束
+        #     if next_token_id == self.tokenizer.eos_token_id or len(output_ids) > 2048:
+        #         break
+        #     output_ids.append(next_token_id)
+        # return self.tokenizer.decode(output_ids, skip_special_tokens=True)
+        return self.llm_response(prompt)
+
+
+    def llm_response(self, prompt: str):
+        # 你的 API key
+        api_key = "3dc12b8ca6fcdccf75a6010e95eca4ca7c8827604c10381686912eb746d41f60"
+        url = "http://127.0.0.1:80/v1.0/chat/completions"
+
+        llm_model= ".bot/Llama 3.1 8B @NPU"
+
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        }
+
+
+        # payload = {
+        #     "model": llm_model,
+        #     "messages": [
+        #         {"role": "system", "content": "You are a helpful assistant."},
+        #         {"role": "user", "content": "Hello!"}
+        #     ]
+        # }
+
+        payload = {
+            "model": llm_model,
+            "messages": prompt
+        }
+
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(url, headers=headers, json=payload)
+
+        print(response.json()["choices"][-1]["message"]["content"])
+        return response.json()["choices"][-1]["message"]["content"]
+            
+
+
+
 
 
 def get_llm(backend: str, **kwargs) -> BaseLLM:
