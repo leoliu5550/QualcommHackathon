@@ -1,3 +1,9 @@
+"""File restoration module.
+
+Reverts organized files back to their original locations.
+Provides safe undo functionality for file organization.
+"""
+
 import json
 import os
 import shutil
@@ -6,18 +12,26 @@ from typing import Dict
 
 
 class FileRestorer:
-    """Restores files from sorted location back to their original paths"""
+    """Restore files to original locations.
+    
+    Uses backup data to safely undo file organization.
+    Cleans up empty directories after restoration.
+    """
 
     def __init__(self, target_path: str):
+        """Initialize restorer with target directory.
+        
+        Args:
+            target_path: Root directory containing organized files
+        """
         self.target_path = target_path
         self.backup_file = os.path.join(target_path, ".backup", "file_paths.json")
 
     def restore(self) -> bool:
-        """
-        Perform the restore operation
+        """Restore all files to original locations.
 
         Returns:
-            bool: Whether the restore was successful
+            True if all files restored successfully
         """
         try:
             backup_data = self._load_backup_data()
@@ -45,7 +59,11 @@ class FileRestorer:
             return False
 
     def _load_backup_data(self) -> Dict:
-        """Load backup JSON data"""
+        """Load backup data from JSON file.
+        
+        Returns:
+            Dict with file movement history
+        """
         try:
             if not os.path.exists(self.backup_file):
                 return {}
@@ -57,14 +75,13 @@ class FileRestorer:
             return {}
 
     def _restore_single_file(self, file_info: Dict) -> bool:
-        """
-        Restore a single file
+        """Restore one file to its original location.
 
         Args:
             file_info: Dict with 'original' and 'new' paths
 
         Returns:
-            bool: Whether the file was successfully restored
+            True if file restored successfully
         """
         try:
             original_path = file_info.get("original")
@@ -74,7 +91,7 @@ class FileRestorer:
                 print("Error: Missing original or new path in file info")
                 return False
 
-            # 正規化路徑處理
+            # Normalize paths
             original_path = os.path.normpath(original_path)
             new_path = os.path.normpath(new_path)
 

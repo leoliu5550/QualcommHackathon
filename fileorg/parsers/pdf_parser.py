@@ -1,3 +1,9 @@
+"""PDF file parser for document text extraction.
+
+Extracts text from PDF documents using pypdf library.
+Limits to first 10 pages for efficiency.
+"""
+
 from fileorg.parsers.base import BaseParser, ParseResult
 from pathlib import Path
 
@@ -11,11 +17,25 @@ except ImportError:
 
 
 class PdfParser(BaseParser):
-    """PDF 檔案解析器"""
+    """Parser for PDF documents.
+    
+    Extracts text from PDFs for content analysis.
+    Requires pypdf library for functionality.
+    """
 
     def parse(self, file_path: Path) -> ParseResult:
+        """Extract text from PDF file.
+        
+        Reads up to 10 pages or char_limit, whichever comes first.
+        
+        Args:
+            file_path: Path to PDF file
+            
+        Returns:
+            ParseResult with extracted text or error
+        """
         if not PYPDF_AVAILABLE:
-            return ParseResult(success=False, error="需要安裝 pypdf 套件來解析 PDF 檔案")
+            return ParseResult(success=False, error="pypdf library required for PDF parsing")
 
         try:
             content = ""

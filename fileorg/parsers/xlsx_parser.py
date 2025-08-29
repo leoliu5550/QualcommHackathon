@@ -1,19 +1,36 @@
+"""Excel spreadsheet parser.
+
+Extracts data from Excel files for analysis.
+"""
+
 from pathlib import Path
 import openpyxl
 from fileorg.parsers.base import BaseParser, ParseResult
 
 
 class XlsxParser(BaseParser):
-    """XLSX 檔案解析器"""
+    """Parser for Excel spreadsheets.
+    
+    Reads cell data from all sheets.
+    Requires openpyxl library.
+    """
 
     def parse(self, file_path: Path) -> ParseResult:
+        """Extract data from Excel file.
+        
+        Args:
+            file_path: Path to XLSX file
+            
+        Returns:
+            ParseResult with spreadsheet data as text
+        """
         try:
             workbook = openpyxl.load_workbook(file_path)
             text_content = []
             char_count = 0
 
             for sheet_name in workbook.sheetnames:
-                sheet_header = f"工作表: {sheet_name}\n"
+                sheet_header = f"Sheet: {sheet_name}\n"
                 text_content.append(sheet_header)
                 char_count += len(sheet_header)
 
@@ -47,5 +64,5 @@ class XlsxParser(BaseParser):
 
         except Exception as e:
             return ParseResult(
-                success=False, error=f"無法解析XLSX檔案: {str(e)}", file_path=str(file_path)
+                success=False, error=f"Failed to parse XLSX: {str(e)}", file_path=str(file_path)
             )

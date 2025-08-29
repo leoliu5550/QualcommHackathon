@@ -1,29 +1,56 @@
+"""HTML file parser for web page content extraction.
+
+Extracts clean text from HTML documents, removing all markup.
+Useful for analyzing web content and documentation.
+"""
+
 from pathlib import Path
 from html.parser import HTMLParser
 from fileorg.parsers.base import BaseParser, ParseResult
 
 
 class HTMLParser_Custom(HTMLParser):
-    """自訂 HTML Parser，用於提取純文字內容"""
+    """Custom HTML parser that extracts text only.
+    
+    Strips all HTML tags and keeps just the readable content.
+    """
 
     def __init__(self):
+        """Initialize with empty text buffer."""
         super().__init__()
         self.text_content = []
 
     def handle_data(self, data):
+        """Collect non-empty text data from HTML.
+        
+        Args:
+            data: Text content between HTML tags
+        """
         if data.strip():
             self.text_content.append(data.strip())
 
 
 class HtmlParser(BaseParser):
-    """HTML 檔案解析器"""
+    """Parser for HTML web documents.
+    
+    Extracts text content from HTML files for categorization.
+    Handles various encodings automatically.
+    """
 
     def parse(self, file_path: Path) -> ParseResult:
+        """Extract text from HTML file.
+        
+        Removes all HTML tags and returns clean text.
+        
+        Args:
+            file_path: Path to HTML file
+            
+        Returns:
+            ParseResult with extracted text content
+        """
         try:
-            # 使用 BaseParser 提供的多編碼嘗試讀取
             content = self._try_encodings(file_path)
 
-            # 使用自訂的 HTML Parser
             parser = HTMLParser_Custom()
             parser.feed(content)
             text = " ".join(parser.text_content)
@@ -40,5 +67,5 @@ class HtmlParser(BaseParser):
             )
         except Exception as e:
             return ParseResult(
-                success=False, error=f"無法解析HTML檔案: {str(e)}", file_path=str(file_path)
+                success=False, error=f"Failed to parse HTML: {str(e)}", file_path=str(file_path)
             )

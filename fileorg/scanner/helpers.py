@@ -1,3 +1,9 @@
+"""Scanner helper utilities.
+
+Provides file information extraction and result formatting.
+Supports scan result saving and summary generation.
+"""
+
 import os
 import json
 from datetime import datetime
@@ -6,28 +12,28 @@ from typing import Dict, Any, Union
 
 
 def get_file_info(file_path: Union[str, Path]) -> Dict[str, Any]:
-    """
-    獲取檔案詳細資訊
+    """Get detailed file information.
+
+    Extracts metadata like size, timestamps, and permissions.
+    Handles errors gracefully with fallback values.
 
     Args:
-        file_path: 檔案路徑物件或字串
+        file_path: File path as string or Path object
 
     Returns:
-        包含檔案資訊的字典
+        Dict with file metadata (path, name, size, times, etc.)
     """
-    # 如果是字串，轉換為 Path 物件
     if isinstance(file_path, str):
         file_path = Path(file_path)
 
     try:
         stat_info = file_path.stat()
 
-        # 檢查檔案是否可讀
+        # Check read permission
         is_readable = os.access(file_path, os.R_OK)
 
-        # 修改時間格式化
+        # Format timestamps
         modified_time = datetime.fromtimestamp(stat_info.st_mtime).isoformat()
-        # 建立時間格式化
         created_time = datetime.fromtimestamp(stat_info.st_ctime).isoformat()
 
         return {
@@ -40,7 +46,7 @@ def get_file_info(file_path: Union[str, Path]) -> Dict[str, Any]:
             "is_readable": is_readable,
         }
     except Exception as e:
-        # 如果無法獲取資訊，返回基本資訊
+        # Return basic info on error
         return {
             "path": str(file_path.absolute()),
             "name": file_path.name,
@@ -53,27 +59,27 @@ def get_file_info(file_path: Union[str, Path]) -> Dict[str, Any]:
 
 
 def save_scan_result(scan_data: Dict[str, Any], output_file: str = "scan_result.json"):
-    """
-    將掃描結果保存為 JSON 檔案
+    """Save scan results to JSON file.
 
     Args:
-        scan_data: 掃描結果資料
-        output_file: 輸出檔案名稱
+        scan_data: Scan result dictionary
+        output_file: Output filename
     """
     try:
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(scan_data, f, ensure_ascii=False, indent=2)
-        print(f"掃描結果已保存至: {output_file}")
+        print(f"Scan results saved to: {output_file}")
     except Exception as e:
-        print(f"保存檔案時發生錯誤: {e}")
+        print(f"Error saving file: {e}")
 
 
 def print_scan_summary(scan_data: Dict[str, Any]):
-    """
-    列印掃描結果摘要
+    """Print scan results summary.
+
+    Shows file count, size distribution, and type breakdown.
 
     Args:
-        scan_data: 掃描結果資料
+        scan_data: Scan result dictionary
     """
     files = scan_data.get("original_files", [])
     total_files = len(files)

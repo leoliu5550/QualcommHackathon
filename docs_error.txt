@@ -1,0 +1,82 @@
+(.venv) (base) PS C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon> mkdocs serve
+INFO    -  Building documentation...
+WARNING -  [git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs' has no git logs, using current
+           timestamp
+INFO    -  Cleaning site directory
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\index.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\index.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\getting-started\quickstart.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\user-guide\cli.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\core\organizer.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\ai\interface.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\getting-started\installation.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\index.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\ai\interface.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\index.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\core\organizer.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\getting-started\installation.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\user-guide\cli.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\getting-started\quickstart.md' has no git logs, using current timestamp
+WARNING -  A reference to 'getting-started/configuration.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'user-guide/gui.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'user-guide/organization.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'user-guide/restore.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'user-guide/reports.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/scanner/scanner.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/parsers/base.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/parsers/parsers.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/ai/config.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/classifier/classifier.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/classifier/prompt-engine.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/reporter/generator.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'api/reporter/visualizer.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'examples/basic.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'examples/advanced.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'examples/custom-parsers.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'examples/ai-integration.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'development/contributing.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'development/architecture.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'development/testing.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'development/parsers.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'advanced/npu.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'advanced/models.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'advanced/performance.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING -  A reference to 'advanced/troubleshooting.md' is included in the 'nav' configuration, which is not found in the documentation files.
+WARNING:root:First revision timestamp is older than last revision timestamp for page index.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING -  Doc file 'index.md' contains a link 'examples/basic.md', but the target is not found among documentation files.
+WARNING -  Doc file 'index.md' contains a link 'development/contributing.md', but the target is not found among documentation files.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\index.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING -  Doc file 'api/index.md' contains a link 'scanner/scanner.md', but the target 'api/scanner/scanner.md' is not found among documentation files.      
+WARNING -  Doc file 'api/index.md' contains a link 'ai/config.md', but the target 'api/ai/config.md' is not found among documentation files.
+WARNING -  Doc file 'api/index.md' contains a link 'classifier/classifier.md', but the target 'api/classifier/classifier.md' is not found among documentation 
+           files.
+WARNING -  Doc file 'api/index.md' contains a link 'parsers/base.md', but the target 'api/parsers/base.md' is not found among documentation files.
+WARNING -  Doc file 'api/index.md' contains a link 'parsers/parsers.md', but the target 'api/parsers/parsers.md' is not found among documentation files.      
+WARNING -  Doc file 'api/index.md' contains a link 'reporter/generator.md', but the target 'api/reporter/generator.md' is not found among documentation files.
+WARNING -  Doc file 'api/index.md' contains a link 'reporter/visualizer.md', but the target 'api/reporter/visualizer.md' is not found among documentation     
+           files.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\ai\interface.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING -  griffe: fileorg\ai\interface.py:229: No type or annotation for parameter '**kwargs'
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\core\organizer.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page getting-started\installation.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING -  Doc file 'getting-started/installation.md' contains a link 'configuration.md', but the target 'getting-started/configuration.md' is not found among
+           documentation files.
+WARNING -  Doc file 'getting-started/installation.md' contains a link '../examples/basic.md', but the target 'examples/basic.md' is not found among
+           documentation files.
+WARNING -  Doc file 'getting-started/installation.md' contains a link '../advanced/troubleshooting.md', but the target 'advanced/troubleshooting.md' is not   
+           found among documentation files.
+WARNING:root:First revision timestamp is older than last revision timestamp for page getting-started\quickstart.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link '../user-guide/organization.md', but the target 'user-guide/organization.md' is not found
+           among documentation files.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link 'configuration.md', but the target 'getting-started/configuration.md' is not found among  
+           documentation files.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link '../examples/ai-integration.md', but the target 'examples/ai-integration.md' is not found 
+           among documentation files.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link '../user-guide/reports.md', but the target 'user-guide/reports.md' is not found among     
+           documentation files.
+WARNING:root:First revision timestamp is older than last revision timestamp for page user-guide\cli.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+INFO    -  Documentation built in 3.25 seconds
+INFO    -  [13:05:36] Watching paths for changes: 'docs', 'mkdocs.yml'
+INFO    -  [13:05:36] Serving on http://127.0.0.1:8000/
+WARNING -  [13:05:38] "GET /versions.json HTTP/1.1" code 404
+INFO    -  [13:05:40] Browser connected: http://127.0.0.1:8000/

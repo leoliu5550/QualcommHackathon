@@ -1,6 +1,7 @@
-"""
-樹狀結構視覺化工具
-生成檔案分類的樹狀圖
+"""Tree structure visualization module.
+
+Creates ASCII and HTML tree views of organized files.
+Provides clear visual representation of folder structure.
 """
 
 from typing import Dict, List
@@ -8,52 +9,56 @@ from datetime import datetime
 
 
 class TreeVisualizer:
+    """Generate tree-style visualizations.
+    
+    Creates both ASCII art and HTML tree structures.
+    """
+    
     def __init__(self):
-        # 樹狀圖符號
+        """Initialize with tree drawing characters."""
         self.BRANCH = "├── "
         self.LAST_BRANCH = "└── "
         self.VERTICAL = "│   "
         self.EMPTY = "    "
 
     def generate_tree(
-        self, folder_mappings: Dict[str, List[str]], title: str = "整理後結構"
+        self, folder_mappings: Dict[str, List[str]], title: str = "Organized Structure"
     ) -> str:
-        """
-        生成樹狀結構圖
+        """Generate ASCII tree structure.
 
         Args:
-            folder_mappings: 資料夾映射字典
-            title: 樹狀圖標題
+            folder_mappings: Folder to files mapping
+            title: Tree diagram title
 
         Returns:
-            樹狀結構字串
+            ASCII tree as string
         """
         tree_lines = [f"📁 {title}"]
 
-        # 排序資料夾
+        # Sort folders
         sorted_folders = sorted(folder_mappings.items())
         total_folders = len(sorted_folders)
 
         for idx, (folder_name, files) in enumerate(sorted_folders):
             is_last_folder = idx == total_folders - 1
 
-            # 資料夾行
+            # Folder line
             folder_prefix = self.LAST_BRANCH if is_last_folder else self.BRANCH
             file_count = len(files)
-            tree_lines.append(f"{folder_prefix}📁 {folder_name} ({file_count}個檔案)")
+            tree_lines.append(f"{folder_prefix}📁 {folder_name} ({file_count} files)")
 
-            # 檔案行（只顯示前2個和最後1個作為範例）
+            # File lines (show sample: first 2 and last 1)
             if files:
                 file_prefix = self.EMPTY if is_last_folder else self.VERTICAL
 
                 if len(files) <= 3:
-                    # 顯示所有檔案
+                    # Show all files
                     for file_idx, file_name in enumerate(files):
                         is_last_file = file_idx == len(files) - 1
                         file_branch = self.LAST_BRANCH if is_last_file else self.BRANCH
                         tree_lines.append(f"{file_prefix}{file_branch}📄 {file_name}")
                 else:
-                    # 顯示前2個和最後1個
+                    # Show first 2 and last 1
                     tree_lines.append(f"{file_prefix}{self.BRANCH}📄 {files[0]}")
                     tree_lines.append(f"{file_prefix}{self.BRANCH}📄 {files[1]}")
                     if len(files) > 3:
@@ -291,7 +296,7 @@ class TreeVisualizer:
         )
         html_parts.append("            <li>\n                <ul>\n")
 
-        # 排序資料夾
+        # Sort folders
         sorted_folders = sorted(folder_mappings.items())
 
         for folder_name, files in sorted_folders:
@@ -312,13 +317,13 @@ class TreeVisualizer:
                 html_parts.append("                        <ul>\n")
 
                 if len(files) <= 3:
-                    # 顯示所有檔案
+                    # Show all files
                     for file_name in files:
                         html_parts.append(
                             f'                            <li><div class="file"><span class="icon">📄</span>{file_name}</div></li>\n'
                         )
                 else:
-                    # 顯示前2個和最後1個
+                    # Show first 2 and last 1
                     html_parts.append(
                         f'                            <li><div class="file"><span class="icon">📄</span>{files[0]}</div></li>\n'
                     )

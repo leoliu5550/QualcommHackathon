@@ -1,12 +1,28 @@
+"""XML file parser for structured data extraction.
+
+Extracts text content from XML documents.
+"""
+
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from fileorg.parsers.base import BaseParser, ParseResult
 
 
 class XmlParser(BaseParser):
-    """XML 檔案解析器"""
+    """Parser for XML documents.
+    
+    Extracts all text content from XML elements.
+    """
 
     def parse(self, file_path: Path) -> ParseResult:
+        """Extract text from XML file.
+        
+        Args:
+            file_path: Path to XML file
+            
+        Returns:
+            ParseResult with extracted text
+        """
         try:
             tree = ET.parse(file_path)
             root = tree.getroot()
@@ -31,5 +47,5 @@ class XmlParser(BaseParser):
             )
         except Exception as e:
             return ParseResult(
-                success=False, error=f"無法解析XML檔案: {str(e)}", file_path=str(file_path)
+                success=False, error=f"Failed to parse XML: {str(e)}", file_path=str(file_path)
             )

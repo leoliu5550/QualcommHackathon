@@ -1,12 +1,33 @@
+"""JSON file parser for structured data extraction.
+
+Handles JSON documents with pretty printing for readability.
+Falls back to plain text if JSON structure is invalid.
+"""
+
 from fileorg.parsers.base import BaseParser, ParseResult
 from pathlib import Path
 import json
 
 
 class JsonParser(BaseParser):
-    """JSON 檔案解析器"""
+    """Parser for JSON data files.
+    
+    Extracts and formats JSON content for analysis.
+    Gracefully handles malformed JSON by treating as text.
+    """
 
     def parse(self, file_path: Path) -> ParseResult:
+        """Extract content from JSON file.
+        
+        Attempts to parse as JSON first, falls back to plain text.
+        Formats JSON with indentation for better readability.
+        
+        Args:
+            file_path: Path to JSON file
+            
+        Returns:
+            ParseResult with formatted JSON or raw text
+        """
         try:
             with open(file_path, "r", encoding="utf-8") as file:
                 data = json.load(file)

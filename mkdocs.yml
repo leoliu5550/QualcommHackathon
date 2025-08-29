@@ -1,0 +1,161 @@
+site_name: FileOrg Documentation
+site_url: https://leoliu5550.github.io/QualcommHackathon/
+site_author: FileOrg Team
+site_description: Intelligent file organization powered by AI - Documentation
+
+repo_name: leoliu5550/QualcommHackathon
+repo_url: https://github.com/leoliu5550/QualcommHackathon
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  # logo: assets/logo.png  # Uncomment when logo is added
+  # favicon: assets/favicon.ico  # Uncomment when favicon is added
+  
+  features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+    - toc.integrate
+    
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+        
+  font:
+    text: Roboto
+    code: Roboto Mono
+    
+  icon:
+    repo: fontawesome/brands/github
+    
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.snippets
+
+plugins:
+  - search:
+      separator: '[\s\-\.\_]+'
+      lang:
+        - en
+        - zh
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: iso_datetime
+      enable_git_follow: false
+  - minify:
+      minify_html: true
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: true
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            merge_init_into_class: true
+            separate_signature: true
+            line_length: 80
+            
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    
+  - User Guide:
+    - CLI Usage: user-guide/cli.md
+    
+  - API Reference:
+    - Overview: api/index.md
+    - Core:
+      - Organizer: api/core/organizer.md
+    - AI:
+      - Interface: api/ai/interface.md
+    
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/leoliu5550/QualcommHackathon
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/fileorg
+      
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX
+    
+  version:
+    provider: mike
+    
+copyright: Copyright &copy; 2024 FileOrg Team

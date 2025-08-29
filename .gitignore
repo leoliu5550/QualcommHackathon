@@ -169,6 +169,7 @@ Organized_Files_*/
 # Test files
 test_real_flow.py
 run_real_tests.bat
+.r_key_venv/
 
 # Coverage reports
 coverage.json
