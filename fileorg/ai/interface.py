@@ -159,7 +159,7 @@ class QualcommLLM(BaseLLM):
         optimal performance.
     """
 
-    def __init__(self, dlc_path: str, tokenizer_id: str):
+    def __init__(self, **kwargs):
         """
         Initialize Qualcomm NPU-accelerated model.
 
@@ -170,13 +170,13 @@ class QualcommLLM(BaseLLM):
         We're working on automatic model optimization and compilation
         to make NPU deployment even more accessible.
         """
-        from transformers import AutoTokenizer
+        # from transformers import AutoTokenizer
 
-        self.dlc_path = dlc_path
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_id)
-        # 決賽前：這裡可以留 stub，等現場裝好 SNPE SDK 再補
-        self.snpe_session = None  # 之後可改為 SNPE session 初始化
-        print(f"[QualcommLLM] 初始化完成（dlc: {dlc_path}）")
+        # self.dlc_path = dlc_path
+        # self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_id)
+        # # 決賽前：這裡可以留 stub，等現場裝好 SNPE SDK 再補
+        # self.snpe_session = None  # 之後可改為 SNPE session 初始化
+        # print(f"[QualcommLLM] 初始化完成（dlc: {dlc_path}）")
 
     def _snpe_infer(self, input_ids: List[int]) -> int:
         """
@@ -219,6 +219,7 @@ class QualcommLLM(BaseLLM):
 
 
     def llm_response(self, prompt: str):
+        import httpx
         # 你的 API key
         api_key = "3dc12b8ca6fcdccf75a6010e95eca4ca7c8827604c10381686912eb746d41f60"
         url = "http://127.0.0.1:80/v1.0/chat/completions"
