@@ -20,7 +20,7 @@ PROMPT_CONFIG = {
 
 
 class Config:
-    """Configuration manager with preset support and runtime updates."""
+    """Configuration manager for LLM and prompt settings."""
     
     def __init__(self):
         """Initialize configuration."""
@@ -97,7 +97,7 @@ config = _default_config.llm  # Backward compatible with existing imports
 
 
 def update_default_config(**kwargs):
-    """Update the default configuration instance.
+    """Update the default configuration.
     
     Args:
         **kwargs: Configuration values to update
