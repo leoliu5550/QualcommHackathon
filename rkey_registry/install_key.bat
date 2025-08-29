@@ -2,21 +2,7 @@
 SETLOCAL ENABLEEXTENSIONS
 SETLOCAL ENABLEDELAYEDEXPANSION
 
-echo ========= Enhanced FileOrg Installer (3 Options) =========
-echo.
-
-:: Optional: Check if running in r_key_venv virtual environment
-IF DEFINED VIRTUAL_ENV (
-    echo %VIRTUAL_ENV% | findstr /C:".rkey_venv" >nul
-    IF ERRORLEVEL 1 (
-        echo [WARNING] Different virtual environment detected: %VIRTUAL_ENV%
-        echo [INFO] Recommended: r_key_venv for testing
-    ) ELSE (
-        echo [OK] Running in r_key_venv virtual environment
-    )
-) ELSE (
-    echo [INFO] No virtual environment detected
-)
+echo ========= FileOrg Right-Click Installer =========
 echo.
 
 :: 1. Check if Python is installed
@@ -61,13 +47,12 @@ IF NOT %ERRORLEVEL% EQU 0 (
 )
 echo [OK] fileorg installed successfully
 
-:: 4. Find fileorg.exe location
-echo [4/5] Locating fileorg.exe...
+:: 4. Find fileorg.exe location from pipx
+echo [4/5] Locating fileorg.exe from pipx installation...
 
-:: Try multiple possible pipx installation paths
 set "EXE_PATH="
 
-:: Check pipx venvs location
+:: Check standard pipx venv locations
 IF EXIST "%USERPROFILE%\pipx\venvs\fileorg\Scripts\fileorg.exe" (
     set "EXE_PATH=%USERPROFILE%\pipx\venvs\fileorg\Scripts\fileorg.exe"
     echo [OK] Found fileorg at: %USERPROFILE%\pipx\venvs\fileorg\Scripts\
@@ -79,7 +64,7 @@ IF EXIST "%USERPROFILE%\pipx\venvs\fileorg\Scripts\fileorg.exe" (
     echo [OK] Found fileorg at: %LOCALAPPDATA%\pipx\venvs\fileorg\Scripts\
 )
 
-:: Also check global bin location
+:: Also check pipx global bin location
 IF "%EXE_PATH%"=="" (
     IF EXIST "%USERPROFILE%\.local\bin\fileorg.exe" (
         set "EXE_PATH=%USERPROFILE%\.local\bin\fileorg.exe"
@@ -89,84 +74,103 @@ IF "%EXE_PATH%"=="" (
 
 :: Check if exe exists
 IF NOT EXIST "%EXE_PATH%" (
-    echo [ERROR] fileorg.exe not found!
-    echo Checked locations:
+    echo [ERROR] fileorg.exe not found in pipx installation!
+    echo.
+    echo Checked pipx locations:
     echo   - %USERPROFILE%\pipx\venvs\fileorg\Scripts\
     echo   - %USERPROFILE%\.local\pipx\venvs\fileorg\Scripts\
     echo   - %LOCALAPPDATA%\pipx\venvs\fileorg\Scripts\
+    echo   - %USERPROFILE%\.local\bin\
+    echo.
+    echo Please ensure fileorg was installed successfully with pipx.
+    echo Try running: pipx list
+    echo to verify the installation.
     pause
     exit /b 1
 )
 
-:: 5. Register context menu with THREE options (User-level, no admin required)
-echo [5/5] Registering context menu with 3 options...
+:: Display found path for debugging
+echo [DEBUG] Using EXE_PATH: %EXE_PATH%
+
+:: 5. Register cascading context menu using CommandStore (User-level, no admin required)
+echo [5/5] Registering cascading context menu...
 echo.
 
 :: Remove old menus if exist
+echo Removing old menu entries...
 reg delete "HKCU\Software\Classes\Directory\shell\fileorg" /f >nul 2>&1
 reg delete "HKCU\Software\Classes\Directory\shell\FileOrg" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\shell\FileOrgPreview" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\shell\FileOrgOrganize" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\shell\FileOrgRestore" /f >nul 2>&1
 reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrgPreview" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrgOrganize" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrgRestore" /f >nul 2>&1
 
-:: Create cascading menu with 3 options using shell submenu structure
+:: Remove old CommandStore entries if exist
+reg delete "HKCU\Software\Classes\FileOrg.Preview" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\FileOrg.Organize" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\FileOrg.Restore" /f >nul 2>&1
+
 echo Creating FileOrg cascading menu...
 
-:: Main menu entry with MUIVerb for cascading
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /ve /d "FileOrg Operations" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "MUIVerb" /d "FileOrg Operations" /f >nul 2>&1
+:: Main cascading menu entry for Directory
+echo Adding main FileOrg menu...
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "MUIVerb" /d "FileOrg" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "SubCommands" /d "" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg" /v "Position" /d "Top" /f >nul 2>&1
 
-:: Option 1: Preview (子選單項目)
-echo Adding Preview option...
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\01preview" /ve /d "📋 Preview Organization" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\01preview" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\01preview\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" --preview && pause\"" /f >nul 2>&1
-
-:: Option 2: Organize (子選單項目)
-echo Adding Organize option...
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\02organize" /ve /d "🗂️ Start Organizing" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\02organize" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\02organize\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" && pause\"" /f >nul 2>&1
-
-:: Option 3: Restore (子選單項目)
-echo Adding Restore option...
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\03restore" /ve /d "↩️ Restore Original" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\03restore" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\03restore\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" --restore && pause\"" /f >nul 2>&1
-
-:: Also add to background context menu (right-click on empty space in folder)
-echo Adding background context menu...
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /ve /d "FileOrg Operations" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "MUIVerb" /d "FileOrg Operations" /f >nul 2>&1
+:: Main cascading menu entry for Directory Background
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "MUIVerb" /d "FileOrg" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
 reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "SubCommands" /d "" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /v "Position" /d "Top" /f >nul 2>&1
 
-:: Background menu - Option 1: Preview
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\01preview" /ve /d "📋 Preview Organization" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\01preview" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\01preview\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --preview && pause\"" /f >nul 2>&1
+:: Setup shell subkeys for cascading menu
+echo Setting up submenu options...
 
-:: Background menu - Option 2: Organize
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\02organize" /ve /d "🗂️ Start Organizing" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\02organize" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\02organize\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" && pause\"" /f >nul 2>&1
+:: Shell subkeys for Directory
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Preview" /ve /d "Preview" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Preview" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Preview\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" --preview && pause\"" /f >nul 2>&1
 
-:: Background menu - Option 3: Restore
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\03restore" /ve /d "↩️ Restore Original" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\03restore" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
-reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\03restore\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --restore && pause\"" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Start" /ve /d "Start" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Start" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Start\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" && pause\"" /f >nul 2>&1
+
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Restore" /ve /d "Restore" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Restore" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\shell\FileOrg\shell\Restore\command" /ve /d "cmd.exe /c \"cd /d \"\"%%1\"\" && \"\"%EXE_PATH%\"\" \"\"%%1\"\" --restore && pause\"" /f >nul 2>&1
+
+:: Shell subkeys for Background
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Preview" /ve /d "Preview" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Preview" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Preview\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --preview && pause\"" /f >nul 2>&1
+
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Start" /ve /d "Start" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Start" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Start\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" && pause\"" /f >nul 2>&1
+
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Restore" /ve /d "Restore" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Restore" /v "Icon" /d "%EXE_PATH%" /f >nul 2>&1
+reg add "HKCU\Software\Classes\Directory\Background\shell\FileOrg\shell\Restore\command" /ve /d "cmd.exe /c \"cd /d \"\"%%V\"\" && \"\"%EXE_PATH%\"\" \"\"%%V\"\" --restore && pause\"" /f >nul 2>&1
 
 echo.
 echo ========= Installation Complete! =========
 echo.
-echo ✅ FileOrg has been successfully installed with 3 options:
-echo    1. 📋 Preview Organization - See what will be organized
-echo    2. 🗂️ Start Organizing - Organize files with AI
-echo    3. ↩️ Restore Original - Restore files to original locations
+echo FileOrg has been successfully installed!
 echo.
-echo 📁 Right-click on any folder to see "FileOrg Operations" menu
+echo Right-click on any folder to see "FileOrg" menu
+echo Click the arrow to see 3 options:
+echo    - Preview - See what will be organized
+echo    - Start - Organize files with AI
+echo    - Restore - Restore files to original locations
+echo.
+echo [DEBUG] Executable path: %EXE_PATH%
 echo.
 echo [INFO] Registry keys: HKCU\Software\Classes\Directory\shell\FileOrg
-echo [INFO] To uninstall: Run uninstall_registry_enhanced.bat
+echo [INFO] To uninstall: Run uninstall_key.bat
 echo ==========================================
 pause
