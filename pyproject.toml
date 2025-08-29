@@ -58,6 +58,15 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
 ]
+docs = [
+    "mkdocs>=1.5.3",
+    "mkdocs-material>=9.5.3",
+    "mkdocstrings[python]>=0.24.0",
+    "mkdocs-autorefs>=1.0.0",  # Updated to latest stable version
+    "mkdocs-git-revision-date-localized-plugin>=1.2.2",
+    "mkdocs-minify-plugin>=0.7.2",
+    "pymdown-extensions>=10.5",
+]
 gpu = []
 qualcomm = []
 
