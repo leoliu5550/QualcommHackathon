@@ -16,7 +16,7 @@ IF ERRORLEVEL 2 (
 echo.
 echo [1/3] Removing enhanced context menu registry keys...
 
-:: Remove enhanced submenu from HKCU (current user)
+:: Remove enhanced submenu from HKCU (current user) - includes all sub-keys
 reg delete "HKCU\Software\Classes\Directory\shell\FileOrg" /f >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo [OK] Removed enhanced FileOrg submenu successfully
@@ -24,17 +24,11 @@ IF %ERRORLEVEL% EQU 0 (
     echo [INFO] Enhanced FileOrg submenu not found or already removed
 )
 
-:: Remove from background context menu
+:: Remove from background context menu - includes all sub-keys
 reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /f >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo [OK] Removed background context menu
 )
-
-:: Remove CommandStore entries
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Preview" /f >nul 2>&1
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Organize" /f >nul 2>&1
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\FileOrg.Restore" /f >nul 2>&1
-echo [OK] Removed CommandStore entries
 
 :: Also remove old single-option menu if exists
 reg delete "HKCU\Software\Classes\Directory\shell\fileorg" /f >nul 2>&1
