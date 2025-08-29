@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 
 # Core LLM Configuration
 LLM_CONFIG = {
-    "backend": "local",  # Options: "local", "qualcomm"
+    "backend": "qualcomm",  # Options: "local", "qualcomm"
     "model_id": "iFaz/llama32_3B_en_emo_2000_stp",
     # "dlc_path": "tinyllama.dlc",  # For Qualcomm backend
     # "tokenizer_id": "TinyLlama/TinyLlama-1.1B-Chat-v1.0"

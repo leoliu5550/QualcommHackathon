@@ -36,18 +36,13 @@ classifiers = [
 ]
 
 dependencies = [
-    "torch>=2.2.2",
-    "transformers>=4.30.0", 
-    "onnx>=1.14.0",
-    "onnxruntime>=1.15.0",  # CPU version by default
     "python-docx>=0.8.11",
     "openpyxl>=3.0.0",
     "python-pptx>=0.6.21",
     "pypdf>=3.0.0",  # Modern replacement for PyPDF2
     "tqdm>=4.65.0",
     "charset-normalizer>=3.0.0",
-    "optimum>=1.8.0",
-    "accelerate>=0.20.0",
+    httpx
 ]
 
 [project.optional-dependencies]
@@ -63,13 +58,8 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
 ]
-gpu = [
-    "onnxruntime-gpu>=1.15.0",
-    "bitsandbytes>=0.40.0",
-]
-qualcomm = [
-    "qai-hub",
-]
+gpu = []
+qualcomm = []
 
 [project.urls]
 Homepage = "https://github.com/leoliu5550/QualcommHackathon"

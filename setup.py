@@ -26,20 +26,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     python_requires=">=3.8",
-    install_requires=[
-        "torch>=2.2.2",
-        "transformers>=4.30.0",
-        "onnx>=1.14.0",
-        "onnxruntime-gpu>=1.15.0",
-        "python-docx>=0.8.11",
-        "openpyxl>=3.0.0",
-        "python-pptx>=0.6.21",
-        "pypdf>=3.0.0",
-        "tqdm>=4.65.0",
-        "bitsandbytes>=0.40.0",
-        "optimum>=1.8.0",
-        "accelerate>=0.20.0",
-    ],
+    install_requires=[],
     extras_require={
         "dev": [
             "pytest>=7.0.0",
