@@ -2,27 +2,31 @@
 File Classification Module
 
 Provides intelligent document classification and folder naming with
-advanced prompt engineering capabilities.
+centralized prompt version management.
 """
 
 from .classifier import CreateFolderNamer, get_create_name, create_name
-from .prompt_engine import (
-    PromptBuilder,
-    PromptOptimizer,
-    PromptTemplates,
-    FewShotExamples
+from .prompt_versions import (
+    get_prompt_version,
+    get_version_features,
+    detect_domain,
+    list_versions,
+    DEFAULT_VERSION,
+    SUPPORTED_VERSIONS
 )
 
 __all__ = [
     'CreateFolderNamer',
     'create_name',
     'get_create_name',
-    'PromptBuilder',
-    'PromptOptimizer',
-    'PromptTemplates',
-    'FewShotExamples'
+    'get_prompt_version',
+    'get_version_features',
+    'detect_domain',
+    'list_versions',
+    'DEFAULT_VERSION',
+    'SUPPORTED_VERSIONS'
 ]
 
 # Version info
 __version__ = '2.0.0'
-CLASSIFIER_VERSION = 'v2'
+CLASSIFIER_VERSION = DEFAULT_VERSION

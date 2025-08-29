@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [main]
+    branches: [main, feat/optimize-dp]
     paths:
       - 'docs/**'
       - 'mkdocs.yml'
@@ -24,6 +24,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for git-revision-date-localized plugin
       
       - name: Setup Python
         uses: actions/setup-python@v5

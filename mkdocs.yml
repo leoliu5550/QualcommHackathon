@@ -109,7 +109,6 @@ plugins:
   - git-revision-date-localized:
       enable_creation_date: true
       type: iso_datetime
-      enable_git_follow: false
   - minify:
       minify_html: true
   - mkdocstrings:

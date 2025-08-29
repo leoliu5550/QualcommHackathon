@@ -17,13 +17,8 @@ LLM_CONFIG = {
 
 # Prompt Engineering Configuration
 PROMPT_CONFIG = {
-    # Classifier Version Control
-    "classifier_version": "v2",  # Options: "v1" (legacy), "v2" (enhanced with prompt engineering)
-    "enable_v2_features": True,  # Global switch for v2 features
-    
-    # Version Control
-    "prompt_version": "v2",  # Options: "v1" (legacy), "v2" (enhanced)
-    "use_advanced_prompt": True,
+    # Unified Version Control (replaces both classifier_version and prompt_version)
+    "prompt_version": "v2",  # Options: "v1" (legacy), "v2" (enhanced with guidelines)
     
     # Few-shot Learning
     "use_few_shot": True,  # Enabled for better accuracy
@@ -52,22 +47,17 @@ PROMPT_CONFIG = {
 PRESETS = {
     "legacy": {
         "prompt_version": "v1",
-        "use_advanced_prompt": False,
         "use_few_shot": False,
         "use_domain_detection": False
     },
     "balanced": {
-        "classifier_version": "v2",
         "prompt_version": "v2",
-        "use_advanced_prompt": True,
         "use_few_shot": True,
         "use_domain_detection": False,
         "few_shot_count": 2
     },
     "advanced": {
-        "classifier_version": "v2",
         "prompt_version": "v2",
-        "use_advanced_prompt": True,
         "use_few_shot": True,
         "use_domain_detection": True,
         "few_shot_count": 3,
