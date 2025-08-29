@@ -1,34 +1,7 @@
-"""Enhanced Folder Naming Tool with Prompt Engineering Support.
+"""Document classification and folder naming module.
 
-This module extends the original folder_namer.py with advanced prompt engineering capabilities
-while maintaining full backward compatibility.
-
-Key Features:
-    - Advanced prompt engineering for better classification accuracy
-    - Multiple prompt template versions (v1 for legacy, v2 for enhanced)
-    - Few-shot learning support for improved context understanding
-    - Automatic domain detection for specialized classification
-    - Content optimization for more efficient LLM processing
-    - Output validation and automatic error correction
-
-Example:
-    Basic usage (backward compatible)::
-
-        from fileorg.classifier.folder_namer_v2 import CreateFolderNamer
-        
-        namer = CreateFolderNamer()
-        folder_name = namer.create_folder_name("Document content here...")
-        
-    Advanced usage with prompt engineering::
-    
-        namer = CreateFolderNamer(
-            use_advanced_prompt=True,
-            prompt_version="v2",
-            use_few_shot=True,
-            use_domain_detection=True
-        )
-        folder_name = namer.create_folder_name("Document content here...")
-
+Provides intelligent document categorization using LLM backends.
+Supports multiple prompt versions for backward compatibility.
 """
 
 from typing import List, Dict, Any
@@ -47,41 +20,24 @@ from .prompt_versions import (
 
 
 class CreateFolderNamer:
-    """Enhanced folder naming tool with optional prompt engineering support.
-    
-    This class provides intelligent document classification and folder naming capabilities.
-    It's fully backward compatible with the original implementation while offering
-    advanced prompt engineering features for improved accuracy.
+    """Document classifier for intelligent folder naming.
     
     Attributes:
-        llm: The language model interface for inference.
-        use_advanced_prompt (bool): Whether to use advanced prompt engineering.
-        prompt_version (str): Version of prompt templates to use ('v1' or 'v2').
-        use_few_shot (bool): Whether to include few-shot examples in prompts.
-        use_domain_detection (bool): Whether to automatically detect content domain.
-        prompt_builder: Instance of PromptBuilder for advanced prompt construction.
-        prompt_optimizer: Instance of PromptOptimizer for content and output optimization.
+        llm: Language model interface for inference.
+        prompt_version: Prompt template version ('v1' or 'v2').
+        use_few_shot: Include few-shot examples in prompts.
+        use_domain_detection: Auto-detect content domain.
     """
     
     def __init__(self, use_advanced_prompt: bool = False, prompt_version: str = "v1",
                  use_few_shot: bool = False, use_domain_detection: bool = False):
-        """Initialize the folder naming tool with optional advanced features.
+        """Initialize folder naming tool.
         
         Args:
-            use_advanced_prompt (bool): Enable advanced prompt engineering features.
-                Defaults to False for backward compatibility.
-            prompt_version (str): Prompt template version to use. Options are 'v1' 
-                (legacy) or 'v2' (enhanced with better guidance). Defaults to 'v1'.
-            use_few_shot (bool): Include few-shot learning examples in prompts to
-                improve classification accuracy. Only works when use_advanced_prompt=True.
-                Defaults to False.
-            use_domain_detection (bool): Automatically detect content domain (academic,
-                business, technology, etc.) for specialized classification. Only works
-                when use_advanced_prompt=True. Defaults to False.
-        
-        Note:
-            The tool defaults to legacy mode for backward compatibility. To enable
-            advanced features, set use_advanced_prompt=True.
+            use_advanced_prompt: Enable advanced features (default: False).
+            prompt_version: Template version 'v1' or 'v2' (default: 'v1').
+            use_few_shot: Include few-shot examples (default: False).
+            use_domain_detection: Auto-detect domain (default: False).
         """
         self.llm = get_llm(
             backend=config.get("backend"),
@@ -110,26 +66,13 @@ class CreateFolderNamer:
         self.use_domain_detection = use_domain_detection and self.features.get("domain_detection", False)
     
     def create_folder_name(self, content: str) -> str:
-        """Generate an appropriate folder name for given file content.
-        
-        This method analyzes the provided content and generates a suitable folder name
-        for classification. It uses either legacy or advanced prompt engineering based
-        on the instance configuration.
+        """Generate folder name for file content.
         
         Args:
-            content (str): The file content to classify. Can be partial content
-                (e.g., first 500 characters) for efficiency.
+            content: File content to classify (max 500 chars used).
         
         Returns:
-            str: The generated folder name in format '/foldername'. The name is
-                cleaned to contain only alphanumeric characters, Chinese characters,
-                spaces, and forward slashes.
-        
-        Example:
-            >>> namer = CreateFolderNamer()
-            >>> content = "Chapter 4: Statistical Analysis of Data..."
-            >>> folder = namer.create_folder_name(content)
-            >>> print(folder)  # Output: "Academic/Statistics"
+            Cleaned folder name with alphanumeric and Chinese characters.
         """
         # Truncate content if needed
         if len(content) > 500:
@@ -145,13 +88,13 @@ class CreateFolderNamer:
         return self.clean_output(create_folder)
     
     def _build_classification_prompt(self, content: str) -> List[Dict[str, str]]:
-        """Build classification prompt using centralized version management.
+        """Build classification prompt.
         
         Args:
-            content (str): Content to classify.
+            content: Content to classify.
             
         Returns:
-            List[Dict[str, str]]: List of message dictionaries for the LLM.
+            List of message dictionaries for LLM.
         """
         messages = []
         
@@ -186,31 +129,13 @@ class CreateFolderNamer:
         return messages
     
     def remapping_folder(self, candidate_folder: List[str]) -> List[Dict[str, str]]:
-        """Group similar folder names together for better organization.
-        
-        This method analyzes a list of folder names and groups semantically similar
-        ones together, reducing redundancy in the folder structure.
+        """Group similar folder names.
         
         Args:
-            candidate_folder (List[str]): List of folder names to be grouped.
-                Example: ["Statistics", "Mathematics", "DataAnalysis", "Orders"]
+            candidate_folder: List of folder names to group.
         
         Returns:
-            List[Dict[str, str]]: List of mappings from original folder names to
-                consolidated group names. Each dictionary contains:
-                - 'foldername': Original folder name
-                - 'groupname': Consolidated group name it should be mapped to
-        
-        Example:
-            >>> namer = CreateFolderNamer()
-            >>> folders = ["Statistics", "Mathematics", "DataAnalysis"]
-            >>> mapping = namer.remapping_folder(folders)
-            >>> print(mapping)
-            [
-                {"foldername": "Statistics", "groupname": "Academic"},
-                {"foldername": "Mathematics", "groupname": "Academic"},
-                {"foldername": "DataAnalysis", "groupname": "Academic"}
-            ]
+            List of dicts mapping original names to group names.
         """
         # Build remapping prompt
         messages = self._build_remapping_prompt(candidate_folder)
@@ -240,13 +165,13 @@ class CreateFolderNamer:
         return data
     
     def _build_remapping_prompt(self, candidate_folder: List[str]) -> List[Dict[str, str]]:
-        """Build remapping prompt using centralized version management.
+        """Build remapping prompt.
         
         Args:
-            candidate_folder (List[str]): List of folder names to group.
+            candidate_folder: Folder names to group.
             
         Returns:
-            List[Dict[str, str]]: List of message dictionaries for the LLM.
+            List of message dictionaries for LLM.
         """
         # Check if version supports remapping
         if not self.features.get("remapping", False):
@@ -284,16 +209,13 @@ class CreateFolderNamer:
         return messages
     
     def clean_output(self, text: str) -> str:
-        """Clean and sanitize output text from LLM.
-        
-        Removes unwanted characters while preserving Chinese characters, English
-        letters, digits, and spaces. Removes forward slashes for path safety.
+        """Clean LLM output for folder names.
         
         Args:
-            text (str): Raw text output from LLM.
+            text: Raw LLM output.
             
         Returns:
-            str: Cleaned text suitable for use as a folder name.
+            Cleaned text with only alphanumeric, Chinese, and spaces.
         """
         # 保留中文、英文大小寫與阿拉伯數字、空格，其餘全部移除（包括斜線）
         cleaned = re.sub(r'[^\u4e00-\u9fa5A-Za-z0-9\s]', '', text)
@@ -306,41 +228,14 @@ class CreateFolderNamer:
         return cleaned.strip()
     
     def process_files(self, summaries_data: Dict[str, Any], base_output_dir: str = "./") -> Dict[str, List[Dict[str, str]]]:
-        """Process files and generate organized folder structure.
-        
-        This is the main processing method that integrates all classification and
-        grouping steps to organize files into a meaningful folder structure.
+        """Process files and organize into folders.
         
         Args:
-            summaries_data (Dict[str, Any]): Dictionary containing a 'summaries' list.
-                Each summary item should have:
-                - 'summary': Text content to classify
-                - 'path': Original file path
-                - 'name': File name
-            base_output_dir (str): Base directory for output file organization.
-                Defaults to current directory './'.
+            summaries_data: Dict with 'summaries' list containing summary, path, name.
+            base_output_dir: Base output directory (default: './').
         
         Returns:
-            Dict[str, List[Dict[str, str]]]: Dictionary with 'file_paths' key containing
-                a list of file mappings. Each mapping has:
-                - 'original': Original file path
-                - 'new': New organized file path
-        
-        Example:
-            >>> data = {
-            ...     "summaries": [
-            ...         {"summary": "Statistics chapter...", "path": "/old/stat.txt", "name": "stat.txt"},
-            ...         {"summary": "Math problems...", "path": "/old/math.txt", "name": "math.txt"}
-            ...     ]
-            ... }
-            >>> result = namer.process_files(data, "/organized/")
-            >>> print(result)
-            {
-                "file_paths": [
-                    {"original": "/old/stat.txt", "new": "/organized/Academic/stat.txt"},
-                    {"original": "/old/math.txt", "new": "/organized/Academic/math.txt"}
-                ]
-            }
+            Dict with 'file_paths' list of original/new path mappings.
         """
         summaries = summaries_data.get("summaries", [])
         
@@ -399,25 +294,21 @@ class CreateFolderNamer:
         return result
     
     def save_result(self, result: Dict[str, Any], output_file: str = "file_mapping_result.json"):
-        """Save processing results to a JSON file.
+        """Save results to JSON.
         
         Args:
-            result (Dict[str, Any]): Results dictionary containing file mappings.
-            output_file (str): Path to output JSON file. Defaults to 'file_mapping_result.json'.
+            result: File mapping results.
+            output_file: Output path (default: 'file_mapping_result.json').
         """
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
         print(f"結果已儲存到: {output_file}")
     
     def get_stats(self) -> Dict[str, Any]:
-        """Get prompt optimization statistics if advanced features are enabled.
+        """Get optimization statistics.
         
         Returns:
-            Dict[str, Any]: Dictionary containing optimization statistics such as:
-                - 'total_optimized': Number of optimizations performed
-                - 'avg_length_reduction': Average content length reduction
-                - 'improvements': List of optimization improvements
-                Returns empty dictionary if advanced features are disabled.
+            Optimization stats dict or empty dict if disabled.
         """
         if self.use_advanced_prompt and self.prompt_optimizer:
             return self.prompt_optimizer.get_optimization_stats()
@@ -429,13 +320,10 @@ _create_name_instance = None
 
 
 def get_create_name():
-    """Get or create the singleton CreateFolderNamer instance.
-    
-    This lazy initialization prevents model loading during import,
-    which is especially important for testing.
+    """Get singleton CreateFolderNamer instance.
     
     Returns:
-        CreateFolderNamer: Singleton instance configured from config
+        CreateFolderNamer: Singleton instance
     """
     global _create_name_instance
     if _create_name_instance is None:
@@ -458,10 +346,6 @@ def get_create_name():
     return _create_name_instance
 
 
-# For backward compatibility - create_name is a function that returns the instance
 def create_name():
-    """Backward compatible function interface.
-    
-    Returns the singleton instance for use in existing code.
-    """
+    """Get CreateFolderNamer instance (backward compatibility)."""
     return get_create_name()

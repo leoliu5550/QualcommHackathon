@@ -1,9 +1,4 @@
-"""
-Unified Configuration Module for FileOrg System
-
-Provides centralized configuration for both LLM backend and prompt engineering settings.
-Supports presets and runtime configuration updates.
-"""
+"""Unified Configuration Module for FileOrg System."""
 
 from typing import Any, Dict, Optional
 
@@ -17,83 +12,20 @@ LLM_CONFIG = {
 
 # Prompt Engineering Configuration
 PROMPT_CONFIG = {
-    # Unified Version Control (replaces both classifier_version and prompt_version)
-    "prompt_version": "v2",  # Options: "v1" (legacy), "v2" (enhanced with guidelines)
-    
-    # Few-shot Learning
-    "use_few_shot": True,  # Enabled for better accuracy
-    "few_shot_count": 2,
-    
-    # Domain Detection
-    "use_domain_detection": False,  # Can be enabled for specialized classification
-    "domain_keywords_threshold": 2,
-    
-    # Content Optimization
-    "optimize_content": False,
-    "max_content_length": 500,
-    
-    # Output Validation
-    "validate_output": False,
-    "strict_json": False,
-    
-    # Model Optimization Parameters
-    "temperature": 0.1,
-    "top_p": 0.95,
-    "repetition_penalty": 1.0,
-    "max_new_tokens": 200
+    "prompt_version": "v2",  # Options: "v1" (legacy), "v2" (enhanced)
+    "use_few_shot": True,
+    "use_domain_detection": False,
 }
 
-# Preset Configurations
-PRESETS = {
-    "legacy": {
-        "prompt_version": "v1",
-        "use_few_shot": False,
-        "use_domain_detection": False
-    },
-    "balanced": {
-        "prompt_version": "v2",
-        "use_few_shot": True,
-        "use_domain_detection": False,
-        "few_shot_count": 2
-    },
-    "advanced": {
-        "prompt_version": "v2",
-        "use_few_shot": True,
-        "use_domain_detection": True,
-        "few_shot_count": 3,
-        "optimize_content": True,
-        "validate_output": True
-    }
-}
 
 
 class Config:
-    """Configuration manager with preset support and runtime updates."""
+    """Configuration manager for LLM and prompt settings."""
     
-    def __init__(self, preset: Optional[str] = None):
-        """Initialize configuration with optional preset.
-        
-        Args:
-            preset: Name of preset to load ("legacy", "balanced", "advanced")
-        """
+    def __init__(self):
+        """Initialize configuration."""
         self._llm_config = LLM_CONFIG.copy()
         self._prompt_config = PROMPT_CONFIG.copy()
-        
-        if preset:
-            self.load_preset(preset)
-    
-    def load_preset(self, preset_name: str = "legacy") -> "Config":
-        """Load a configuration preset.
-        
-        Args:
-            preset_name: Name of the preset to load
-            
-        Returns:
-            Self for method chaining
-        """
-        if preset_name in PRESETS:
-            self._prompt_config.update(PRESETS[preset_name])
-        return self
     
     def get(self, key: str, default: Any = None) -> Any:
         """Get configuration value by key.
@@ -157,32 +89,15 @@ class Config:
         """
         return self._prompt_config
     
-    def __repr__(self) -> str:
-        """String representation of configuration."""
-        return f"Config(backend={self.get('backend')}, prompt_version={self.get('prompt_version')})"
 
 
 # Default instance for backward compatibility
-# This maintains compatibility with existing code that imports 'config' directly
 _default_config = Config()
-config = _default_config.llm  # Backward compatible with original mode_config.py
-
-
-# Convenience functions for quick access
-def get_config(preset: Optional[str] = None) -> Config:
-    """Get a new configuration instance with optional preset.
-    
-    Args:
-        preset: Preset name to load
-        
-    Returns:
-        New Config instance
-    """
-    return Config(preset=preset)
+config = _default_config.llm  # Backward compatible with existing imports
 
 
 def update_default_config(**kwargs):
-    """Update the default configuration instance.
+    """Update the default configuration.
     
     Args:
         **kwargs: Configuration values to update

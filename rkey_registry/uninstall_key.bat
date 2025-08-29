@@ -14,27 +14,47 @@ IF ERRORLEVEL 2 (
 )
 
 echo.
-echo [1/3] Removing enhanced context menu registry keys...
+echo [1/3] Removing context menu registry keys...
 
-:: Remove enhanced submenu from HKCU (current user) - includes all sub-keys
+:: Remove main FileOrg menu items
 reg delete "HKCU\Software\Classes\Directory\shell\FileOrg" /f >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
-    echo [OK] Removed enhanced FileOrg submenu successfully
-) ELSE (
-    echo [INFO] Enhanced FileOrg submenu not found or already removed
+    echo [OK] Removed FileOrg cascading menu
 )
+reg delete "HKCU\Software\Classes\Directory\shell\fileorg" /f >nul 2>&1
 
-:: Remove from background context menu - includes all sub-keys
+:: Remove individual menu items (if they exist)
+reg delete "HKCU\Software\Classes\Directory\shell\FileOrgPreview" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\shell\FileOrgOrganize" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\shell\FileOrgRestore" /f >nul 2>&1
+
+:: Remove background context menu
 reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrg" /f >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
-    echo [OK] Removed background context menu
+    echo [OK] Removed background FileOrg cascading menu
+)
+reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrgPreview" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrgOrganize" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Directory\Background\shell\FileOrgRestore" /f >nul 2>&1
+
+:: Remove CommandStore definitions
+reg delete "HKCU\Software\Classes\FileOrg.Preview" /f >nul 2>&1
+IF %ERRORLEVEL% EQU 0 (
+    echo [OK] Removed FileOrg.Preview command
+)
+reg delete "HKCU\Software\Classes\FileOrg.Organize" /f >nul 2>&1
+IF %ERRORLEVEL% EQU 0 (
+    echo [OK] Removed FileOrg.Organize command
+)
+reg delete "HKCU\Software\Classes\FileOrg.Restore" /f >nul 2>&1
+IF %ERRORLEVEL% EQU 0 (
+    echo [OK] Removed FileOrg.Restore command
 )
 
-:: Also remove old single-option menu if exists
-reg delete "HKCU\Software\Classes\Directory\shell\fileorg" /f >nul 2>&1
-IF %ERRORLEVEL% EQU 0 (
-    echo [OK] Removed old single-option menu
-)
+:: Remove any MuiCache entries
+reg delete "HKCU\Software\Classes\Local Settings\MuiCache\CommandStore\shell\FileOrgPreview" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Local Settings\MuiCache\CommandStore\shell\FileOrgOrganize" /f >nul 2>&1
+reg delete "HKCU\Software\Classes\Local Settings\MuiCache\CommandStore\shell\FileOrgRestore" /f >nul 2>&1
 
 :: Try to remove from HKCR if exists (requires admin)
 echo.
@@ -58,21 +78,43 @@ echo.
 echo [3/3] Verifying removal...
 
 :: Verify removal
+set KEYS_FOUND=0
+
+:: Check main menu
 reg query "HKCU\Software\Classes\Directory\shell\FileOrg" >nul 2>&1
-IF %ERRORLEVEL% NEQ 0 (
-    reg query "HKCU\Software\Classes\Directory\shell\fileorg" >nul 2>&1
-    IF %ERRORLEVEL% NEQ 0 (
-        reg query "HKCR\Directory\shell\FileOrg" >nul 2>&1
-        IF %ERRORLEVEL% NEQ 0 (
-            echo [OK] All registry keys successfully removed
-        ) ELSE (
-            echo [WARNING] Some HKCR keys may still exist (need admin to remove)
-        )
-    ) ELSE (
-        echo [ERROR] Failed to remove old fileorg keys
-    )
+IF %ERRORLEVEL% EQU 0 set KEYS_FOUND=1
+
+:: Check individual menus
+reg query "HKCU\Software\Classes\Directory\shell\FileOrgPreview" >nul 2>&1
+IF %ERRORLEVEL% EQU 0 set KEYS_FOUND=1
+
+reg query "HKCU\Software\Classes\Directory\shell\FileOrgOrganize" >nul 2>&1
+IF %ERRORLEVEL% EQU 0 set KEYS_FOUND=1
+
+reg query "HKCU\Software\Classes\Directory\shell\FileOrgRestore" >nul 2>&1
+IF %ERRORLEVEL% EQU 0 set KEYS_FOUND=1
+
+:: Check command definitions
+reg query "HKCU\Software\Classes\FileOrg.Preview" >nul 2>&1
+IF %ERRORLEVEL% EQU 0 set KEYS_FOUND=1
+
+reg query "HKCU\Software\Classes\FileOrg.Organize" >nul 2>&1
+IF %ERRORLEVEL% EQU 0 set KEYS_FOUND=1
+
+reg query "HKCU\Software\Classes\FileOrg.Restore" >nul 2>&1
+IF %ERRORLEVEL% EQU 0 set KEYS_FOUND=1
+
+:: Check HKCR
+reg query "HKCR\Directory\shell\FileOrg" >nul 2>&1
+IF %ERRORLEVEL% EQU 0 (
+    echo [WARNING] Some HKCR keys may still exist (need admin to remove)
+    set KEYS_FOUND=1
+)
+
+IF %KEYS_FOUND% EQU 0 (
+    echo [OK] All registry keys successfully removed
 ) ELSE (
-    echo [ERROR] Failed to remove FileOrg submenu keys
+    echo [ERROR] Some FileOrg keys may still exist
 )
 
 echo.
