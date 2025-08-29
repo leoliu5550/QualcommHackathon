@@ -1,17 +1,24 @@
+"""Base parser module for file content extraction.
+
+Provides the foundation for all file parsers in the FileOrg system.
+Each parser extracts meaningful content from different file types.
+"""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Dict, Any  # 新增型別註解所需
+from typing import List, Dict, Any
 
 
-# 解析結果封裝類，儲存解析後的資訊與狀態
 class ParseResult:
-    """解析結果封裝類
-    用於儲存檔案解析後的各項資訊，例如是否成功、內容、檔案型態、原始長度、是否截斷、錯誤訊息與檔案路徑。
+    """Container for parsed file results.
+    
+    Stores everything we extract from a file - content, metadata, and status.
+    Makes it easy to handle both successful and failed parsing attempts.
     """
 
     def __init__(
         self,
-        success: bool = False,  # 添加預設值
+        success: bool = False,
         content: str = "",
         file_type: str = "",
         original_length: int = 0,
@@ -19,23 +26,31 @@ class ParseResult:
         error: str = "",
         file_path: str = "",
     ):
-        # 解析是否成功
+        """Initialize parse result with file information.
+        
+        Args:
+            success: Whether parsing succeeded
+            content: Extracted text content
+            file_type: File extension or type
+            original_length: Original content length before truncation
+            truncated: Whether content was cut for size limits
+            error: Error message if parsing failed
+            file_path: Path to the parsed file
+        """
         self.success = success
-        # 解析後的內容
         self.content = content
-        # 檔案型態（副檔名等）
         self.file_type = file_type
-        # 原始內容長度
         self.original_length = original_length
-        # 是否有被截斷
         self.truncated = truncated
-        # 錯誤訊息（若有）
         self.error = error
-        # 檔案路徑
         self.file_path = file_path
 
     def to_dict(self) -> Dict[str, Any]:
-        """轉換為字典格式，方便序列化或輸出。"""
+        """Convert to dictionary for easy serialization.
+        
+        Returns:
+            Dict with all parse result fields
+        """
         return {
             "success": self.success,
             "content": self.content,
@@ -47,11 +62,11 @@ class ParseResult:
         }
 
     def __str__(self) -> str:
-        """返回 ParseResult 的字串表示"""
+        """Human-readable representation of parse result."""
         return f"ParseResult(success={self.success}, file_type={self.file_type}, content_length={len(self.content)})"
 
     def __eq__(self, other) -> bool:
-        """比較兩個 ParseResult 是否相等"""
+        """Check if two ParseResults are equal."""
         if not isinstance(other, ParseResult):
             return False
         return (
@@ -65,44 +80,67 @@ class ParseResult:
         )
 
 
-# 抽象解析器基類，所有解析器需繼承此類別
 class BaseParser(ABC):
-    """抽象解析器基類
-    定義解析器的基本結構與共用方法，所有具體解析器需繼承並實作 parse 方法。
+    """Abstract base for all file parsers.
+    
+    Defines the interface that all parsers must follow.
+    Handles common tasks like content truncation and encoding detection.
     """
 
     def __init__(self, char_limit: int = 1000):
-        # 內容截斷的字元上限，預設 1000
+        """Initialize parser with character limit.
+        
+        Args:
+            char_limit: Maximum characters to extract (prevents memory issues)
+        """
         self.char_limit = char_limit
 
     @abstractmethod
     def parse(self, file_path: Path) -> ParseResult:
-        """解析檔案的抽象方法，子類別需實作。"""
+        """Extract content from a file.
+        
+        Args:
+            file_path: Path to the file to parse
+            
+        Returns:
+            ParseResult with extracted content or error info
+        """
         pass
 
     def _truncate_content(self, content: str) -> tuple[str, bool]:
-        """截斷內容到指定長度，回傳截斷後的內容與是否有截斷。"""
+        """Truncate content to character limit.
+        
+        Args:
+            content: Text to potentially truncate
+            
+        Returns:
+            Tuple of (truncated_content, was_truncated)
+        """
         if len(content) > self.char_limit:
             return content[: self.char_limit], True
         return content, False
 
     def _try_encodings(self, file_path: Path, encodings: List[str] = None) -> str:
-        """嘗試多種編碼讀取文件，遇到編碼錯誤會自動切換編碼。
-        若全部失敗則以 utf-8 並忽略錯誤讀取。
+        """Try multiple encodings to read a file.
+        
+        Automatically handles different text encodings (UTF-8, Chinese, etc.).
+        Falls back to UTF-8 with error ignoring if all encodings fail.
+        
+        Args:
+            file_path: Path to file to read
+            encodings: List of encodings to try (uses defaults if None)
+            
+        Returns:
+            File content as string
         """
         if encodings is None:
-            # 常見中文與西文編碼
             encodings = ["utf-8", "big5", "gbk", "cp1252"]
 
         for encoding in encodings:
             try:
-                # 嘗試以不同編碼讀取
                 with open(file_path, "r", encoding=encoding) as file:
                     return file.read()
             except UnicodeDecodeError:
-                # 若解碼失敗則嘗試下一個編碼
                 continue
-
-        # 如果所有編碼都失敗，使用 utf-8 並忽略錯誤
         with open(file_path, "r", encoding="utf-8", errors="ignore") as file:
             return file.read()

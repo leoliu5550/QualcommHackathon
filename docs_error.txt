@@ -1,0 +1,62 @@
+(.venv) (base) PS C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon> mkdocs serve                                                             
+INFO    -  Building documentation...
+INFO    -  Cleaning site directory
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\excel.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\base.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\classifier\classifier.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\word.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\pdf.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\reporter\generator.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\reporter\visualizer.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\reporter\stats.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\scanner\scanner.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\restore\restore.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\classifier\classifier.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\base.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\pdf.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\word.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\parsers\excel.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\reporter\generator.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\reporter\stats.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\restore\restore.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\reporter\visualizer.md' has no git logs, using current timestamp
+[git-revision-date-localized-plugin] 'C:\Users\USER\Desktop\Develop\QualcommHackathon\QualcommHackathon\docs\api\scanner\scanner.md' has no git logs, using current timestamp
+WARNING -  griffe: fileorg\ai\interface.py:229: No type or annotation for parameter '**kwargs'
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\classifier\classifier.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING -  griffe: fileorg\classifier\classifier.py:418: No type or annotation for returned value 'CreateFolderNamer'
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\parsers\base.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\parsers\excel.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\parsers\pdf.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\parsers\word.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\reporter\generator.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\reporter\stats.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\reporter\visualizer.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\restore\restore.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING:root:First revision timestamp is older than last revision timestamp for page api\scanner\scanner.md. This can be due to a quirk in `git` follow behaviour. You can try to set `enable_git_follow: false` in the plugin configuration.
+WARNING -  Doc file 'getting-started/installation.md' contains a link 'configuration.md', but the target 'getting-started/configuration.md' is not found among
+           documentation files.
+WARNING -  Doc file 'getting-started/installation.md' contains a link '../examples/basic.md', but the target 'examples/basic.md' is not found among
+           documentation files.
+WARNING -  Doc file 'getting-started/installation.md' contains a link '../advanced/troubleshooting.md', but the target 'advanced/troubleshooting.md' is not   
+           found among documentation files.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link '../user-guide/organization.md', but the target 'user-guide/organization.md' is not found
+           among documentation files.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link 'configuration.md', but the target 'getting-started/configuration.md' is not found among
+           documentation files.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link '../examples/ai-integration.md', but the target 'examples/ai-integration.md' is not found 
+           among documentation files.
+WARNING -  Doc file 'getting-started/quickstart.md' contains a link '../user-guide/reports.md', but the target 'user-guide/reports.md' is not found among     
+           documentation files.
+INFO    -  Documentation built in 12.64 seconds
+INFO    -  [13:43:09] Watching paths for changes: 'docs', 'mkdocs.yml'
+INFO    -  [13:43:09] Serving on http://127.0.0.1:8000/QualcommHackathon/
+WARNING -  [13:43:12] "GET /versions.json HTTP/1.1" code 404
+INFO    -  [13:43:12] Browser connected: http://127.0.0.1:8000/QualcommHackathon/
+WARNING -  [13:43:16] "GET /versions.json HTTP/1.1" code 404
+WARNING -  [13:43:20] "GET /versions.json HTTP/1.1" code 404
+WARNING -  [13:43:21] "GET /versions.json HTTP/1.1" code 404
+WARNING -  [13:43:22] "GET /versions.json HTTP/1.1" code 404
+WARNING -  [13:43:24] "GET /versions.json HTTP/1.1" code 404
+WARNING -  [13:43:26] "GET /versions.json HTTP/1.1" code 404
+WARNING -  [13:43:28] "GET /versions.json HTTP/1.1" code 404
+WARNING -  [13:43:31] "GET /versions.json HTTP/1.1" code 40

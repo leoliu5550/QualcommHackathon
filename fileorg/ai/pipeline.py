@@ -1,6 +1,7 @@
-"""
-模型管道整合腳本
-提供完整的模型導出、上傳、編譯流程
+"""Model pipeline integration module.
+
+Provides end-to-end model export and compilation workflow.
+Supports ONNX export and Qualcomm AI Hub integration.
 """
 
 import os
@@ -10,7 +11,7 @@ import json
 from pathlib import Path
 from typing import Dict, Any
 
-# 添加當前目錄到路徑
+# Add current directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from mode_config import config
@@ -20,37 +21,51 @@ from upload_to_aihub import upload_model_to_aihub, check_aihub_status
 
 
 class ModelPipeline:
-    """模型處理管道"""
+    """Model processing pipeline for AI deployment.
+    
+    Handles model export, optimization, and deployment preparation.
+    """
 
     def __init__(self, config_dict: Dict[str, Any] = None):
+        """Initialize pipeline with configuration.
+        
+        Args:
+            config_dict: Model configuration dictionary
+        """
         self.config = config_dict or config
         self.output_dir = "./onnx_models"
         self.logs = []
 
     def log(self, message: str):
-        """記錄日誌"""
+        """Log message to console and internal buffer.
+        
+        Args:
+            message: Message to log
+        """
         print(message)
         self.logs.append(message)
 
     def export_to_onnx(self, model_id: str = None) -> str:
-        """
-        導出模型到 ONNX 格式
+        """Export model to ONNX format.
 
+        Args:
+            model_id: Model identifier to export
+            
         Returns:
-            ONNX 模型路徑
+            Path to exported ONNX model
         """
         model_id = model_id or self.config["model_id"]
         export_config = self.config.get("onnx_export", {})
 
-        self.log("=== 步驟 1: 導出 ONNX 模型 ===")
-        self.log(f"模型 ID: {model_id}")
+        self.log("=== Step 1: Export ONNX Model ===")
+        self.log(f"Model ID: {model_id}")
 
         try:
-            # 檢查是否使用修復版導出器
+            # Check if using fixed exporter
             if export_config.get("use_fixed_export", True):
-                self.log("使用修復版 ONNX 導出器")
+                self.log("Using fixed ONNX exporter")
 
-                # 創建修復版導出器
+                # Create fixed exporter
                 exporter_config = {
                     "sequence_length": export_config.get("sequence_length", 128),
                     "opset": export_config.get("opset", 14),
@@ -67,7 +82,7 @@ class ModelPipeline:
                     export_strategy=export_config.get("export_strategy", "auto"),
                 )
             else:
-                self.log("使用原版 ONNX 導出器")
+                self.log("Using original ONNX exporter")
 
                 onnx_path = export_model_to_onnx(
                     model_id=model_id,
@@ -77,7 +92,7 @@ class ModelPipeline:
                     sequence_length=export_config.get("sequence_length", 128),
                 )
 
-            self.log(f"✓ ONNX 導出成功: {onnx_path}")
+            self.log(f"✓ ONNX export successful: {onnx_path}")
             return onnx_path
 
         except Exception as e:

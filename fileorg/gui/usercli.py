@@ -1,9 +1,7 @@
-"""
-usercli.py
-FileOrg Terminal GUI Module
+"""Terminal GUI module for FileOrg.
 
-提供終端的圖形化界面，讓使用者透過箭頭鍵選擇選項
-放置位置: fileorg/gui/usercli.py
+Provides interactive terminal interface with arrow key navigation.
+Cross-platform support for Windows and Unix systems.
 """
 
 import sys
@@ -21,23 +19,34 @@ except ImportError:
 
 
 class TerminalGUI:
+    """Interactive terminal GUI for folder selection.
+    
+    Provides arrow key navigation and history tracking.
+    Works on both Windows and Unix-like systems.
+    """
+    
     def __init__(self):
+        """Initialize GUI with history tracking."""
         self.history_file = os.path.expanduser("~/.fileorg_history.json")
         self.selected_index = 0
         
     def clear_screen(self):
-        """清除螢幕"""
+        """Clear terminal screen."""
         os.system('cls' if os.name == 'nt' else 'clear')
     
     def get_key(self):
-        """跨平台的按鍵獲取"""
+        """Get keyboard input cross-platform.
+        
+        Returns:
+            Key identifier ('UP', 'DOWN', 'ENTER', 'ESC', or char)
+        """
         if WINDOWS:
             key = msvcrt.getch()
-            if key == b'\xe0':  # 方向鍵前綴
+            if key == b'\xe0':  # Arrow key prefix
                 key = msvcrt.getch()
-                if key == b'H':  # 上箭頭
+                if key == b'H':  # Up arrow
                     return 'UP'
-                elif key == b'P':  # 下箭頭
+                elif key == b'P':  # Down arrow
                     return 'DOWN'
             elif key == b'\r':  # Enter
                 return 'ENTER'
@@ -50,11 +59,11 @@ class TerminalGUI:
             try:
                 tty.setraw(sys.stdin.fileno())
                 key = sys.stdin.read(1)
-                if key == '\x1b':  # ESC 序列
+                if key == '\x1b':  # ESC sequence
                     key += sys.stdin.read(2)
-                    if key == '\x1b[A':  # 上箭頭
+                    if key == '\x1b[A':  # Up arrow
                         return 'UP'
-                    elif key == '\x1b[B':  # 下箭頭
+                    elif key == '\x1b[B':  # Down arrow
                         return 'DOWN'
                     else:
                         return 'ESC'

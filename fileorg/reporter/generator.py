@@ -1,6 +1,7 @@
-"""
-報告生成器
-整合樹狀圖、統計資料，生成完整的整理報告
+"""Report generation module.
+
+Creates comprehensive organization reports with visualizations.
+Includes tree structures, statistics, and markdown summaries.
 """
 
 import os
@@ -12,23 +13,32 @@ from .stats import StatisticsCalculator
 
 
 class ReportGenerator:
+    """Generate organization reports in multiple formats.
+    
+    Creates HTML tree views, markdown reports, and statistics.
+    Stores reports in timestamped folders for history tracking.
+    """
+    
     def __init__(self, target_path: str):
+        """Initialize report generator.
+        
+        Args:
+            target_path: Root directory being organized
+        """
         self.target_path = target_path
         self.tree_visualizer = TreeVisualizer()
         self.stats_calculator = StatisticsCalculator()
         self.report_dir = os.path.join(target_path, ".tidy_report")
 
     def generate_reports(self, backup_path: Optional[str] = None) -> Dict[str, str]:
-        """
-        生成所有報告
+        """Generate all report types.
 
         Args:
-            backup_path: 備份資料夾路徑，如果未提供則使用預設路徑
+            backup_path: Path to backup folder with organization data
 
         Returns:
-            包含各報告檔案路徑的字典
+            Dict with paths to generated report files
         """
-        # 確定備份路徑
         if not backup_path:
             backup_path = os.path.join(self.target_path, ".backup")
 
@@ -37,12 +47,12 @@ class ReportGenerator:
         summ_load_file = os.path.join(backup_path, "summ_load.json")
 
         if not os.path.exists(file_paths_file):
-            raise FileNotFoundError(f"找不到備份檔案: {file_paths_file}")
+            raise FileNotFoundError(f"Backup file not found: {file_paths_file}")
 
         with open(file_paths_file, "r", encoding="utf-8") as f:
             file_data = json.load(f)
 
-        # 載入摘要資料（如果存在）
+        # Load summaries if available
         summaries = {}
         if os.path.exists(summ_load_file):
             with open(summ_load_file, "r", encoding="utf-8") as f:
@@ -50,28 +60,28 @@ class ReportGenerator:
                 for item in summ_data.get("summaries", []):
                     summaries[item["name"]] = item["summary"]
 
-        # 生成時間戳記和日期資料夾
+        # Generate timestamp folder
         now = datetime.now()
         date_folder = now.strftime("%Y%m%d_%H%M%S")
         report_subfolder = os.path.join(self.report_dir, date_folder)
 
-        # 建立日期子資料夾
+        # Create date subfolder
         os.makedirs(report_subfolder, exist_ok=True)
 
-        # 生成各種報告
+        # Generate all reports
         report_files = {}
 
-        # 1. 生成樹狀結構報告
+        # 1. Tree structure report
         tree_file = os.path.join(report_subfolder, "tree_structure.html")
         self._generate_tree_report(file_data["folder_mappings"], tree_file)
         report_files["tree"] = tree_file
 
-        # 2. 生成Markdown報告
+        # 2. Markdown report
         md_file = os.path.join(report_subfolder, "organize_report.md")
         self._generate_markdown_report(file_data, summaries, md_file)
         report_files["markdown"] = md_file
 
-        # 3. 生成統計報告
+        # 3. Statistics report
         stats_file = os.path.join(report_subfolder, "statistics.txt")
         self._generate_statistics_report(
             file_data["folder_mappings"], file_data["file_paths"], stats_file

@@ -111,6 +111,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+r_key_venv/
+.r_key_venv/
+*_venv/
+virtualenv/
+.virtualenv/
 
 # Spyder project settings
 .spyderproject
@@ -151,6 +156,7 @@ ehthumbs.db
 Desktop.ini
 
 # Project specific
+fileorg/ai/model
 onnx_models/
 onnx_models_fixed/
 test_onnx_simple/
@@ -165,6 +171,7 @@ Organized_Files_*/
 *.bak
 *.swp
 *~
+nul
 
 # Test files
 test_real_flow.py

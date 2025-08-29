@@ -1,15 +1,31 @@
-from fileorg.parsers.base import BaseParser, ParseResult
+"""Microsoft Word document parser.
 
+Extracts text from DOCX files using python-docx library.
+"""
+
+from fileorg.parsers.base import BaseParser, ParseResult
 from pathlib import Path
 from docx import Document
 
 
 class DocxParser(BaseParser):
-    """DOCX 檔案解析器"""
+    """Parser for Microsoft Word documents.
+    
+    Extracts paragraph text from DOCX files.
+    Requires python-docx library.
+    """
 
     def parse(self, file_path: Path) -> ParseResult:
+        """Extract text from Word document.
+        
+        Args:
+            file_path: Path to DOCX file
+            
+        Returns:
+            ParseResult with document text
+        """
         if Document is None:
-            return ParseResult(success=False, error="需要安裝 python-docx 套件來解析 DOCX 檔案")
+            return ParseResult(success=False, error="python-docx library required for DOCX parsing")
 
         try:
             doc = Document(file_path)

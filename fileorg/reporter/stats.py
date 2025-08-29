@@ -1,6 +1,7 @@
-"""
-統計計算工具
-計算檔案分類的各項統計數據
+"""Statistics calculation module.
+
+Calculates metrics for file organization results.
+Provides insights into categorization patterns.
 """
 
 from typing import Dict, List
@@ -8,21 +9,26 @@ import os
 
 
 class StatisticsCalculator:
+    """Calculate organization statistics.
+    
+    Analyzes folder distributions, file types, and patterns.
+    """
+    
     def __init__(self):
+        """Initialize statistics calculator."""
         pass
 
     def calculate_statistics(
         self, folder_mappings: Dict[str, List[str]], file_paths: List[Dict]
     ) -> Dict:
-        """
-        計算檔案整理統計資料
+        """Calculate file organization statistics.
 
         Args:
-            folder_mappings: 資料夾映射
-            file_paths: 檔案路徑資訊
+            folder_mappings: Folder to files mapping
+            file_paths: File path information
 
         Returns:
-            統計資料字典
+            Dict with various statistics
         """
         stats = {
             "total_files": sum(len(files) for files in folder_mappings.values()),
@@ -33,7 +39,7 @@ class StatisticsCalculator:
             "smallest_folder": None,
         }
 
-        # 計算每個資料夾的詳細資訊
+        # Calculate folder details
         for folder_name, files in folder_mappings.items():
             stats["folder_details"][folder_name] = {
                 "file_count": len(files),
@@ -44,12 +50,12 @@ class StatisticsCalculator:
                 ),
             }
 
-            # 統計副檔名
+            # Count file extensions
             for file_name in files:
-                ext = os.path.splitext(file_name)[1].lower() or "無副檔名"
+                ext = os.path.splitext(file_name)[1].lower() or "no_extension"
                 stats["file_extensions"][ext] = stats["file_extensions"].get(ext, 0) + 1
 
-        # 找出最大和最小的資料夾
+        # Find largest and smallest folders
         if folder_mappings:
             sorted_folders = sorted(folder_mappings.items(), key=lambda x: len(x[1]))
             stats["smallest_folder"] = (sorted_folders[0][0], len(sorted_folders[0][1]))

@@ -1,12 +1,33 @@
+"""CSV file parser for spreadsheet data extraction.
+
+Handles comma-separated values with automatic encoding detection.
+Extracts rows as text for AI analysis.
+"""
+
 from fileorg.parsers.base import BaseParser, ParseResult
 from pathlib import Path
 import csv
 
 
 class CsvParser(BaseParser):
-    """CSV 檔案解析器"""
+    """Parser for CSV spreadsheet files.
+    
+    Reads CSV data and converts it to text format.
+    Handles various encodings and limits output for efficiency.
+    """
 
     def parse(self, file_path: Path) -> ParseResult:
+        """Extract content from CSV file.
+        
+        Reads up to 100 rows or char_limit, whichever comes first.
+        Automatically tries multiple encodings for compatibility.
+        
+        Args:
+            file_path: Path to CSV file
+            
+        Returns:
+            ParseResult with CSV content as text
+        """
         try:
             content = ""
             encodings = ["utf-8", "big5", "gbk", "cp1252"]
@@ -28,7 +49,7 @@ class CsvParser(BaseParser):
                 except UnicodeDecodeError:
                     continue
             else:
-                raise UnicodeDecodeError("無法以任何編碼讀取 CSV 檔案")
+                raise UnicodeDecodeError("Cannot read CSV with any encoding")
 
             truncated_content, is_truncated = self._truncate_content(content)
 
