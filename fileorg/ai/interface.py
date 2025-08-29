@@ -238,7 +238,7 @@ class QualcommLLM(BaseLLM):
             "temperature": 0.1 
         }
 
-        with httpx.Client(timeout=180.0) as client:
+        with httpx.Client(timeout=600.0) as client:
             response = client.post(url, headers=headers, json=payload)
 
         llm_response = response.json()["choices"][-1]["message"]["content"]
