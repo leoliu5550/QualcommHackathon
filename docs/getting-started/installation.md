@@ -297,18 +297,14 @@ python -c "from fileorg.ai import get_llm; print(get_llm('local'))"
 
 ## Next Steps
 
-✅ Installation complete! Now you can:
+Installation complete! Now you can:
 
-- 📖 Read the [Quick Start Guide](quickstart.md)
-- 🎯 Learn about [CLI Usage](../user-guide/cli.md)
-- 🔧 Configure [Settings](configuration.md)
-- 🚀 Try the [Examples](../examples/basic.md)
+- Read the [Quick Start Guide](quickstart.md)
+- Learn about [CLI Usage](../user-guide/cli.md)
 
 ## Getting Help
 
 If you encounter issues:
 
-1. Check the [Troubleshooting Guide](../advanced/troubleshooting.md)
-2. Search [GitHub Issues](https://github.com/leoliu5550/QualcommHackathon/issues)
-3. Join our [Discord Community](https://discord.gg/fileorg)
-4. Contact support at support@fileorg.com
+1. Search [GitHub Issues](https://github.com/leoliu5550/QualcommHackathon/issues)
+2. Create a new issue with detailed error information

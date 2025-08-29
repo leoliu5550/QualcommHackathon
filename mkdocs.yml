@@ -141,21 +141,31 @@ nav:
     - Overview: api/index.md
     - Core:
       - Organizer: api/core/organizer.md
+    - Scanner:
+      - File Scanner: api/scanner/scanner.md
+    - Parsers:
+      - Base Parser: api/parsers/base.md
+      - PDF Parser: api/parsers/pdf.md
+      - Word Parser: api/parsers/word.md
+      - Excel Parser: api/parsers/excel.md
     - AI:
       - Interface: api/ai/interface.md
+    - Classifier:
+      - Document Classifier: api/classifier/classifier.md
+    - Reporter:
+      - Report Generator: api/reporter/generator.md
+      - Tree Visualizer: api/reporter/visualizer.md
+      - Statistics: api/reporter/stats.md
+    - Restore:
+      - File Restoration: api/restore/restore.md
     
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/leoliu5550/QualcommHackathon
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/fileorg
       
   analytics:
     provider: google
     property: G-XXXXXXXXXX
-    
-  version:
-    provider: mike
     
 copyright: Copyright &copy; 2024 FileOrg Team

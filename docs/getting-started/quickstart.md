@@ -2,7 +2,7 @@
 
 Get started with FileOrg in under 5 minutes! This guide will walk you through your first file organization.
 
-## 🚀 Your First Organization
+## Your First Organization
 
 ### Step 1: Choose Your Target Folder
 
@@ -21,32 +21,32 @@ fileorg ~/Downloads --preview
 ```
 
 This will:
-- ✅ Scan all files
-- ✅ Analyze content with AI
-- ✅ Show proposed organization
-- ❌ NOT move any files
+- Scan all files
+- Analyze content with AI
+- Show proposed organization
+- NOT move any files
 
 ### Step 3: Review the Plan
 
 FileOrg will display:
 
 ```
-📊 Organization Preview
+Organization Preview
 ========================
 Files Found: 156
 Proposed Folders: 12
 
-📁 Academic_Research (23 files)
+Academic_Research (23 files)
    ├── machine_learning_paper.pdf
    ├── thesis_draft_v3.docx
    └── ...
 
-📁 Financial_Documents (15 files)
+Financial_Documents (15 files)
    ├── invoice_2024.pdf
    ├── tax_return.xlsx
    └── ...
 
-📁 Personal_Photos (45 files)
+Personal_Photos (45 files)
    ├── vacation_2024.jpg
    ├── family_reunion.png
    └── ...
@@ -66,7 +66,7 @@ FileOrg will:
 3. Generate reports
 4. Display summary
 
-## 🎮 Interactive GUI Mode
+## Interactive GUI Mode
 
 Prefer a visual interface? Use GUI mode:
 
@@ -79,7 +79,7 @@ Navigate with arrow keys:
 - Enter - Select
 - ESC - Go back
 
-## 📝 Common Workflows
+## Common Workflows
 
 ### Organizing Downloads Folder
 
@@ -118,7 +118,7 @@ for folder in ~/Downloads ~/Desktop ~/Documents; do
 done
 ```
 
-## 🔄 Restore Original Structure
+## Restore Original Structure
 
 Changed your mind? Restore is one command away:
 
@@ -132,7 +132,7 @@ This will:
 - Clean up empty folders
 - Preserve all file metadata
 
-## 📊 Understanding Reports
+## Understanding Reports
 
 After organization, check the reports:
 
@@ -160,7 +160,7 @@ Shows:
 cat ~/Downloads/.tidy_report/*/organize_report.md
 ```
 
-## ⚙️ Configuration Tips
+## Configuration Tips
 
 ### Use Faster Models
 
@@ -193,7 +193,7 @@ fileorg ~/Downloads --types "pdf,docx,txt"
 }
 ```
 
-## 🎯 Best Practices
+## Best Practices
 
 ### 1. Always Preview First
 Never run organization without preview, especially on important folders.
@@ -210,7 +210,7 @@ FileOrg creates automatic backups, but having external backups is wise.
 ### 5. Custom Categories
 For specialized needs, consider training custom models or adjusting prompts.
 
-## 🔍 Example Scenarios
+## Example Scenarios
 
 ### Scenario 1: Student's Semester Files
 
@@ -219,11 +219,11 @@ For specialized needs, consider training custom models or adjusting prompts.
 fileorg ~/University/Fall2024 --preview
 
 # Results in:
-# 📁 Assignments
-# 📁 Lecture_Notes  
-# 📁 Research_Papers
-# 📁 Lab_Reports
-# 📁 Exams
+# Assignments
+# Lecture_Notes  
+# Research_Papers
+# Lab_Reports
+# Exams
 ```
 
 ### Scenario 2: Photographer's Portfolio
@@ -233,11 +233,11 @@ fileorg ~/University/Fall2024 --preview
 fileorg ~/Photos/Unsorted --preview
 
 # Results in:
-# 📁 Landscapes
-# 📁 Portraits
-# 📁 Events
-# 📁 Architecture
-# 📁 Wildlife
+# Landscapes
+# Portraits
+# Events
+# Architecture
+# Wildlife
 ```
 
 ### Scenario 3: Developer's Projects
@@ -247,14 +247,14 @@ fileorg ~/Photos/Unsorted --preview
 fileorg ~/Code/misc --preview
 
 # Results in:
-# 📁 Python_Projects
-# 📁 Web_Development
-# 📁 Documentation
-# 📁 Scripts_Utils
-# 📁 Config_Files
+# Python_Projects
+# Web_Development
+# Documentation
+# Scripts_Utils
+# Config_Files
 ```
 
-## 🆘 Quick Troubleshooting
+## Quick Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -263,7 +263,7 @@ fileorg ~/Code/misc --preview
 | "Slow processing" | Enable GPU or use lighter model |
 | "Wrong categorization" | Adjust prompts or use few-shot examples |
 
-## 🎉 Success Tips
+## Success Tips
 
 1. **Regular Maintenance**: Run FileOrg weekly on Downloads
 2. **Project Organization**: Use for each completed project
@@ -274,10 +274,8 @@ fileorg ~/Code/misc --preview
 
 Now that you've organized your first folder:
 
-- 📚 Learn about [Advanced Features](../user-guide/organization.md)
-- 🛠️ Explore [Configuration Options](configuration.md)
-- 🤖 Understand [AI Integration](../examples/ai-integration.md)
-- 📈 Master [Report Analysis](../user-guide/reports.md)
+- Learn about [CLI Usage](../user-guide/cli.md)
+- Explore the [API Reference](../api/index.md)
 
 ---
 

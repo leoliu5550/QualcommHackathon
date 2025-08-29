@@ -111,6 +111,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+r_key_venv/
+.r_key_venv/
+*_venv/
+virtualenv/
+.virtualenv/
 
 # Spyder project settings
 .spyderproject
@@ -166,11 +171,11 @@ Organized_Files_*/
 *.bak
 *.swp
 *~
+nul
 
 # Test files
 test_real_flow.py
 run_real_tests.bat
-.r_key_venv/
 
 # Coverage reports
 coverage.json
