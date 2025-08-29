@@ -42,7 +42,7 @@ dependencies = [
     "pypdf>=3.0.0",  # Modern replacement for PyPDF2
     "tqdm>=4.65.0",
     "charset-normalizer>=3.0.0",
-    httpx
+    "httpx"
 ]
 
 [project.optional-dependencies]
