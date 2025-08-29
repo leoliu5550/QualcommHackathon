@@ -1,97 +1,97 @@
-# 修正過的 GitHub Actions 工作流程，發布到 GitHub Packages
-name: Publish to GitHub Packages
+# # 修正過的 GitHub Actions 工作流程，發布到 GitHub Packages
+# name: Publish to GitHub Packages
 
-on:
-  push:
-    branches: [ main, release* ]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '.gitignore'
-      - 'LICENSE'
-  workflow_dispatch:
+# on:
+#   push:
+#     branches: [ main, release* ]
+#     paths-ignore:
+#       - '**.md'
+#       - 'docs/**'
+#       - '.gitignore'
+#       - 'LICENSE'
+#   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write  # 發布到 GitHub Packages 需要這個權限
+# permissions:
+#   contents: read
+#   packages: write  # 發布到 GitHub Packages 需要這個權限
 
-env:
-  PYTHON_VERSION: "3.11"
+# env:
+#   PYTHON_VERSION: "3.11"
 
-jobs:
-  build-and-publish:
-    runs-on: ubuntu-latest
+# jobs:
+#   build-and-publish:
+#     runs-on: ubuntu-latest
 
-    steps:
-      # 檢查程式碼
-      - uses: actions/checkout@v4
+#     steps:
+#       # 檢查程式碼
+#       - uses: actions/checkout@v4
 
-      # 設定 Python 環境
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+#       # 設定 Python 環境
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: ${{ env.PYTHON_VERSION }}
 
-      # 安裝建置工具
-      - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip
-          # 安裝 build, wheel, setuptools 與 twine（確保 twine 可用）
-          python -m pip install --upgrade build setuptools wheel twine
+#       # 安裝建置工具
+#       - name: Install build tools
+#         run: |
+#           python -m pip install --upgrade pip
+#           # 安裝 build, wheel, setuptools 與 twine（確保 twine 可用）
+#           python -m pip install --upgrade build setuptools wheel twine
 
-      - name: Verify tools installed (debug)
-        run: |
-          python -V
-          python -m pip --version
-          python -m pip show twine || true
-          python -m pip list
+#       - name: Verify tools installed (debug)
+#         run: |
+#           python -V
+#           python -m pip --version
+#           python -m pip show twine || true
+#           python -m pip list
 
-      # 建立套件
-      - name: Build package
-        run: python -m build
+#       # 建立套件
+#       - name: Build package
+#         run: python -m build
 
-      # 驗證套件
-      - name: Verify package
-        run: |
-          ls -la dist/
-          python -m zipfile -l dist/*.whl || true
+#       # 驗證套件
+#       - name: Verify package
+#         run: |
+#           ls -la dist/
+#           python -m zipfile -l dist/*.whl || true
 
       
-      # 嘗試使用正確的 GitHub Packages PyPI 端點
-      - name: Publish to GitHub Packages
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # GitHub Packages 的 PyPI 端點格式是：
-          # https://pypi.pkg.github.com/{username}/
-          python -m twine upload \
-            --verbose \
-            --repository-url "https://pypi.pkg.github.com/${{ github.repository_owner }}/" \
-            dist/*
+#       # 嘗試使用正確的 GitHub Packages PyPI 端點
+#       - name: Publish to GitHub Packages
+#         env:
+#           TWINE_USERNAME: __token__
+#           TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           # GitHub Packages 的 PyPI 端點格式是：
+#           # https://pypi.pkg.github.com/{username}/
+#           python -m twine upload \
+#             --verbose \
+#             --repository-url "https://pypi.pkg.github.com/${{ github.repository_owner }}/" \
+#             dist/*
 
-      # 如果上述方法失敗，嘗試舊的 API 端點（備用）
-      - name: Fallback to legacy API endpoint
-        if: failure()
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Primary method failed, trying legacy endpoint..."
-          python -m twine upload \
-            --verbose \
-            --repository-url "https://api.github.com/users/${{ github.repository_owner }}/packages/pypi/upload" \
-            dist/*
+#       # 如果上述方法失敗，嘗試舊的 API 端點（備用）
+#       - name: Fallback to legacy API endpoint
+#         if: failure()
+#         env:
+#           TWINE_USERNAME: __token__
+#           TWINE_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           echo "Primary method failed, trying legacy endpoint..."
+#           python -m twine upload \
+#             --verbose \
+#             --repository-url "https://api.github.com/users/${{ github.repository_owner }}/packages/pypi/upload" \
+#             dist/*
 
-      - name: Debug on failure
-        if: failure()
-        run: |
-          echo "Both upload methods failed. Debug information:"
-          echo "Repository: ${{ github.repository }}"
-          echo "Owner: ${{ github.repository_owner }}"
+#       - name: Debug on failure
+#         if: failure()
+#         run: |
+#           echo "Both upload methods failed. Debug information:"
+#           echo "Repository: ${{ github.repository }}"
+#           echo "Owner: ${{ github.repository_owner }}"
           
-          # 檢查套件內容
-          for file in dist/*.whl; do
-            echo "=== $file ==="
-            python -m zipfile -l "$file" | head -20
-          done
+#           # 檢查套件內容
+#           for file in dist/*.whl; do
+#             echo "=== $file ==="
+#             python -m zipfile -l "$file" | head -20
+#           done

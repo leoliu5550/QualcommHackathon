@@ -176,6 +176,7 @@ nul
 # Test files
 test_real_flow.py
 run_real_tests.bat
+.rkey_venv/
 
 # Coverage reports
 coverage.json
