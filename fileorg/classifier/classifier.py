@@ -283,6 +283,12 @@ class CreateFolderNamer:
         """
         # 保留中文、英文大小寫與阿拉伯數字、空格，其餘全部移除（包括斜線）
         cleaned = re.sub(r'[^\u4e00-\u9fa5A-Za-z0-9\s]', '', text)
+        
+        # 移除 "foldername" 這個字眼，不分大小寫
+        cleaned = re.sub(r'foldername', '', cleaned, flags=re.IGNORECASE)
+        
+        return cleaned.strip()
+
         return cleaned.strip()
     
     def process_files(self, summaries_data: Dict[str, Any], base_output_dir: str = "./") -> Dict[str, List[Dict[str, str]]]:
