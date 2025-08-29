@@ -7,7 +7,7 @@ name = "fileorg"
 version = "1.0.0"
 description = "智慧檔案整理工具 - 使用 AI 技術自動分類與整理檔案"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
     {name = "Leo", email = "leoliu5550@gmail.com"},
@@ -36,6 +36,7 @@ classifiers = [
 ]
 
 dependencies = [
+    # Core document processing (required for all modes)
     "python-docx>=0.8.11",
     "openpyxl>=3.0.0",
     "python-pptx>=0.6.21",
@@ -46,6 +47,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Non-NPU mode: Heavy dependencies for running models on CPU/GPU
+non-npu = [
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "accelerate>=0.24.0",
+    "sentencepiece>=0.1.99",  # Required for some tokenizers
+    "protobuf>=3.20.0",  # Required for some models
+]
+
+# Development tools
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0", 
@@ -58,8 +69,40 @@ dev = [
     "build>=0.10.0",
     "twine>=4.0.0",
 ]
-gpu = []
-qualcomm = []
+
+# Documentation tools
+docs = [
+    "mkdocs==1.5.3",
+    "mkdocs-material==9.5.3",
+    "mkdocstrings[python]==0.24.0",
+    "mkdocs-git-revision-date-localized-plugin==1.2.2",
+    "mkdocs-minify-plugin==0.7.2",
+    "pymdown-extensions==10.5",
+    "sphinx>=5.0.0",
+    "furo>=2023.3.27",
+    "myst-parser>=0.18.0",
+]
+
+# Complete development environment
+all = [
+    # Non-NPU mode dependencies
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "accelerate>=0.24.0",
+    "sentencepiece>=0.1.99",
+    "protobuf>=3.20.0",
+    # Dev tools
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.10.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "pre-commit>=3.0.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/leoliu5550/QualcommHackathon"
@@ -105,7 +148,7 @@ target-version = ['py38', 'py39', 'py310', 'py311']
 include = '\.pyi?$'
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
