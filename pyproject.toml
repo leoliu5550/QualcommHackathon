@@ -43,9 +43,7 @@ dependencies = [
     "pypdf>=3.0.0",  # Modern replacement for PyPDF2
     "tqdm>=4.65.0",
     "charset-normalizer>=3.0.0",
-    # Qualcomm NPU API client (default for users)
-    "httpx>=0.25.0",
-    "qai-hub>=0.4.0",
+    "httpx"
 ]
 
 [project.optional-dependencies]
