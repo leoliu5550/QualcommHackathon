@@ -10,7 +10,7 @@ whether you're using a high-end GPU, Snapdragon NPU, or just a CPU.
 """
 
 from typing import List
-
+import httpx
 from fileorg.ai.config import config
 
 
@@ -42,97 +42,97 @@ class BaseLLM:
         raise NotImplementedError("Must implement in subclass")
 
 
-class LocalTransformersLLM(BaseLLM):
-    """
-    Local transformer-based LLM implementation for GPU/CPU inference.
+# class LocalTransformersLLM(BaseLLM):
+#     """
+#     Local transformer-based LLM implementation for GPU/CPU inference.
 
-    This implementation leverages the Hugging Face transformers library to run
-    models locally. We automatically detect and use available hardware acceleration,
-    falling back gracefully when needed.
+#     This implementation leverages the Hugging Face transformers library to run
+#     models locally. We automatically detect and use available hardware acceleration,
+#     falling back gracefully when needed.
 
-    We're committed to supporting the latest open-source models and optimizations
-    to give users the best possible local AI experience.
+#     We're committed to supporting the latest open-source models and optimizations
+#     to give users the best possible local AI experience.
 
-    Attributes:
-        device (str): Computing device ('cuda' or 'cpu')
-        model: Loaded transformer model
-        tokenizer: Associated tokenizer
+#     Attributes:
+#         device (str): Computing device ('cuda' or 'cpu')
+#         model: Loaded transformer model
+#         tokenizer: Associated tokenizer
 
-    Note:
-        We cache models locally to reduce download times and support offline usage.
-        Future versions will include quantization options for memory-constrained systems.
-    """
+#     Note:
+#         We cache models locally to reduce download times and support offline usage.
+#         Future versions will include quantization options for memory-constrained systems.
+#     """
 
-    def __init__(self, model_id: str, device: str = "cuda"):
-        """
-        Initialize local transformer model with automatic device selection.
+#     def __init__(self, model_id: str, device: str = "cuda"):
+#         """
+#         Initialize local transformer model with automatic device selection.
 
-        Args:
-            model_id (str): Hugging Face model identifier
-            device (str): Preferred device ('cuda' or 'cpu')
+#         Args:
+#             model_id (str): Hugging Face model identifier
+#             device (str): Preferred device ('cuda' or 'cpu')
 
-        The initialization process intelligently handles hardware availability,
-        ensuring the best possible performance on any system.
-        """
-        import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+#         The initialization process intelligently handles hardware availability,
+#         ensuring the best possible performance on any system.
+#         """
+#         import torch
+#         from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
-        model_dir = "./fileorg/ai/model"
+#         model_dir = "./fileorg/ai/model"
 
-        # 檢查 CUDA 可用性，若不可用則切換到 CPU
-        if device == "cuda" and not torch.cuda.is_available():
-            # print("[LocalTransformersLLM] CUDA not available, switching to CPU")
-            self.device = "cpu"
-        else:
-            self.device = device  # "cuda" or "cpu"
+#         # 檢查 CUDA 可用性，若不可用則切換到 CPU
+#         if device == "cuda" and not torch.cuda.is_available():
+#             # print("[LocalTransformersLLM] CUDA not available, switching to CPU")
+#             self.device = "cpu"
+#         else:
+#             self.device = device  # "cuda" or "cpu"
 
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=model_dir)
+#         self.tokenizer = AutoTokenizer.from_pretrained(model_id, cache_dir=model_dir)
         
-        # Try to load model with quantization if available, fallback to non-quantized if bitsandbytes is not available
-        try:
-            # First attempt: load with original configuration (may include quantization)
-            self.model = AutoModelForCausalLM.from_pretrained(
-                model_id, 
-                cache_dir=model_dir
-            ).to(self.device)
-        except (ImportError, Exception) as e:
-            # If loading fails due to bitsandbytes, load without quantization
-            error_str = str(e)
-            if "bitsandbytes" in error_str or "quantization" in error_str or "No package metadata was found" in error_str:
-                print(f"Note: Loading model without quantization (bitsandbytes not available)")
-                self.model = AutoModelForCausalLM.from_pretrained(
-                    model_id, 
-                    cache_dir=model_dir,
-                    quantization_config=None,  # Ignore quantization config
-                    load_in_4bit=False,  # Disable 4bit loading
-                    load_in_8bit=False   # Disable 8bit loading
-                ).to(self.device)
-            else:
-                # Re-raise if it's not a bitsandbytes related error
-                raise
-        self.llm = pipeline(
-            "text-generation", model=self.model, tokenizer=self.tokenizer, return_full_text=False
-        )
+#         # Try to load model with quantization if available, fallback to non-quantized if bitsandbytes is not available
+#         try:
+#             # First attempt: load with original configuration (may include quantization)
+#             self.model = AutoModelForCausalLM.from_pretrained(
+#                 model_id, 
+#                 cache_dir=model_dir
+#             ).to(self.device)
+#         except (ImportError, Exception) as e:
+#             # If loading fails due to bitsandbytes, load without quantization
+#             error_str = str(e)
+#             if "bitsandbytes" in error_str or "quantization" in error_str or "No package metadata was found" in error_str:
+#                 print(f"Note: Loading model without quantization (bitsandbytes not available)")
+#                 self.model = AutoModelForCausalLM.from_pretrained(
+#                     model_id, 
+#                     cache_dir=model_dir,
+#                     quantization_config=None,  # Ignore quantization config
+#                     load_in_4bit=False,  # Disable 4bit loading
+#                     load_in_8bit=False   # Disable 8bit loading
+#                 ).to(self.device)
+#             else:
+#                 # Re-raise if it's not a bitsandbytes related error
+#                 raise
+#         self.llm = pipeline(
+#             "text-generation", model=self.model, tokenizer=self.tokenizer, return_full_text=False
+#         )
 
-    def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
-        """
-        Generate text using the local transformer model.
+#     def inference(self, prompt: str, max_new_tokens: int = 128) -> str:
+#         """
+#         Generate text using the local transformer model.
 
-        Args:
-            prompt (str): Input text to process
-            max_new_tokens (int): Maximum tokens to generate
+#         Args:
+#             prompt (str): Input text to process
+#             max_new_tokens (int): Maximum tokens to generate
 
-        Returns:
-            str: Generated text response
+#         Returns:
+#             str: Generated text response
 
-        We've tuned the generation parameters for file organization tasks,
-        balancing creativity with accuracy for optimal categorization.
-        """
-        print(f"model inferences: {prompt}")
-        output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=True, temperature=0.1)[
-            0
-        ]["generated_text"]
-        return output
+#         We've tuned the generation parameters for file organization tasks,
+#         balancing creativity with accuracy for optimal categorization.
+#         """
+#         print(f"model inferences: {prompt}")
+#         output = self.llm(prompt, max_new_tokens=max_new_tokens, do_sample=True, temperature=0.1)[
+#             0
+#         ]["generated_text"]
+#         return output
 
 
 class QualcommLLM(BaseLLM):
@@ -218,7 +218,7 @@ class QualcommLLM(BaseLLM):
         return self.llm_response(prompt)
 
 
-    def llm_response(self, prompt: str):
+    def llm_response(self, prompt: str ):
         import httpx
         # 你的 API key
         api_key = "3dc12b8ca6fcdccf75a6010e95eca4ca7c8827604c10381686912eb746d41f60"
@@ -232,24 +232,19 @@ class QualcommLLM(BaseLLM):
         }
 
 
-        # payload = {
-        #     "model": llm_model,
-        #     "messages": [
-        #         {"role": "system", "content": "You are a helpful assistant."},
-        #         {"role": "user", "content": "Hello!"}
-        #     ]
-        # }
-
         payload = {
             "model": llm_model,
-            "messages": prompt
+            "messages": prompt,
+            "temperature": 0.1 
         }
 
-        with httpx.Client(timeout=30.0) as client:
+        with httpx.Client(timeout=180.0) as client:
             response = client.post(url, headers=headers, json=payload)
 
-        print(response.json()["choices"][-1]["message"]["content"])
-        return response.json()["choices"][-1]["message"]["content"]
+        llm_response = response.json()["choices"][-1]["message"]["content"]
+        # if len(llm_response)>20:
+
+        return llm_response
             
 
 
@@ -284,7 +279,8 @@ def get_llm(backend: str, **kwargs) -> BaseLLM:
         - 'hybrid': Combining local and cloud for optimal performance
     """
     if backend == "local":
-        return LocalTransformersLLM(**kwargs)
+        pass
+        # return LocalTransformersLLM(**kwargs)
     elif backend == "qualcomm":
         return QualcommLLM(**kwargs)
     else:
