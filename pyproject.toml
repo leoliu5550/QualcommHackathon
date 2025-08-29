@@ -49,8 +49,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Local mode: Heavy dependencies for running models locally
-local = [
+# Non-NPU mode: Heavy dependencies for running models on CPU/GPU
+non-npu = [
     "torch>=2.0.0",
     "transformers>=4.35.0",
     "accelerate>=0.24.0",
@@ -87,7 +87,7 @@ docs = [
 
 # Complete development environment
 all = [
-    # Local mode dependencies
+    # Non-NPU mode dependencies
     "torch>=2.0.0",
     "transformers>=4.35.0",
     "accelerate>=0.24.0",
