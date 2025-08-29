@@ -151,7 +151,6 @@ ehthumbs.db
 Desktop.ini
 
 # Project specific
-fileorg/ai/model/
 onnx_models/
 onnx_models_fixed/
 test_onnx_simple/
