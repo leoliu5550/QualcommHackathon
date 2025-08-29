@@ -4,7 +4,7 @@
 
 [![GitHub Stars](https://img.shields.io/github/stars/leoliu5550/QualcommHackathon)](https://github.com/leoliu5550/QualcommHackathon)
 [![License](https://img.shields.io/github/license/leoliu5550/QualcommHackathon)](https://github.com/leoliu5550/QualcommHackathon/blob/main/LICENSE)
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://pypi.org/project/fileorg/)
+[![Python Version](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org)
 
 ## Transform Your Digital Chaos into Organized Structure
 
@@ -38,12 +38,21 @@ Messy Folder → File Discovery → Content Extraction → AI Analysis → Smart
 
 ## Quick Start
 
-### Command Line
+### Installation
 
 ```bash
-# Install FileOrg
-pip install fileorg
+# Install from GitHub using pipx (recommended)
+pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
 
+# Or clone and install for development
+git clone https://github.com/leoliu5550/QualcommHackathon.git
+cd QualcommHackathon
+pip install -e .
+```
+
+### Command Line Usage
+
+```bash
 # Organize a folder
 fileorg /path/to/messy/folder
 
@@ -57,7 +66,7 @@ fileorg /path/to/folder --restore
 ### Python API
 
 ```python
-from fileorg import Organizer
+from fileorg.organizer import Organizer
 
 # Create organizer instance
 organizer = Organizer()
