@@ -114,63 +114,7 @@ fileorg /path/to/directory --restore
 
 ## Documentation
 
-### 📚 Online Documentation
-
-Visit our comprehensive documentation at [https://docs.fileorg.com](https://docs.fileorg.com) for:
-- Complete API reference
-- User guides and tutorials
-- Advanced configuration options
-- Examples and best practices
-
-### 🛠️ Building Documentation Locally
-
-#### Prerequisites
-Install documentation dependencies:
-```bash
-pip install -r requirements-docs.txt
-```
-
-#### Local Development Server
-Run the documentation server locally for development:
-```bash
-mkdocs serve
-```
-This will start a development server at `http://127.0.0.1:8000/` with live reloading.
-
-#### Building Static Documentation
-Build the static documentation site:
-```bash
-mkdocs build
-```
-The built documentation will be in the `site/` directory.
-
-#### Deploying to GitHub Pages
-Deploy documentation to GitHub Pages (requires push permissions):
-```bash
-mkdocs gh-deploy
-```
-This command builds the documentation and pushes it to the `gh-pages` branch.
-
-### 📝 Documentation Structure
-
-```
-docs/
-├── index.md              # Homepage
-├── getting-started/      # Installation and setup guides
-├── user-guide/           # User documentation
-├── api/                  # API reference (auto-generated)
-├── examples/             # Code examples
-├── development/          # Developer guides
-└── advanced/             # Advanced topics
-```
-
-### 🔧 Configuration
-
-Documentation is configured via `mkdocs.yml` with:
-- **Theme**: Material for MkDocs
-- **Plugins**: mkdocstrings for automatic API documentation
-- **Features**: Search, dark mode, code highlighting
-- **Custom Domain**: https://docs.fileorg.com
+For detailed documentation, API reference, and advanced configuration options, visit our [GitHub Pages](https://leoliu5550.github.io/QualcommHackathon/).
 
 ## Contributing
 
