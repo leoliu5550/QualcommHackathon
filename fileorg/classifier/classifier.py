@@ -38,12 +38,6 @@ import os
 
 from fileorg.ai.interface import get_llm
 from fileorg.ai.config import config
-from .prompt_versions import (
-    get_prompt_version,
-    get_version_features,
-    detect_domain,
-    migrate_config
-)
 
 
 class CreateFolderNamer:
@@ -88,26 +82,30 @@ class CreateFolderNamer:
             model_id=config.get("model_id"),
         )
         
-        # Determine prompt version based on configuration
-        if use_advanced_prompt:
-            self.prompt_version = prompt_version
+        # 為了相容舊版，預設都是關閉的
+        self.use_advanced_prompt = use_advanced_prompt
+        self.prompt_version = prompt_version if use_advanced_prompt else "v1"
+        self.use_few_shot = use_few_shot and use_advanced_prompt
+        self.use_domain_detection = use_domain_detection and use_advanced_prompt
+        
+        # 只有在開啟進階功能時才引入相關模組
+        if self.use_advanced_prompt:
+            try:
+                from .prompt_engine import PromptBuilder, PromptOptimizer
+                self.prompt_builder = PromptBuilder(
+                    version=self.prompt_version,
+                    use_few_shot=self.use_few_shot,
+                    use_domain_detection=self.use_domain_detection
+                )
+                self.prompt_optimizer = PromptOptimizer()
+            except ImportError:
+                print("提醒：找不到 prompt_engine 模組，自動切換回傳統模式")
+                self.use_advanced_prompt = False
+                self.prompt_builder = None
+                self.prompt_optimizer = None
         else:
-            # For backward compatibility
-            self.prompt_version = "v1"
-        
-        # Load prompt configuration
-        try:
-            self.prompt_config = get_prompt_version(self.prompt_version)
-            self.features = get_version_features(self.prompt_version)
-        except ValueError:
-            # Fallback to v1 if version not found
-            self.prompt_version = "v1"
-            self.prompt_config = get_prompt_version("v1")
-            self.features = get_version_features("v1")
-        
-        # Apply feature flags (respecting version capabilities)
-        self.use_few_shot = use_few_shot and self.features.get("few_shot", False)
-        self.use_domain_detection = use_domain_detection and self.features.get("domain_detection", False)
+            self.prompt_builder = None
+            self.prompt_optimizer = None
     
     def create_folder_name(self, content: str) -> str:
         """Generate an appropriate folder name for given file content.
@@ -131,58 +129,53 @@ class CreateFolderNamer:
             >>> folder = namer.create_folder_name(content)
             >>> print(folder)  # Output: "Academic/Statistics"
         """
-        # Truncate content if needed
-        if len(content) > 500:
-            content = content[:500]
+        if self.use_advanced_prompt and self.prompt_builder:
+            # 先優化內容（如果有 optimizer）
+            if self.prompt_optimizer:
+                content = self.prompt_optimizer.optimize_content(content, max_length=500)
+            
+            # 使用進階的提示詞建構方式
+            messages = self.prompt_builder.build_classification_prompt(content)
+        else:
+            # 使用傳統提示詞（相容舊版）
+            messages = self._build_legacy_classification_prompt(content)
         
-        # Build prompt messages using centralized prompt version
-        messages = self._build_classification_prompt(content)
-        
-        # Call LLM
+        # 呼叫大型語言模型
         create_folder = self.llm.inference(prompt=messages, max_new_tokens=200)
         
-        # Clean and return output
+        # 驗證並清理輸出結果
+        if self.use_advanced_prompt and self.prompt_optimizer:
+            is_valid, fixed_output = self.prompt_optimizer.validate_output(create_folder, "json")
+            if is_valid:
+                create_folder = fixed_output
+        
         return self.clean_output(create_folder)
     
-    def _build_classification_prompt(self, content: str) -> List[Dict[str, str]]:
-        """Build classification prompt using centralized version management.
+    def _build_legacy_classification_prompt(self, content: str) -> List[Dict[str, str]]:
+        """Build legacy format prompt for backward compatibility.
+        
+        This private method constructs the traditional prompt format used in the
+        original implementation.
         
         Args:
             content (str): Content to classify.
             
         Returns:
-            List[Dict[str, str]]: List of message dictionaries for the LLM.
+            List[Dict[str, str]]: List of message dictionaries in the format
+                expected by the LLM interface. Each dictionary contains 'role'
+                and 'content' keys.
         """
-        messages = []
-        
-        # Add system message
-        messages.append({
-            "role": "system",
-            "content": self.prompt_config["system"]
-        })
-        
-        # Add few-shot examples if enabled and available
-        if self.use_few_shot and "examples" in self.prompt_config:
-            for example in self.prompt_config["examples"][:2]:  # Use first 2 examples
-                messages.append({
-                    "role": "user",
-                    "content": self.prompt_config["prompt_prefix"] + example["input"]
-                })
-                messages.append({
-                    "role": "assistant",
-                    "content": example["output"]
-                })
-        
-        # Add actual content to classify
-        user_content = self.prompt_config["prompt_prefix"] + content
-        messages.append({"role": "user", "content": user_content})
-        
-        # Add assistant prefix to guide output format
-        messages.append({
-            "role": "assistant",
-            "content": self.prompt_config["assistant_prefix"]
-        })
-        
+        pmt = "give me an appropriate folder name of the content must in json format:"
+        txt = content
+        cnt = pmt + txt
+        messages = [
+            {
+                "role": "system",
+                "content": 'you are a master of categorizing content and give it a folder name in json format, eg. {"foldername": "/foldername"}',
+            },
+            {"role": "user", "content": cnt},
+            {"role": "assistant", "content": '{"foldername": "'},
+        ]
         return messages
     
     def remapping_folder(self, candidate_folder: List[str]) -> List[Dict[str, str]]:
@@ -212,15 +205,29 @@ class CreateFolderNamer:
                 {"foldername": "DataAnalysis", "groupname": "Academic"}
             ]
         """
-        # Build remapping prompt
-        messages = self._build_remapping_prompt(candidate_folder)
+        if self.use_advanced_prompt and self.prompt_builder:
+            # 如果可以的話，先優化資料夾名稱
+            if self.prompt_optimizer:
+                candidate_folder = self.prompt_optimizer.optimize_folder_names(candidate_folder)
+            
+            # 使用進階的提示詞建構方式
+            messages = self.prompt_builder.build_remapping_prompt(candidate_folder)
+        else:
+            # 使用傳統提示詞（相容舊版）
+            messages = self._build_legacy_remapping_prompt(candidate_folder)
         
-        # Call LLM
+        # 進行推論（可以自行選擇 generate 或 pipeline 方式）
         mapp_folder = self.llm.inference(prompt=messages, max_new_tokens=400)
         
-        # Parse and validate output
+        # 解析並驗證輸出結果
         try:
-            # Try to fix common JSON issues
+            # 試著解析 JSON，如果出錯就手動修復看看
+            if self.use_advanced_prompt and self.prompt_optimizer:
+                is_valid, fixed_output = self.prompt_optimizer.validate_output(mapp_folder, "json")
+                if is_valid:
+                    mapp_folder = fixed_output
+            
+            # 傳統的 JSON 修復方式
             if not mapp_folder.startswith('['):
                 mapp_folder = '[{"foldername":"' + mapp_folder
             if not mapp_folder.endswith(']'):
@@ -228,59 +235,38 @@ class CreateFolderNamer:
             
             data = json.loads(mapp_folder)
         except json.JSONDecodeError as e:
-            print(f"JSON parsing failed: {e}\nOutput: {mapp_folder}")
-            # Fallback to identity mapping
+            print(f"JSON 解析失敗了: {e}\n輸出內容: {mapp_folder}")
+            # 如果 JSON 解析失敗，就用原本的對應關係
             data = [{"foldername": folder, "groupname": folder} for folder in candidate_folder]
         
-        # Clean folder names
+        # 清理資料夾名稱與群組名稱
         for item in data:
             item["foldername"] = item["foldername"].lstrip('/')
             item["groupname"] = self.clean_output(item["groupname"])
         
         return data
     
-    def _build_remapping_prompt(self, candidate_folder: List[str]) -> List[Dict[str, str]]:
-        """Build remapping prompt using centralized version management.
+    def _build_legacy_remapping_prompt(self, candidate_folder: List[str]) -> List[Dict[str, str]]:
+        """Build legacy format remapping prompt for backward compatibility.
+        
+        This private method constructs the traditional prompt format for folder
+        grouping used in the original implementation.
         
         Args:
             candidate_folder (List[str]): List of folder names to group.
             
         Returns:
-            List[Dict[str, str]]: List of message dictionaries for the LLM.
+            List[Dict[str, str]]: List of message dictionaries in the format
+                expected by the LLM interface.
         """
-        # Check if version supports remapping
-        if not self.features.get("remapping", False):
-            # Fallback to simple prompt for v1
-            pmt = "categorize the foldername into several groups if they are related or similar and give each group a name, must in json format:"
-            txt = "[" + ", ".join(candidate_folder) + "]"
-            cnt = pmt + txt
-            messages = [
-                {"role": "system", "content": 'you are a master of categorizing folder names and give it a new group name in json format, eg. {"foldername":"/foldername", "groupname":"/groupname"]}'},
-                {"role": "user", "content": cnt},
-                {"role": "assistant", "content": '{"groups": ["'},
-            ]
-            return messages
-        
-        # Use v2 remapping system if available
-        messages = []
-        
-        # Add remapping system message
-        messages.append({
-            "role": "system",
-            "content": self.prompt_config.get("remapping_system", self.prompt_config["system"])
-        })
-        
-        # Add user content
-        folder_list = "[" + ", ".join(f'"{f}"' for f in candidate_folder) + "]"
-        user_content = self.prompt_config.get("remapping_prefix", "Group these folders: ") + folder_list
-        messages.append({"role": "user", "content": user_content})
-        
-        # Add assistant prefix
-        messages.append({
-            "role": "assistant",
-            "content": self.prompt_config.get("remapping_assistant_prefix", '[{"foldername":"')
-        })
-        
+        pmt = "categorize the foldername into several groups if they are related or similar and give each group a name, must in json format:"
+        txt = "[" + ", ".join(candidate_folder) + "]"
+        cnt = pmt + txt
+        messages = [
+            {"role": "system", "content": 'you are a master of categorizing folder names and give it a new group name in json format, eg. {"foldername":"/foldername", "groupname":"/groupname"]}'},
+            {"role": "user", "content": cnt},
+            {"role": "assistant", "content": '{"groups": ["'},
+        ]
         return messages
     
     def clean_output(self, text: str) -> str:
@@ -435,25 +421,28 @@ def get_create_name():
     which is especially important for testing.
     
     Returns:
-        CreateFolderNamer: Singleton instance configured from config
+        CreateFolderNamer: Singleton instance with v2 features enabled by default
     """
     global _create_name_instance
     if _create_name_instance is None:
+        # Default to v2 with enhanced features
         from fileorg.ai.config import Config
         cfg = Config()
         
-        # Get version from config (using new centralized version management)
-        version = cfg.get("prompt_version", cfg.get("classifier_version", "v2"))
+        # Check if config specifies to use v1
+        use_v2 = cfg.get("classifier_version", "v2") == "v2"
         
-        # Determine if we should use advanced features based on version
-        use_advanced = version != "v1"
-        
-        _create_name_instance = CreateFolderNamer(
-            use_advanced_prompt=use_advanced,
-            prompt_version=version,
-            use_few_shot=cfg.get("use_few_shot", use_advanced),
-            use_domain_detection=cfg.get("use_domain_detection", False)
-        )
+        if use_v2:
+            # Use v2 with advanced features
+            _create_name_instance = CreateFolderNamer(
+                use_advanced_prompt=True,
+                prompt_version="v2",
+                use_few_shot=cfg.get("use_few_shot", True),
+                use_domain_detection=cfg.get("use_domain_detection", False)
+            )
+        else:
+            # Fallback to v1 compatibility mode
+            _create_name_instance = CreateFolderNamer(use_advanced_prompt=False)
     
     return _create_name_instance
 

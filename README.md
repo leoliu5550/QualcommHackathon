@@ -1,88 +1,129 @@
 # FileOrg - AI-Powered File Organization
 
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests/)
+[![PyPI](https://img.shields.io/badge/pypi-v1.0.0-orange)](https://pypi.org/project/fileorg/)
 
-Intelligent file organization tool using AI to analyze and categorize documents automatically.
+An intelligent file organization system leveraging AI to analyze content and automatically categorize files into meaningful structures.
 
 ## Installation
 
-### Install from GitHub (Recommended)
+### 📋 Environment Selection Guide
 
-#### Using pipx (Isolated environment)
-```bash
-pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
-```
+| Environment Type | Use Case | Key Features |
+|----------|----------|----------|
+| **Development** | Local development, GPU-accelerated training | Full features + CUDA support |
+| **CPU-only** | Lightweight deployment, production | CPU-only inference, small footprint |
+| **Qualcomm NPU** | Snapdragon device acceleration | NPU hardware-accelerated inference |
 
-### Development Installation
+### 🚀 Installation Steps
+
+**Step 1: Clone the repository**
 ```bash
 git clone https://github.com/leoliu5550/QualcommHackathon.git
 cd QualcommHackathon
-pip install -e .              # Basic installation
-pip install -e ".[dev]"       # With development tools
-pip install -e ".[non-npu]"   # With CPU/GPU model support
-pip install -e ".[docs]"      # With documentation tools
 ```
 
-### Installation Options
-- **Default**: NPU API client (httpx) - smallest footprint
-- **[non-npu]**: PyTorch + Transformers for CPU/GPU inference
-- **[dev]**: Testing and code quality tools
-- **[docs]**: Documentation generation tools
+**Step 2: Choose and install environment dependencies**
 
-> Note: PyPI package coming soon. Currently install from GitHub.
-
-## Usage
-
-### GUI Interface
+*Development environment* (with CUDA support):
 ```bash
-fileorg start
+pip install -r requirements-dev.txt
 ```
-> Opens graphical interface with drag-and-drop support
 
-### Command Line
+*CPU environment* (lightweight):
 ```bash
-fileorg /path/to/folder           # Organize folder
-fileorg /path/to/folder --preview # Preview mode (no file movement)
-fileorg /path/to/folder --restore # Restore original structure
+pip install -r requirements-cpu.txt
 ```
 
-### Windows Context Menu
-```batch
-# Install context menu
-cd rkey_registry
-install_key.bat
-
-# Uninstall context menu
-uninstall_key.bat
-```
-> Right-click any folder to see "Organize with FileOrg" option
-
-## Configuration
-
-Edit `fileorg/ai/config.py`:
-```python
-"backend": "qualcomm"  # Use NPU API (default)
-"backend": "local"     # Use local CPU/GPU (requires [non-npu] installation)
+*Qualcomm NPU environment*:
+```bash
+pip install -e ".[dev,qualcomm]"
 ```
 
-## Key Features
+**Step 3: Install the project**
+```bash
+pip install -e .
+```
+> 💡 `-e` means editable/development mode installation. Code changes take effect without reinstalling, and the `fileorg` command will be available system-wide
 
-- **AI Content Analysis** - Smart document type and content detection
-- **Auto Categorization** - Creates meaningful folder structures
-- **Safe Preview** - Review changes before execution
-- **One-Click Restore** - Complete backup and restoration
-- **Batch Processing** - Fast organization of large file collections
+### 🏃‍♂️ Quick Install (One-liner)
 
-## Supported Formats
+**Development environment full installation:**
+```bash
+git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-dev.txt && pip install -e .
+```
 
-PDF, Word, Excel, PowerPoint, TXT, HTML, JSON, CSV, XML, Markdown
+**CPU environment full installation:**
+```bash
+git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-cpu.txt && pip install -e .
+```
+### 📦 Install from Github PyPI by pipx (recommended)
+```bash
+# Install pipx if you don't have it yet
+python -m pip install --user pipx
+python -m pipx ensurepath
+
+pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
+```
+
+### 📦 Install from Github PyPI by pip
+```bash
+pip install git+https://github.com/leoliu5550/QualcommHackathon.git
+```
+
+### 📦 Install from PyPI (Coming Soon)
+```bash
+pip install fileorg
+```
+
+
+## Quick Start
+
+```bash
+# Preview organization structure without moving files
+fileorg /path/to/directory --preview
+
+# Organize files
+fileorg /path/to/directory
+
+# Restore original structure
+fileorg /path/to/directory --restore
+```
+
+## Features
+
+- **Content-based classification** using local LLM models
+- **Safe preview mode** to review changes before execution
+- **Complete restore capability** with automatic backup
+- **Comprehensive reports** in HTML and Markdown formats
+- **Snapdragon NPU support** for accelerated inference
+
+## System Requirements
+
+### Hardware Requirements
+- **Minimum**: Python 3.8+, 4GB RAM
+- **Recommended**: Python 3.10+, 8GB RAM, CUDA-compatible GPU
+- **Snapdragon NPU**: Qualcomm Snapdragon X Series processors
+
+### Software Dependencies
+- **Core**: PyTorch, Transformers, ONNX Runtime
+- **File Processing**: python-docx, openpyxl, pypdf, python-pptx
+- **Development Tools**: pytest, black, ruff, mypy (dev environment)
+
+## Documentation
+
+For detailed documentation, API reference, and advanced configuration options, visit our [GitHub Pages](https://leoliu5550.github.io/QualcommHackathon/).
 
 ## Contributing
 
-Issues and Pull Requests are welcome!
+We welcome contributions. Please see our [contributing guidelines](CONTRIBUTING.md) for details.
+
+## Acknowledgments
+
+Originally developed for the Qualcomm Hackathon, FileOrg continues to evolve with community contributions.
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) for details
+MIT License - see [LICENSE](LICENSE) for details.
