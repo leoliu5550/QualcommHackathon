@@ -1,129 +1,88 @@
 # FileOrg - AI-Powered File Organization
 
-[![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests/)
-[![PyPI](https://img.shields.io/badge/pypi-v1.0.0-orange)](https://pypi.org/project/fileorg/)
 
-An intelligent file organization system leveraging AI to analyze content and automatically categorize files into meaningful structures.
+Intelligent file organization tool using AI to analyze and categorize documents automatically.
 
 ## Installation
 
-### 📋 Environment Selection Guide
+### Install from GitHub (Recommended)
 
-| Environment Type | Use Case | Key Features |
-|----------|----------|----------|
-| **Development** | Local development, GPU-accelerated training | Full features + CUDA support |
-| **CPU-only** | Lightweight deployment, production | CPU-only inference, small footprint |
-| **Qualcomm NPU** | Snapdragon device acceleration | NPU hardware-accelerated inference |
-
-### 🚀 Installation Steps
-
-**Step 1: Clone the repository**
+#### Using pipx (Isolated environment)
 ```bash
-git clone https://github.com/leoliu5550/QualcommHackathon.git
-cd QualcommHackathon
-```
-
-**Step 2: Choose and install environment dependencies**
-
-*Development environment* (with CUDA support):
-```bash
-pip install -r requirements-dev.txt
-```
-
-*CPU environment* (lightweight):
-```bash
-pip install -r requirements-cpu.txt
-```
-
-*Qualcomm NPU environment*:
-```bash
-pip install -e ".[dev,qualcomm]"
-```
-
-**Step 3: Install the project**
-```bash
-pip install -e .
-```
-> 💡 `-e` means editable/development mode installation. Code changes take effect without reinstalling, and the `fileorg` command will be available system-wide
-
-### 🏃‍♂️ Quick Install (One-liner)
-
-**Development environment full installation:**
-```bash
-git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-dev.txt && pip install -e .
-```
-
-**CPU environment full installation:**
-```bash
-git clone https://github.com/leoliu5550/QualcommHackathon.git && cd QualcommHackathon && pip install -r requirements-cpu.txt && pip install -e .
-```
-### 📦 Install from Github PyPI by pipx (recommended)
-```bash
-# Install pipx if you don't have it yet
-python -m pip install --user pipx
-python -m pipx ensurepath
-
 pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
 ```
 
-### 📦 Install from Github PyPI by pip
+### Development Installation
 ```bash
-pip install git+https://github.com/leoliu5550/QualcommHackathon.git
+git clone https://github.com/leoliu5550/QualcommHackathon.git
+cd QualcommHackathon
+pip install -e .              # Basic installation
+pip install -e ".[dev]"       # With development tools
+pip install -e ".[non-npu]"   # With CPU/GPU model support
+pip install -e ".[docs]"      # With documentation tools
 ```
 
-### 📦 Install from PyPI (Coming Soon)
+### Installation Options
+- **Default**: NPU API client (httpx) - smallest footprint
+- **[non-npu]**: PyTorch + Transformers for CPU/GPU inference
+- **[dev]**: Testing and code quality tools
+- **[docs]**: Documentation generation tools
+
+> Note: PyPI package coming soon. Currently install from GitHub.
+
+## Usage
+
+### GUI Interface
 ```bash
-pip install fileorg
+fileorg start
+```
+> Opens graphical interface with drag-and-drop support
+
+### Command Line
+```bash
+fileorg /path/to/folder           # Organize folder
+fileorg /path/to/folder --preview # Preview mode (no file movement)
+fileorg /path/to/folder --restore # Restore original structure
 ```
 
+### Windows Context Menu
+```batch
+# Install context menu
+cd rkey_registry
+install_key.bat
 
-## Quick Start
+# Uninstall context menu
+uninstall_key.bat
+```
+> Right-click any folder to see "Organize with FileOrg" option
 
-```bash
-# Preview organization structure without moving files
-fileorg /path/to/directory --preview
+## Configuration
 
-# Organize files
-fileorg /path/to/directory
-
-# Restore original structure
-fileorg /path/to/directory --restore
+Edit `fileorg/ai/config.py`:
+```python
+"backend": "qualcomm"  # Use NPU API (default)
+"backend": "local"     # Use local CPU/GPU (requires [non-npu] installation)
 ```
 
-## Features
+## Key Features
 
-- **Content-based classification** using local LLM models
-- **Safe preview mode** to review changes before execution
-- **Complete restore capability** with automatic backup
-- **Comprehensive reports** in HTML and Markdown formats
-- **Snapdragon NPU support** for accelerated inference
+- **AI Content Analysis** - Smart document type and content detection
+- **Auto Categorization** - Creates meaningful folder structures
+- **Safe Preview** - Review changes before execution
+- **One-Click Restore** - Complete backup and restoration
+- **Batch Processing** - Fast organization of large file collections
 
-## System Requirements
+## Supported Formats
 
-### Hardware Requirements
-- **Minimum**: Python 3.8+, 4GB RAM
-- **Recommended**: Python 3.10+, 8GB RAM, CUDA-compatible GPU
-- **Snapdragon NPU**: Qualcomm Snapdragon X Series processors
-
-### Software Dependencies
-- **Core**: PyTorch, Transformers, ONNX Runtime
-- **File Processing**: python-docx, openpyxl, pypdf, python-pptx
-- **Development Tools**: pytest, black, ruff, mypy (dev environment)
-
-## Documentation
-
-For detailed documentation, API reference, and advanced configuration options, visit our [GitHub Pages](https://leoliu5550.github.io/QualcommHackathon/).
+PDF, Word, Excel, PowerPoint, TXT, HTML, JSON, CSV, XML, Markdown
 
 ## Contributing
 
-We welcome contributions. Please see our [contributing guidelines](CONTRIBUTING.md) for details.
-
-## Acknowledgments
-
-Originally developed for the Qualcomm Hackathon, FileOrg continues to evolve with community contributions.
+Issues and Pull Requests are welcome!
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
