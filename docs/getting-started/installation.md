@@ -3,7 +3,7 @@
 ## System Requirements
 
 ### Minimum Requirements
-- **Python**: 3.8 or higher
+- **Python**: 3.11 or higher
 - **RAM**: 4GB minimum (8GB recommended)
 - **Storage**: 500MB for installation + space for models
 - **OS**: Windows 10/11, macOS 10.15+, Ubuntu 20.04+
@@ -16,59 +16,61 @@
 
 ## Installation Methods
 
-### Method 1: Install from PyPI (Recommended)
+### Method 1: Install from GitHub (Recommended)
 
-=== "Standard Installation"
+=== "Using pipx (Isolated Environment)"
 
     ```bash
+    # Install pipx if not already installed
+    python -m pip install --user pipx
+    python -m pipx ensurepath
+    
     # Install FileOrg
-    pip install fileorg
+    pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
     
     # Verify installation
     fileorg --version
     ```
 
-=== "With GPU Support"
+=== "Direct pip Installation"
 
     ```bash
-    # Install with CUDA support
-    pip install fileorg[gpu]
+    # Install directly with pip
+    pip install git+https://github.com/leoliu5550/QualcommHackathon.git
     
-    # Verify CUDA
-    python -c "import torch; print(torch.cuda.is_available())"
+    # Verify installation
+    fileorg --version
     ```
 
-=== "With NPU Support"
-
-    ```bash
-    # Install with Snapdragon NPU support
-    pip install fileorg[npu]
-    
-    # Additional NPU setup required
-    # See NPU Integration guide
-    ```
-
-### Method 2: Install from GitHub
+### Method 2: Development Installation
 
 ```bash
 # Clone repository
 git clone https://github.com/leoliu5550/QualcommHackathon.git
 cd QualcommHackathon
 
-# Install in development mode
+# Basic installation (NPU API mode)
 pip install -e .
 
-# Or install directly via pipx
-pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
+# With CPU/GPU model support
+pip install -e ".[non-npu]"
+
+# With development tools
+pip install -e ".[dev]"
+
+# With documentation tools
+pip install -e ".[docs]"
+
+# All extras
+pip install -e ".[non-npu,dev,docs]"
 ```
 
-### Method 3: Windows Installer
+### Installation Options Explained
 
-For Windows users, we provide a convenient installer with right-click integration:
-
-1. Download the installer from [Releases](https://github.com/leoliu5550/QualcommHackathon/releases)
-2. Run `fileorg_installer.exe`
-3. FileOrg will be added to your right-click context menu
+- **Default Installation**: Includes NPU API client (httpx) for Qualcomm backend - smallest footprint
+- **[non-npu]**: Adds PyTorch + Transformers for local CPU/GPU inference
+- **[dev]**: Adds testing and code quality tools (pytest, black, mypy)
+- **[docs]**: Adds documentation generation tools (mkdocs)
 
 ## Platform-Specific Instructions
 
@@ -79,7 +81,12 @@ For Windows users, we provide a convenient installer with right-click integratio
 ```powershell
 # Open PowerShell as Administrator
 python -m pip install --upgrade pip
-pip install fileorg
+
+# Install from GitHub
+pip install git+https://github.com/leoliu5550/QualcommHackathon.git
+
+# Or use pipx for isolated environment
+pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
 
 # Add to PATH if needed
 $env:Path += ";$env:USERPROFILE\.local\bin"
@@ -87,11 +94,17 @@ $env:Path += ";$env:USERPROFILE\.local\bin"
 
 #### Right-Click Integration
 
-After installation, register the context menu:
+For Windows context menu integration:
 
-```powershell
-# Run as Administrator
-fileorg --register-context-menu
+```batch
+# Navigate to the cloned repository
+cd QualcommHackathon\rkey_registry
+
+# Install context menu (Run as Administrator)
+install_key.bat
+
+# To uninstall later
+uninstall_key.bat
 ```
 
 Now you can right-click any folder and select "Organize with FileOrg"
@@ -99,13 +112,15 @@ Now you can right-click any folder and select "Organize with FileOrg"
 ### macOS
 
 ```bash
-# Install via Homebrew (if available)
+# Install Python via Homebrew
 brew install python@3.11
-pip3 install fileorg
 
-# Or use pipx for isolated environment
+# Install FileOrg from GitHub
+pip3 install git+https://github.com/leoliu5550/QualcommHackathon.git
+
+# Or use pipx for isolated environment (recommended)
 brew install pipx
-pipx install fileorg
+pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
 ```
 
 ### Linux
@@ -115,12 +130,17 @@ pipx install fileorg
     ```bash
     # Install Python and pip
     sudo apt update
-    sudo apt install python3-pip python3-venv
+    sudo apt install python3-pip python3-venv git
     
-    # Install FileOrg
-    pip3 install fileorg
+    # Install FileOrg from GitHub
+    pip3 install git+https://github.com/leoliu5550/QualcommHackathon.git
     
-    # Add to PATH
+    # Or use pipx
+    python3 -m pip install --user pipx
+    python3 -m pipx ensurepath
+    pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
+    
+    # Add to PATH if needed
     echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
     source ~/.bashrc
     ```
@@ -129,20 +149,20 @@ pipx install fileorg
 
     ```bash
     # Install Python and pip
-    sudo dnf install python3-pip
+    sudo dnf install python3-pip git
     
-    # Install FileOrg
-    pip3 install fileorg
+    # Install FileOrg from GitHub
+    pip3 install git+https://github.com/leoliu5550/QualcommHackathon.git
     ```
 
 === "Arch Linux"
 
     ```bash
     # Install Python and pip
-    sudo pacman -S python python-pip
+    sudo pacman -S python python-pip git
     
-    # Install FileOrg
-    pip install fileorg
+    # Install FileOrg from GitHub
+    pip install git+https://github.com/leoliu5550/QualcommHackathon.git
     ```
 
 ## Hardware Acceleration Setup
@@ -188,59 +208,71 @@ pipx install fileorg
 
 ### Core Dependencies
 
-FileOrg automatically installs these dependencies:
+The default installation includes minimal dependencies:
 
-- `transformers>=4.35.0` - Model loading and inference
-- `torch>=2.0.0` - Deep learning framework
-- `pypdf>=3.17.0` - PDF parsing
-- `python-docx>=1.0.0` - Word document parsing
-- `openpyxl>=3.1.0` - Excel file parsing
-- `python-pptx>=0.6.0` - PowerPoint parsing
+- `httpx` - NPU API client
+- `pypdf>=3.0.0` - PDF parsing
+- `python-docx>=0.8.11` - Word document parsing
+- `openpyxl>=3.0.0` - Excel file parsing
+- `python-pptx>=0.6.21` - PowerPoint parsing
+- `tqdm>=4.65.0` - Progress bars
+- `charset-normalizer>=3.0.0` - Text encoding detection
 
 ### Optional Dependencies
 
-=== "Development"
+=== "Local Model Support [non-npu]"
 
     ```bash
-    pip install fileorg[dev]
-    # Includes: pytest, black, flake8, mypy
+    pip install -e ".[non-npu]"
+    # Includes:
+    # - torch>=2.0.0 - Deep learning framework
+    # - transformers>=4.35.0 - Model loading and inference
+    # - accelerate>=0.24.0 - Model optimization
+    # - sentencepiece>=0.1.99 - Tokenization
     ```
 
-=== "Documentation"
+=== "Development [dev]"
 
     ```bash
-    pip install fileorg[docs]
+    pip install -e ".[dev]"
+    # Includes: pytest, black, ruff, mypy, pre-commit
+    ```
+
+=== "Documentation [docs]"
+
+    ```bash
+    pip install -e ".[docs]"
     # Includes: mkdocs, mkdocs-material
     ```
 
-=== "All Extras"
+## Backend Configuration
 
-    ```bash
-    pip install fileorg[all]
-    # Includes all optional dependencies
-    ```
+### NPU Backend (Default)
 
-## Model Installation
-
-FileOrg automatically downloads required models on first use:
-
-### Default Model (TinyLlama)
-
-- **Size**: ~500MB
-- **Location**: `~/.cache/huggingface/`
-- **Auto-download**: Yes
-
-### Alternative Models
+The default installation uses the Qualcomm NPU API:
 
 ```python
-# Configure custom model
-from fileorg.ai.config import update_default_config
-
-update_default_config(
-    model_id="meta-llama/Llama-3.2-1B",
-    backend="local"
-)
+# fileorg/ai/config.py
+"backend": "qualcomm"  # Uses NPU API at localhost:80
 ```
+
+### Local Model Backend
+
+For CPU/GPU inference, install with non-npu extras:
+
+```bash
+pip install -e ".[non-npu]"
+```
+
+Then configure:
+
+```python
+# fileorg/ai/config.py
+"backend": "local"
+"model_id": "iFaz/llama32_3B_en_emo_2000_stp"  # Or any HuggingFace model
+```
+
+Models are automatically downloaded on first use to `./fileorg/ai/model/`
 
 ## Verification
 
@@ -257,7 +289,7 @@ fileorg --help
 fileorg --preview ~/Downloads
 
 # Check AI backend
-python -c "from fileorg.ai import get_llm; print(get_llm('local'))"
+python -c "from fileorg.ai import get_llm, config; print(f'Backend: {config.get(\"backend\")}')"
 ```
 
 ## Troubleshooting
@@ -266,33 +298,36 @@ python -c "from fileorg.ai import get_llm; print(get_llm('local'))"
 
 ??? question "ImportError: No module named 'fileorg'"
     
-    **Solution**: Ensure pip installation completed successfully
+    **Solution**: Ensure installation completed successfully
     ```bash
+    # Reinstall from GitHub
     pip uninstall fileorg
-    pip install fileorg --no-cache-dir
+    pip install git+https://github.com/leoliu5550/QualcommHackathon.git --no-cache-dir
     ```
 
-??? question "CUDA out of memory"
+??? question "CUDA out of memory" (Local backend only)
     
-    **Solution**: Use smaller model or reduce batch size
+    **Solution**: Use CPU instead of GPU
     ```python
-    # Use CPU instead
-    update_default_config(device="cpu")
+    # Edit fileorg/ai/config.py
+    from fileorg.ai.config import update_default_config
+    update_default_config(backend="local", device="cpu")
     ```
 
 ??? question "Permission denied on Windows"
     
     **Solution**: Run as Administrator or install in user directory
     ```powershell
-    pip install --user fileorg
+    pip install --user git+https://github.com/leoliu5550/QualcommHackathon.git
     ```
 
-??? question "Model download fails"
+??? question "NPU API connection failed" (Qualcomm backend)
     
-    **Solution**: Check internet connection or manually download
+    **Solution**: Ensure NPU service is running at localhost:80
     ```bash
-    # Manual download
-    huggingface-cli download iFaz/llama32_3B_en_emo_2000_stp
+    # Or switch to local backend
+    # Edit fileorg/ai/config.py: "backend": "local"
+    # Then install: pip install -e ".[non-npu]"
     ```
 
 ## Next Steps
