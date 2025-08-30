@@ -109,7 +109,6 @@ plugins:
   - git-revision-date-localized:
       enable_creation_date: true
       type: iso_datetime
-      enable_git_follow: false
   - minify:
       minify_html: true
   - mkdocstrings:
@@ -120,13 +119,6 @@ plugins:
             docstring_style: google
             show_source: true
             show_root_heading: true
-            show_root_toc_entry: true
-            show_signature_annotations: true
-            show_symbol_type_heading: true
-            show_symbol_type_toc: true
-            merge_init_into_class: true
-            separate_signature: true
-            line_length: 80
             
 nav:
   - Home: index.md
