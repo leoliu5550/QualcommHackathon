@@ -2,7 +2,7 @@
 name: "Task / General Issue"
 about: "A task, improvement, or general issue"
 title: "[TASK] "
-labels: ["enhancement", "P2 - medium"]
+labels: ["enhancement", "Urgent - Medium"]
 assignees: ""
 ---
 

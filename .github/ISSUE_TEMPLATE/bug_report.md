@@ -2,7 +2,7 @@
 name: "Bug Report"
 about: "Report a bug or unexpected behavior"
 title: "[BUG] "
-labels: ["bug", "P2 - high"]
+labels: ["bug", "Urgent - Medium"]
 ---
 
 ## Bug Description
