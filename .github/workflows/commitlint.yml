@@ -1,0 +1,31 @@
+name: "Commit Message Lint"
+
+# Run this workflow on pull requests
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the PR code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install Node.js (required for commitlint)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      # Step 3: Install commitlint and conventional config
+      - name: Install commitlint
+        run: |
+          npm install --save-dev @commitlint/{config-conventional,cli}
+
+      # Step 4: Run commitlint on all commits in this PR
+      - name: Lint commits
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          npx commitlint --from=origin/${{ github.base_ref }} --to=HEAD

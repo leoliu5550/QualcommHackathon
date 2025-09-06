@@ -1,7 +1,7 @@
 # FileOrg - AI-Powered File Organization
 
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://www.python.org)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](tests/)
 
 Intelligent file organization tool using AI to analyze and categorize documents automatically.
