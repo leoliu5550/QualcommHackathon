@@ -1,1 +1,0 @@
-# Scanner module tests
