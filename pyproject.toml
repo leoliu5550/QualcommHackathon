@@ -59,15 +59,15 @@ non-npu = [
 # Development tools
 dev = [
     "pytest>=7.0.0",
-    "pytest-cov>=4.0.0", 
+    "pytest-cov>=4.0.0",
     "pytest-mock>=3.10.0",
     "pytest-asyncio>=0.21.0",
-    "black>=23.0.0",
-    "ruff>=0.1.0",  # Modern linter replacing flake8
+    "ruff>=0.1.0", # Modern linter replacing flake8
     "mypy>=1.0.0",
     "pre-commit>=3.0.0",
     "build>=0.10.0",
     "twine>=4.0.0",
+    "commitizen>=4.9.1",
 ]
 docs = [
     "mkdocs>=1.5.3",
