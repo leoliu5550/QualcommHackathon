@@ -121,11 +121,7 @@ uv sync --no-dev
 
 ```bash
 # Install with specific optional groups
-uv sync -E dev -E test
-uv sync --extra dev --extra test
-
-# Install multiple extras
-uv sync -E "dev,test,docs"
+uv sync --extra dev --extra docs
 
 # Install all optional dependencies
 uv sync --all-extras

@@ -2,30 +2,64 @@ name: "Commit Message Lint"
 
 # Run this workflow on pull requests
 on:
+  push:
+    branches: [main, dev]
   pull_request:
-    types: [opened, edited, synchronize]
+    types: [opened, edited, synchronize, reopened]
 
 jobs:
   commit-lint:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the PR code
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Step 2: Install Node.js (required for commitlint)
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: "18"
 
-      # Step 3: Install commitlint and conventional config
       - name: Install commitlint
         run: |
           npm install --save-dev @commitlint/{config-conventional,cli}
 
-      # Step 4: Run commitlint on all commits in this PR
       - name: Lint commits
         run: |
           git fetch origin ${{ github.base_ref }} --depth=1
           npx commitlint --from=origin/${{ github.base_ref }} --to=HEAD
+
+  quality-check:
+    name: "Code Quality Check"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Sync dependencies with uv
+        run: uv sync --extra dev
+
+      # Ruff Lint & Format Check
+      - name: Run Ruff Linter
+        run: uv run ruff check .
+
+      - name: Run Ruff Format Check
+        run: uv run ruff format --check
+
+      # Bandit Security Scan
+      - name: Run Bandit Security Scan
+        run: uv run bandit -r . -c pyproject.toml
+
+      # pip-audit Security Audit
+      - name: Run pip-audit (via uv)
+        run: |
+          uv pip compile pyproject.toml -o requirements.txt
+          uv run pip-audit -r requirements.txt
