@@ -72,7 +72,7 @@ cd my-project
 uv init
 
 # Create with specific Python version
-uv init --python 3.11 my-project
+uv init --python 3.13 my-project
 ```
 
 ### 3.2. Virtual Environment Management
@@ -84,7 +84,7 @@ UV automatically manages virtual environments, but you can control them explicit
 uv venv
 
 # Create with specific Python version
-uv venv --python 3.11
+uv venv --python 3.13
 
 # Create in custom location
 uv venv .venv-custom
@@ -193,7 +193,7 @@ uv run black .
 uv run mypy src/
 
 # Run with specific Python version
-uv run --python 3.11 python script.py
+uv run --python 3.13 python script.py
 ```
 
 ### 5.2. Advanced Execution
@@ -334,10 +334,10 @@ export UV_PYTHON_PREFERENCE=only-managed
 uv python list
 
 # Install specific Python version
-uv python install 3.11
+uv python install 3.13
 
 # Pin project to specific Python version
-uv python pin 3.11
+uv python pin 3.13
 
 # Find Python installations
 uv python find

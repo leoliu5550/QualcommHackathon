@@ -16,23 +16,8 @@ pipx install git+https://github.com/leoliu5550/QualcommHackathon.git
 ```
 
 ### Development Installation
-```bash
-git clone https://github.com/leoliu5550/QualcommHackathon.git
-cd QualcommHackathon
-pip install -e .              # Basic installation
-pip install -e ".[dev]"       # With development tools
-pip install -e ".[non-npu]"   # With CPU/GPU model support
-pip install -e ".[docs]"      # With documentation tools
-```
-
-### Installation Options
-- **Default**: NPU API client (httpx) - smallest footprint
-- **[non-npu]**: PyTorch + Transformers for CPU/GPU inference
-- **[dev]**: Testing and code quality tools
-- **[docs]**: Documentation generation tools
-
-> Note: PyPI package coming soon. Currently install from GitHub.
-
+- [專案程式碼品質與提交規範指南](docs/專案程式碼品質與提交規範指南.md)
+- [uv使用說明](docs/uv使用說明.md)
 ## Usage
 
 ### GUI Interface
