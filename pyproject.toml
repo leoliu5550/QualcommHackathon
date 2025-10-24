@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "智慧檔案整理工具 - 使用 AI 技術自動分類與整理檔案"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "MIT"}
+license = {text = "GNU GENERAL PUBLIC LICENSE"}
 authors = [
     {name = "Leo", email = "leoliu5550@gmail.com"},
     {name = "Yide", email = "lin.yide.doris@gmail.com"},
@@ -22,27 +22,54 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3.11",
-    "Operating System :: OS Independent",
+    "Operating System :: MacOS",
+    # "Operating System :: POSIX :: Linux",
+    # "Operating System :: Microsoft :: Windows"
 ]
 
 dependencies = [
+    "appdirs>=1.4.4",
     # Core document processing (required for all modes)
-    "python-docx>=0.8.11",
-    "openpyxl>=3.0.0",
-    "python-pptx>=0.6.21",
-    "pypdf>=3.0.0", # Modern replacement for PyPDF2
-    "tqdm>=4.65.0",
-    "charset-normalizer>=3.0.0",
-    "httpx>=0.28.1",
+    # "python-docx>=0.8.11",
+    # "openpyxl>=3.0.0",
+    # "python-pptx>=0.6.21",
+    # "pypdf>=3.0.0", # Modern replacement for PyPDF2
+    # "tqdm>=4.65.0",
+    # "charset-normalizer>=3.0.0",
+    # "httpx>=0.28.1",
+    "dotenv>=0.9.9",
+    "loguru>=0.7.3",
 ]
 
 [project.optional-dependencies]
+# Development tools
+dev = [
+    # "pytest>=7.0.0",
+    # "pytest-cov>=4.0.0",
+    # "pytest-mock>=3.10.0",
+    # "pytest-asyncio>=0.21.0",
+    # "mypy>=1.0.0",
+    # "build>=0.10.0",
+    # "twine>=4.0.0",
+    "pre-commit>=3.0.0",
+    "commitizen>=4.9.1",
+    "ruff>=0.1.0", # Modern linter replacing flake8
+    "bandit>=1.8.6",
+    "pip-audit>=2.9.0",
+    "ipykernel>=7.0.1",
+]
+
+docs = [
+    # "mkdocs>=1.5.3",
+    # "mkdocs-material>=9.5.3",
+    # "mkdocstrings[python]>=0.24.0",
+    # "mkdocs-autorefs>=1.0.0",  # Updated to latest stable version
+    # "mkdocs-git-revision-date-localized-plugin>=1.2.2",
+    # "mkdocs-minify-plugin>=0.7.2",
+    # "pymdown-extensions>=10.5",
+]
 # Non-NPU mode: Heavy dependencies for running models on CPU/GPU
 non-npu = [
     # "torch>=2.0.0",
@@ -51,34 +78,6 @@ non-npu = [
     # "sentencepiece>=0.1.99",  # Required for some tokenizers
     # "protobuf>=3.20.0",  # Required for some models
 ]
-
-# Development tools
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pytest-mock>=3.10.0",
-    "pytest-asyncio>=0.21.0",
-    "mypy>=1.0.0",
-    "pre-commit>=3.0.0",
-    "build>=0.10.0",
-    "twine>=4.0.0",
-    "commitizen>=4.9.1",
-    "ruff>=0.1.0", # Modern linter replacing flake8
-    "bandit>=1.8.6",
-    "pip-audit>=2.9.0",
-]
-
-docs = [
-    "mkdocs>=1.5.3",
-    "mkdocs-material>=9.5.3",
-    "mkdocstrings[python]>=0.24.0",
-    "mkdocs-autorefs>=1.0.0",  # Updated to latest stable version
-    "mkdocs-git-revision-date-localized-plugin>=1.2.2",
-    "mkdocs-minify-plugin>=0.7.2",
-    "pymdown-extensions>=10.5",
-]
-gpu = []
-qualcomm = []
 
 [project.urls]
 Homepage = "https://github.com/leoliu5550/QualcommHackathon"
@@ -125,8 +124,12 @@ markers = [
 [tool.bandit]
 exclude_dirs = [".venv", "tests", "docs"]
 targets = ["."]
-severity = "LOW"
-confidence = "LOW"
+skips = ["B101"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"
 
 [tool.ruff]
 line-length = 150
@@ -139,7 +142,6 @@ lint.select = [
     "C4",  # flake8-comprehensions (列表/字典生成式簡潔性)
     "B",   # flake8-bugbear (可能的 Bug 或設計問題)
     "TID", # flake8-tidy-imports (規範匯入來源)
-    "S",   # flake8-bandit (安全問題檢查)
     "A",   # flake8-builtins (避免覆蓋內建函數)
 ]
 
@@ -151,7 +153,7 @@ indent-style = "space"
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = false
+disallow_untyped_defs = true
 ignore_missing_imports = true
 
 [tool.coverage.run]

@@ -1,0 +1,39 @@
+# .pre-commit-config.yaml
+
+repos:
+  # 將所有 Hook 都定義在 local repo 區塊下
+  - repo: local
+    hooks:
+
+      # --- 1. Ruff Lint Check (使用 uv 環境中的版本) ---
+      - id: ruff-check
+        name: Ruff Lint Check
+        entry: ruff check
+        language: system
+        types: [python]
+
+      # --- 2. Ruff Format (使用 uv 環境中的版本) ---
+      - id: ruff-format
+        name: Ruff Code Format
+        entry: ruff format --check
+        language: system
+        types: [python]
+
+      # --- 3. Bandit Security Scan (使用 uv 環境中的版本) ---
+      - id: bandit
+        name: Bandit Security Scan
+        entry: bandit
+        language: system
+        args: ['-r', 'fileorg', '-c', 'pyproject.toml']
+        pass_filenames: false  # 👈 加這行
+        types: [python]
+
+      # --- 4. Pip-audit (使用 uv 環境中的版本) ---
+      - id: pip-audit
+        name: Pip Dependency Audit
+        entry: uv run pip-audit
+        language: system
+        args: ["--local", "--ignore-vuln", "GHSA-4xh5-x5gv-qwph", "--skip-editable"]
+        pass_filenames: false 
+        always_run: true
+
