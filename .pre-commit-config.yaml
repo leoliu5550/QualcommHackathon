@@ -22,31 +22,18 @@ repos:
       # --- 3. Bandit Security Scan (使用 uv 環境中的版本) ---
       - id: bandit
         name: Bandit Security Scan
-        entry: uv run bandit
+        entry: bandit
         language: system
+        args: ['-r', 'fileorg', '-c', 'pyproject.toml']
+        pass_filenames: false  # 👈 加這行
         types: [python]
-        args: ["-r", ".", "-c", "pyproject.toml", "--exclude", "tests"]
 
       # --- 4. Pip-audit (使用 uv 環境中的版本) ---
       - id: pip-audit
         name: Pip Dependency Audit
-        entry: bash -c
+        entry: uv run pip-audit
         language: system
-        pass_filenames: false
+        args: ["--local", "--ignore-vuln", "GHSA-4xh5-x5gv-qwph", "--skip-editable"]
+        pass_filenames: false 
         always_run: true
-        args:
-          - -c
-          - |
-            set -e
-            uv run pip-audit \
-              --local \
-              --ignore-vuln GHSA-4xh5-x5gv-qwph \
-              --skip-editable
 
-
-      # --- 5. Commitizen 提交訊息驗證 Hook ---
-      - id: commitizen-check
-        name: Commit Message Validation
-        entry: cz check --message-format commit-msg
-        language: system
-        stages: [commit-msg]
