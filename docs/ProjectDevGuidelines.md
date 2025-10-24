@@ -34,10 +34,19 @@ Once the hooks are installed, the following checks will automatically run every 
 | :--- | :--- | :--- |
 | **ruff check** | pre-commit | Checks all Python files for code style (Linting), potential errors, and compliance issues. |
 | **ruff format** | pre-commit | Automatically formats the code to the standard style. (Please check and accept the changes before committing!) |
-| **bandit** | pre-commit | Performs static security analysis on all Python code, checking for common vulnerabilities and insecure code patterns. |
-| **pip-audit** | pre-commit | Checks the project's dependencies (`requirements.txt` or environment) for known security vulnerabilities. |
+| **bandit** | pre-commit | Performs static security analysis on all Python code. Scans recursively from the project root (.), using the configuration in pyproject.toml, and excludes the tests directory.|
+| **pip-audit** | pre-commit | Checks project dependencies for known security vulnerabilities using uv run pip-audit --local. Automatically ignores the vulnerability GHSA-4xh5-x5gv-qwph in pip and skips editable/local packages. Only runs if requirements.txt changes.|
 
 **Note**: Any failed check will prevent the commit. Please fix the issues before attempting to commit again. If you need to temporarily bypass the hooks (not recommended), use `git commit --no-verify`.
+
+- manual trigger
+```bash
+ruff check
+ruff format
+uv run bandit -r . -c pyproject.toml --exclude tests 
+uv run pip-audit --local --ignore-vuln GHSA-4xh5-x5gv-qwph --skip-editable
+```
+
 
 # Standardized Commit Messages
 

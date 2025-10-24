@@ -134,7 +134,7 @@ uv sync --all-extras
 uv add requests
 
 # Add a development dependency
-uv add --dev pytest
+uv add --optional dev pytest
 
 # Add to a specific optional group
 uv add --optional test pytest-cov

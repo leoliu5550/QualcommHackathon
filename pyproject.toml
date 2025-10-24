@@ -30,6 +30,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "appdirs>=1.4.4",
     # Core document processing (required for all modes)
     # "python-docx>=0.8.11",
     # "openpyxl>=3.0.0",
@@ -38,6 +39,8 @@ dependencies = [
     # "tqdm>=4.65.0",
     # "charset-normalizer>=3.0.0",
     # "httpx>=0.28.1",
+    "dotenv>=0.9.9",
+    "loguru>=0.7.3",
 ]
 
 [project.optional-dependencies]
@@ -55,6 +58,7 @@ dev = [
     "ruff>=0.1.0", # Modern linter replacing flake8
     "bandit>=1.8.6",
     "pip-audit>=2.9.0",
+    "ipykernel>=7.0.1",
 ]
 
 docs = [
@@ -120,8 +124,12 @@ markers = [
 [tool.bandit]
 exclude_dirs = [".venv", "tests", "docs"]
 targets = ["."]
-severity = "LOW"
-confidence = "LOW"
+skips = ["B101"]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"
 
 [tool.ruff]
 line-length = 150

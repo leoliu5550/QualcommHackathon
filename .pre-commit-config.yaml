@@ -9,41 +9,45 @@ repos:
       - id: ruff-check
         name: Ruff Lint Check
         entry: ruff check
-        language: system      # 告訴 pre-commit 使用系統/環境中已安裝的 ruff
-        types: [python]       # 只對 Python 檔案運行
-        
+        language: system
+        types: [python]
+
       # --- 2. Ruff Format (使用 uv 環境中的版本) ---
       - id: ruff-format
         name: Ruff Code Format
-        entry: ruff format
-        language: system      # 告訴 pre-commit 使用系統/環境中已安裝的 ruff
+        entry: ruff format --in-place
+        language: system
         types: [python]
-        args: ["--in-place"]  # 讓 ruff 直接修改文件
 
       # --- 3. Bandit Security Scan (使用 uv 環境中的版本) ---
       - id: bandit
         name: Bandit Security Scan
-        entry: bandit
+        entry: uv run bandit
         language: system
         types: [python]
-        # pass_filenames: true 是默認行為，但 bandit 需要額外的 args 
-        # 這裡我們傳入 bandit 專用的參數
-        args: ["-r", ".", "--exclude", "tests"] # 掃描所有文件，排除 tests
+        args: ["-r", ".", "-c", "pyproject.toml", "--exclude", "tests"]
 
       # --- 4. Pip-audit (使用 uv 環境中的版本) ---
       - id: pip-audit
         name: Pip Dependency Audit
-        entry: pip-audit
+        entry: bash -c
         language: system
-        # [移除 pass_files: false]
+        pass_filenames: false
+        always_run: true
+        args:
+          - -c
+          - |
+            set -e
+            echo "🔍 Running pip-audit on uv environment..."
+            uv run pip-audit \
+              --local \
+              --ignore-vuln GHSA-4xh5-x5gv-qwph \
+              --skip-editable
 
-        # 保留 files 欄位，確保只在依賴文件變動時執行
-        files: ^requirements\.txt$
 
-      # === 5. Commitizen 提交訊息驗證 Hook (新增) ===
+      # --- 5. Commitizen 提交訊息驗證 Hook ---
       - id: commitizen-check
         name: Commit Message Validation
-        entry: cz check --message-format commit-msg --no-verify
+        entry: cz check --message-format commit-msg
         language: system
-        # 關鍵：指定這個 Hook 在 'commit-msg' 階段運行
         stages: [commit-msg]
