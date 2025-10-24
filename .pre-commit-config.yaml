@@ -15,7 +15,7 @@ repos:
       # --- 2. Ruff Format (使用 uv 環境中的版本) ---
       - id: ruff-format
         name: Ruff Code Format
-        entry: ruff format --in-place
+        entry: ruff format --check
         language: system
         types: [python]
 
@@ -38,7 +38,6 @@ repos:
           - -c
           - |
             set -e
-            echo "🔍 Running pip-audit on uv environment..."
             uv run pip-audit \
               --local \
               --ignore-vuln GHSA-4xh5-x5gv-qwph \

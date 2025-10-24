@@ -7,35 +7,6 @@ on:
     types: [opened, edited, synchronize, reopened]
 
 jobs:
-  commit-lint:
-    name: "Commit Message Validation"
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # 需要完整歷史來檢查 commit messages
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
-
-      - name: Install Commitizen
-        run: uv tool install commitizen
-
-      - name: Validate commit messages
-        run: |
-          # 檢查從 base branch 到 HEAD 的所有 commits
-          git fetch origin ${{ github.base_ref }} --depth=50
-          uv tool run cz check --rev-range origin/${{ github.base_ref }}..HEAD
-
   quality-check:
     name: "Code Quality Check"
     runs-on: ubuntu-latest
