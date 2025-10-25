@@ -163,7 +163,8 @@ test_output/
 .backup/
 .tidy_report/
 Organized_Files_*/
-
+tests/example_data*
+tests\example_data*
 # Temporary files
 *.tmp
 *.bak
