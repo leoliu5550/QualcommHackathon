@@ -71,40 +71,6 @@ class FileScanner:
                 return True
         return False
 
-    # def _scan(self, directory: Path) -> List[Dict[str, str]]:
-    #     """Recursively scan a directory and collect file metadata.
-
-    #     Args:
-    #         directory (Path): The directory to scan.
-
-    #     Returns:
-    #         List[Dict[str, str]]: A list of file info dictionaries containing:
-    #             - "path": Absolute file path
-    #             - "name": File name
-    #             - "size": File size in bytes (as string)
-    #     """
-    #     results = []
-
-    #     for entry in directory.iterdir():
-    #         if self._is_ignored(entry):
-    #             continue
-
-    #         if entry.is_dir():
-    #             results.extend(self._scan(entry))
-    #         elif entry.is_file():
-    #             try:
-    #                 results.append(
-    #                     {
-    #                         "path": str(entry.resolve()),
-    #                         "name": entry.name,
-    #                         "size": str(entry.stat().st_size),
-    #                     }
-    #                 )
-    #             except OSError:
-    #                 continue  # Skip unreadable files
-
-    #     return results
-
     def _get_file_info(self, entry: Path) -> Optional[Dict[str, str]]:
         """Get file metadata, return None if unreadable."""
         try:
@@ -142,10 +108,10 @@ class FileScanner:
 
         Returns:
             Dict[str, object]: Report containing:
-                - "root": Root directory path
-                - "file_count": Total number of files scanned
-                - "total_size": Total file size in bytes
-                - "files": Detailed file list (path, name, size)
+                - "root" (str): Root directory path
+                - "file_count" (int): Total number of files scanned
+                - "total_size" (int): Total file size in bytes
+                - "files" (List[Dict]): Detailed file list (path, name, size)
         """
         files = self.scan()
         total_size = sum(int(f["size"]) for f in files)
