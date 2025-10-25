@@ -16,8 +16,10 @@ from typing import Dict, List, Optional
 
 from loguru import logger
 
+from fileorg.file_scan.interface import IFileScanner, ReportOutput, ScanOutput
 
-class FileScanner:
+
+class FileScanner(IFileScanner):
     """A class for intelligent and efficient file system scanning.
 
     The FileScanner class provides recursive directory scanning functionality
@@ -77,7 +79,7 @@ class FileScanner:
             return {
                 "path": str(entry.resolve()),
                 "name": entry.name,
-                "size": str(entry.stat().st_size),
+                "size": int(entry.stat().st_size),
             }
         except OSError:
             return None
@@ -95,7 +97,7 @@ class FileScanner:
                     results.append(file_info)
         return results
 
-    def scan(self) -> List[Dict[str, str]]:
+    def scan(self) -> ScanOutput:
         """Perform a complete scan starting from the root directory.
 
         Returns:
@@ -103,7 +105,7 @@ class FileScanner:
         """
         return self._scan(self.root_dir)
 
-    def generate_report(self) -> Dict[str, object]:
+    def generate_report(self) -> ReportOutput:
         """Generate a detailed scan report for the target directory.
 
         Returns:
@@ -131,7 +133,7 @@ class FileScanner:
         """
         report = self.generate_report()
         with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(report, f, indent=2, ensure_ascii=False)
+            json.dump(report, f, indent=4, ensure_ascii=False)
 
 
 def main():
