@@ -1,0 +1,132 @@
+{
+    "project": {
+        "id": 101,
+        "name": "新產品開發",
+        "description": "針對市場需求進行新產品規劃、設計與測試。",
+        "startDate": "2025-06-01",
+        "endDate": "2025-12-31",
+        "status": "進行中",
+        "budget": 250000,
+        "tags": [
+            "研發",
+            "市場調查",
+            "測試"
+        ]
+    },
+    "team": [
+        {
+            "userId": 1,
+            "name": "王小明",
+            "role": "產品經理",
+            "email": "xiaoming.wang@example.com",
+            "active": true
+        },
+        {
+            "userId": 2,
+            "name": "陳美麗",
+            "role": "技術主管",
+            "email": "meili.chen@example.com",
+            "active": true
+        },
+        {
+            "userId": 3,
+            "name": "李大華",
+            "role": "市場分析師",
+            "email": "dahua.li@example.com",
+            "active": false
+        }
+    ],
+    "tasks": [
+        {
+            "taskId": 1001,
+            "title": "市場調查報告撰寫",
+            "description": "彙整競品資訊與消費者訪談結果，完成 20 頁調查報告。",
+            "assignee": 3,
+            "status": "已完成",
+            "priority": "高",
+            "dueDate": "2025-07-15",
+            "subtasks": [
+                {
+                    "subtaskId": 1101,
+                    "title": "競品資料蒐集",
+                    "status": "已完成"
+                },
+                {
+                    "subtaskId": 1102,
+                    "title": "消費者訪談",
+                    "status": "已完成"
+                }
+            ],
+            "comments": [
+                {
+                    "author": 2,
+                    "date": "2025-07-10T14:20:00",
+                    "message": "報告已初稿，請確認格式與內容完整性。"
+                },
+                {
+                    "author": 3,
+                    "date": "2025-07-12T09:45:00",
+                    "message": "已依建議修改完畢，請再審閱。"
+                }
+            ]
+        },
+        {
+            "taskId": 1002,
+            "title": "產品原型設計",
+            "description": "根據需求文檔完成初步原型並提供 Wireframe。",
+            "assignee": 2,
+            "status": "進行中",
+            "priority": "中",
+            "dueDate": "2025-08-01",
+            "subtasks": [
+                {
+                    "subtaskId": 1201,
+                    "title": "用戶流程圖繪製",
+                    "status": "已完成"
+                },
+                {
+                    "subtaskId": 1202,
+                    "title": "UI Wireframe",
+                    "status": "進行中"
+                }
+            ],
+            "comments": [
+                {
+                    "author": 1,
+                    "date": "2025-07-20T10:00:00",
+                    "message": "流程圖看起來很清楚，Wireframe 可以多加幾個互動範例。"
+                }
+            ]
+        }
+    ],
+    "settings": {
+        "notifications": {
+            "email": true,
+            "sms": false,
+            "push": true
+        },
+        "theme": "light",
+        "locale": "zh-TW"
+    },
+    "history": [
+        {
+            "event": "project_created",
+            "user": 1,
+            "timestamp": "2025-05-20T08:30:00"
+        },
+        {
+            "event": "member_added",
+            "user": 1,
+            "targetUser": 2,
+            "timestamp": "2025-05-22T09:15:00"
+        },
+        {
+            "event": "task_completed",
+            "user": 3,
+            "taskId": 1001,
+            "timestamp": "2025-07-15T16:45:00"
+        }
+    ],
+    "metadata": null,
+    "version": 1.2
+}
