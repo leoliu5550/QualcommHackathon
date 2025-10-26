@@ -4,18 +4,18 @@ version = "1.0.0"
 description = "智慧檔案整理工具 - 使用 AI 技術自動分類與整理檔案"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "GNU GENERAL PUBLIC LICENSE"}
+license = { text = "GNU GENERAL PUBLIC LICENSE" }
 authors = [
-    {name = "Leo", email = "leoliu5550@gmail.com"},
-    {name = "Yide", email = "lin.yide.doris@gmail.com"},
-    {name = "Joel", email = "jieyao.hsu.efef31016@gmail.com"},
-    {name = "Steven", email = "bingjunye4@gmail.com"}
+    { name = "Leo", email = "leoliu5550@gmail.com" },
+    { name = "Yide", email = "lin.yide.doris@gmail.com" },
+    { name = "Joel", email = "jieyao.hsu.efef31016@gmail.com" },
+    { name = "Steven", email = "bingjunye4@gmail.com" },
 ]
 maintainers = [
-    {name = "Leo", email = "leoliu5550@gmail.com"},
-    {name = "Yide", email = "lin.yide.doris@gmail.com"},
-    {name = "Joel", email = "jieyao.hsu.efef31016@gmail.com"},
-    {name = "Steven", email = "bingjunye4@gmail.com"}
+    { name = "Leo", email = "leoliu5550@gmail.com" },
+    { name = "Yide", email = "lin.yide.doris@gmail.com" },
+    { name = "Joel", email = "jieyao.hsu.efef31016@gmail.com" },
+    { name = "Steven", email = "bingjunye4@gmail.com" },
 ]
 keywords = ["file organization", "AI", "automation", "document management"]
 classifiers = [
@@ -55,10 +55,13 @@ dev = [
     # "twine>=4.0.0",
     "pre-commit>=3.0.0",
     "commitizen>=4.9.1",
-    "ruff>=0.1.0", # Modern linter replacing flake8
+    "ruff>=0.1.0",       # Modern linter replacing flake8
     "bandit>=1.8.6",
     "pip-audit>=2.9.0",
     "ipykernel>=7.0.1",
+    "loguru>=0.7.3",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
 ]
 
 docs = [
@@ -89,7 +92,7 @@ Issues = "https://github.com/leoliu5550/QualcommHackathon/issues"
 fileorg = "fileorg.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["fileorg*"] 
+include = ["fileorg*"]
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
@@ -104,6 +107,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+pythonpath = ["."]
 addopts = [
     "-v",
     "--strict-markers",
@@ -144,6 +148,7 @@ lint.select = [
     "TID", # flake8-tidy-imports (規範匯入來源)
     "A",   # flake8-builtins (避免覆蓋內建函數)
 ]
+# extend-exclude = ["tests"]
 
 [tool.ruff.format]
 quote-style = "double"
