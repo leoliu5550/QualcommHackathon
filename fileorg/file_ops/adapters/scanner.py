@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 
 from loguru import logger
 
-from fileorg.file_scan.interface import IFileScanner, ReportOutput, ScanOutput
+from fileorg.file_ops.ports import IFileScanner, ReportOutput, ScanOutput
 
 
 class FileScanner(IFileScanner):
@@ -143,14 +143,14 @@ def main():
     scanner = FileScanner(target_dir)
     report = scanner.generate_report()
 
-    logger("\n=== File Scan Report ===")
-    logger(f"Root Directory: {report['root']}")
-    logger(f"Total Files: {report['file_count']}")
-    logger(f"Total Size: {report['total_size']} bytes")
+    logger.debug("\n=== File Scan Report ===")
+    logger.debug(f"Root Directory: {report['root']}")
+    logger.debug(f"Total Files: {report['file_count']}")
+    logger.debug(f"Total Size: {report['total_size']} bytes")
 
     output_file = "scan_report.json"
     scanner.save_report(output_file)
-    logger(f"\nReport saved to {output_file}")
+    logger.debug(f"\nReport saved to {output_file}")
 
 
 if __name__ == "__main__":

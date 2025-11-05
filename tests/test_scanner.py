@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from fileorg.file_scan.scanner import FileScanner
+from fileorg.file_ops.adapters.scanner import FileScanner
 
 
 @pytest.mark.scanner
