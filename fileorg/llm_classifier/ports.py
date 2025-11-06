@@ -63,7 +63,7 @@ class ProcessingResult:
 # Inbound Ports (Use Cases - Entry Points)
 # ============================================================================
 
-class ClassifyDocumentUseCase(ABC):
+class IClassifyDocumentUseCase(ABC):
     """
     Inbound Port: Document classification use case.
 
@@ -90,7 +90,7 @@ class ClassifyDocumentUseCase(ABC):
         pass
 
 
-class RemapFoldersUseCase(ABC):
+class IRemapFoldersUseCase(ABC):
     """
     Inbound Port: Folder remapping use case.
 
@@ -111,7 +111,7 @@ class RemapFoldersUseCase(ABC):
         pass
 
 
-class ProcessFilesUseCase(ABC):
+class IProcessFilesUseCase(ABC):
     """
     Inbound Port: Batch file processing use case.
 
@@ -142,7 +142,7 @@ class ProcessFilesUseCase(ABC):
 # Outbound Ports (Dependencies - External Services)
 # ============================================================================
 
-class LLMPort(ABC):
+class ILLMPort(ABC):
     """
     Outbound Port: Language Model inference interface.
 
@@ -173,7 +173,7 @@ class LLMPort(ABC):
         pass
 
 
-class PromptBuilderPort(ABC):
+class IPromptBuilderPort(ABC):
     """
     Outbound Port: Prompt construction interface.
 
@@ -216,7 +216,7 @@ class PromptBuilderPort(ABC):
         pass
 
 
-class OutputValidatorPort(ABC):
+class IOutputValidatorPort(ABC):
     """
     Outbound Port: Output validation and sanitization interface.
 
@@ -250,7 +250,7 @@ class OutputValidatorPort(ABC):
         pass
 
 
-class ConfigPort(ABC):
+class IConfigPort(ABC):
     """
     Outbound Port: Configuration management interface.
 
@@ -283,7 +283,7 @@ class ConfigPort(ABC):
         pass
 
 
-class PersistencePort(ABC):
+class IPersistencePort(ABC):
     """
     Outbound Port: Data persistence interface.
 
@@ -323,7 +323,7 @@ class PersistencePort(ABC):
 # Factory Ports (for creating adapters)
 # ============================================================================
 
-class LLMFactoryPort(ABC):
+class ILLMFactoryPort(ABC):
     """
     Factory port for creating LLM adapters.
 
@@ -335,7 +335,7 @@ class LLMFactoryPort(ABC):
         self,
         backend: str,
         config: Dict[str, Any]
-    ) -> LLMPort:
+    ) -> ILLMPort:
         """
         Create an LLM adapter instance.
 
@@ -349,7 +349,7 @@ class LLMFactoryPort(ABC):
         pass
 
 
-class PromptBuilderFactoryPort(ABC):
+class IPromptBuilderFactoryPort(ABC):
     """
     Factory port for creating prompt builder adapters.
     """
@@ -360,7 +360,7 @@ class PromptBuilderFactoryPort(ABC):
         version: str,
         use_few_shot: bool,
         use_domain_detection: bool
-    ) -> PromptBuilderPort:
+    ) -> IPromptBuilderPort:
         """
         Create a prompt builder instance.
 

@@ -1,0 +1,58 @@
+{#
+Remapping Prompt Template
+This template generates prompts for folder name grouping/remapping tasks.
+
+Variables:
+  - folder_names: List of folder names to group
+  - version: Template version (v1 or v2, default: v2)
+#}
+
+{% if version == "v1" %}
+{# Legacy v1 Template #}
+[
+  {
+    "role": "system",
+    "content": "you are a master of categorizing folder names and give it a new group name in json format, eg. {\"foldername\":\"/foldername\", \"groupname\":\"/groupname\"]}"
+  },
+  {
+    "role": "user",
+    "content": "categorize the foldername into several groups if they are related or similar and give each group a name, must in json format:[{{ folder_names|join(', ') }}]"
+  },
+  {
+    "role": "assistant",
+    "content": "{\"groups\": [\""
+  }
+]
+
+{% else %}
+{# Enhanced v2 Template #}
+[
+  {
+    "role": "system",
+    "content": "You are an expert at organizing and grouping related folder names.
+
+Your task is to analyze a list of folder names and group similar or related ones together.
+
+Grouping Rules:
+1. Group folders with similar topics or domains
+2. Create meaningful group names that encompass the folders
+3. Maintain hierarchy when appropriate
+4. Don't over-consolidate - keep distinct topics separate
+
+Output format: [{\"foldername\": \"original_name\", \"groupname\": \"consolidated_group\"}, ...]
+
+Examples:
+- \"Statistics\", \"Mathematics\", \"DataAnalysis\" → group as \"Academic\"
+- \"CustomerOrders\", \"Invoices\", \"Contracts\" → group as \"Business\"
+- \"PythonCode\", \"JavaScripts\", \"SQLQueries\" → group as \"Programming\""
+  },
+  {
+    "role": "user",
+    "content": "Analyze and group these folder names intelligently: {{ folder_names }}"
+  },
+  {
+    "role": "assistant",
+    "content": "[{\"foldername\":\""
+  }
+]
+{% endif %}
