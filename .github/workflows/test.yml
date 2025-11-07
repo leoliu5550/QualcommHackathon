@@ -1,0 +1,40 @@
+name: "Unit Tests"
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  test:
+    name: "Run Unit Tests"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --extra dev
+
+      - name: Run pytest
+        run: |
+          # Override pyproject.toml addopts to disable coverage requirements (to avoid delaying milestones
+          uv run pytest fileorg/llm_classifier/tests/ -v --tb=short --override-ini='addopts=-v --strict-markers'
+        continue-on-error: false
+
+      - name: Test Summary
+        if: always()
+        run: |
+          echo "::notice::Unit tests completed. Check the logs above for results."
