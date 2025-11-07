@@ -25,7 +25,7 @@ repos:
         entry: bandit
         language: system
         args: ['-r', 'fileorg', '-c', 'pyproject.toml']
-        pass_filenames: false  # 👈 加這行
+        pass_filenames: false
         types: [python]
 
       # --- 4. Pytest Unit Tests ---
