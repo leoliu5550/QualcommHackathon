@@ -28,12 +28,22 @@ repos:
         pass_filenames: false  # 👈 加這行
         types: [python]
 
-      # --- 4. Pip-audit (使用 uv 環境中的版本) ---
+      # --- 4. Pytest Unit Tests ---
+      - id: pytest
+        name: Run Unit Tests
+        entry: pytest
+        language: system
+        args: ["fileorg/llm_classifier/tests/", "-v", "--tb=short", "--override-ini=addopts=-v --strict-markers"]
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      # --- 5. Pip-audit (使用 uv 環境中的版本) ---
       - id: pip-audit
         name: Pip Dependency Audit
         entry: uv run pip-audit
         language: system
         args: ["--local", "--ignore-vuln", "GHSA-4xh5-x5gv-qwph", "--skip-editable"]
-        pass_filenames: false 
+        pass_filenames: false
         always_run: true
 
