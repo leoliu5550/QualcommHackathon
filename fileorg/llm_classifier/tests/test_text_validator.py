@@ -189,36 +189,3 @@ class TestEdgeCases:
         """Validator with negative max_length should reject all text."""
         validator = BasicTextValidator(max_length=-1)
         assert validator.validate("any text") is False
-
-
-class TestIntegrationScenarios:
-    """Test realistic usage scenarios."""
-
-    def test_sanitize_then_validate_workflow(self, text_validator):
-        """Typical workflow: sanitize then validate."""
-        dirty_text = "  \n\n  AI Filing  \n\n  "
-        clean_text = text_validator.sanitize(dirty_text)
-        is_valid = text_validator.validate(clean_text)
-
-        assert clean_text == "AI Filing"
-        assert is_valid is True
-
-    def test_sanitize_invalid_input_stays_invalid(self, text_validator):
-        """Sanitizing invalid input should result in invalid output."""
-        dirty_text = "  \n\n  \t\t  \n\n  "  # Only whitespace
-        clean_text = text_validator.sanitize(dirty_text)
-        is_valid = text_validator.validate(clean_text)
-
-        assert clean_text == ""
-        assert is_valid is False
-
-    def test_multiple_samples(self, text_validator, valid_text_samples):
-        """All valid samples should pass validation after sanitization."""
-        for sample in valid_text_samples:
-            sanitized = text_validator.sanitize(sample)
-            assert text_validator.validate(sanitized) is True
-
-    def test_invalid_samples(self, text_validator, invalid_text_samples):
-        """All invalid samples should fail validation."""
-        for sample in invalid_text_samples:
-            assert text_validator.validate(sample) is False

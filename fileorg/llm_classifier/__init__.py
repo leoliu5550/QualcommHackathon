@@ -4,6 +4,7 @@ LLM Classifier Module
 Provides LLM-based text classification using hexagonal architecture.
 """
 
+from .adapters.prompt_builder import BasicPromptBuilder
 from .adapters.text_validator import BasicTextValidator
 from .ports import (
     ClassificationOutput,
@@ -24,4 +25,5 @@ __all__ = [
     "IOutputParser",
     "ITextValidator",
     "BasicTextValidator",
+    "BasicPromptBuilder",
 ]
