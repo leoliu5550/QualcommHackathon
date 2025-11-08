@@ -5,9 +5,14 @@ Defines contracts for LLM-based text classification independent of specific use 
 Focus: Text input/output handling and model constraints.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+if TYPE_CHECKING:
+    import jinja2
 
 # ============================================================================
 # Input/Output Data Models
@@ -118,11 +123,36 @@ class ILLMProvider(ABC):
 
 class IPromptBuilder(ABC):
     """
-    Prompt engineering interface.
+    Prompt engineering interface for constructing LLM messages.
+
+    This interface defines HOW to build prompts from input text and instructions.
+    Different implementations can use different strategies:
+    - Template-based prompts (LlamaPromptBuilder using ITemplateLoader)
+    - Hardcoded prompts (for simple use cases)
+    - Dynamic prompts based on context
+
+    Relationship with ITemplateLoader:
+        IPromptBuilder and ITemplateLoader are separate concerns:
+        - IPromptBuilder: WHAT messages to send to the LLM (prompt construction logic)
+        - ITemplateLoader: HOW to retrieve template content (I/O and caching)
+
+        This separation follows composition over inheritance:
+        - Template-based builders compose ITemplateLoader for flexible prompt management
+        - This is NOT redundant - it's clean architecture with clear boundaries
 
     Usage:
-        builder = MyPromptBuilder()
+        # Template-based approach (recommended for production)
+        loader = Jinja2TemplateLoader(base_path="prompts/")
+        builder = LlamaPromptBuilder(
+            template_loader=loader,
+            provider="llama3b",
+            version="v1"
+        )
         messages = builder.build_prompt(text="classify this", instruction="...")
+
+    Current Implementation:
+        - LlamaPromptBuilder: Jinja2 templates with version control, composes ITemplateLoader
+          Supports Llama 3B/8B with provider-specific optimizations and A/B testing via versions
     """
 
     @abstractmethod
@@ -136,7 +166,11 @@ class IPromptBuilder(ABC):
             max_tokens: Token limit for input text
 
         Returns:
-            Chat-formatted messages for LLM
+            Chat-formatted messages for LLM, e.g.:
+            [
+                {"role": "system", "content": "You are a classifier..."},
+                {"role": "user", "content": "Classify this text..."}
+            ]
         """
         pass
 
@@ -200,5 +234,61 @@ class ITextValidator(ABC):
 
         Returns:
             True if valid, False otherwise
+        """
+        pass
+
+
+class ITemplateLoader(ABC):
+    """
+    Load and cache prompt templates from storage (filesystem, database, etc.).
+
+    Usage:
+        # Standalone usage
+        loader = Jinja2TemplateLoader(base_path="prompts/")
+        template = loader.load_template(provider="llama3b", version="v1", template_type="system")
+        content = template.render(suggested_categories=["doc", "code"])
+
+        # Composed with IPromptBuilder
+        loader = Jinja2TemplateLoader(base_path="prompts/")
+        builder = LlamaPromptBuilder(template_loader=loader, provider="llama3b", version="v1")
+        messages = builder.build_prompt(text="...", instruction="...")
+
+    Implementations:
+        - Jinja2TemplateLoader: Filesystem-based with LRU caching
+    """
+
+    @abstractmethod
+    def load_template(self, provider: str, version: str, template_type: str) -> "jinja2.Template":
+        """
+        Load a specific template with caching.
+
+        Args:
+            provider: LLM provider name (e.g., "llama3b", "llama8b")
+            version: Template version (e.g., "v1", "v2") for A/B testing
+            template_type: Type of template (e.g., "system", "user")
+
+        Returns:
+            Jinja2 Template object ready for rendering
+
+        Raises:
+            FileNotFoundError: If template file doesn't exist
+            ValueError: If template is invalid or has syntax errors
+        """
+        pass
+
+    @abstractmethod
+    def template_exists(self, provider: str, version: str, template_type: str) -> bool:
+        """
+        Check if a template exists without loading it.
+
+        Useful for validation and graceful degradation.
+
+        Args:
+            provider: LLM provider name
+            version: Template version
+            template_type: Type of template
+
+        Returns:
+            True if template exists and is accessible, False otherwise
         """
         pass
