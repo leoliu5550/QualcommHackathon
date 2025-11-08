@@ -31,11 +31,12 @@ repos:
       # --- 4. Pytest Unit Tests ---
       - id: pytest
         name: Run Unit Tests
-        entry: pytest
+        entry: uv run pytest
         language: system
         args: ["fileorg/llm_classifier/tests/", "-v", "--tb=short", "--override-ini=addopts=-v --strict-markers"]
         pass_filenames: false
-        always_run: true
+        always_run: false
+        types: [python]
         stages: [pre-commit]
 
       # --- 5. Pip-audit (使用 uv 環境中的版本) ---
