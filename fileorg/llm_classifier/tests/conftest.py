@@ -4,6 +4,7 @@ Pytest configuration and fixtures for LLM classifier tests.
 
 import pytest
 
+from fileorg.llm_classifier.adapters.prompt_builder import BasicPromptBuilder
 from fileorg.llm_classifier.adapters.text_validator import BasicTextValidator
 
 
@@ -11,6 +12,12 @@ from fileorg.llm_classifier.adapters.text_validator import BasicTextValidator
 def text_validator():
     """Provide a BasicTextValidator instance with default configuration."""
     return BasicTextValidator(max_length=150000)
+
+
+@pytest.fixture
+def prompt_builder():
+    """Provide a BasicPromptBuilder instance with default configuration."""
+    return BasicPromptBuilder()
 
 
 @pytest.fixture
