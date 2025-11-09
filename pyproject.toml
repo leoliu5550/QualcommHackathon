@@ -43,7 +43,10 @@ dependencies = [
     "chardet>=5.2.0",
     "dotenv>=0.9.9",
     "loguru>=0.7.3",
+    "mammoth>=1.11.0",
     "pdfplumber>=0.11.8",
+    "python-docx>=1.2.0",
+    "python-pptx>=1.0.2",
 ]
 
 [project.optional-dependencies]
