@@ -1,27 +1,29 @@
 """
 LLM Classifier Module
-
-Provides LLM-based text classification using hexagonal architecture.
 """
 
-from .adapters.text_validator import BasicTextValidator
-from .ports import (
+from fileorg.llm_classifier.ports import (
     ClassificationOutput,
     IClassifierUseCase,
     ILLMProvider,
     IOutputParser,
     IPromptBuilder,
+    ITemplateLoader,
     ITextValidator,
     LLMInput,
 )
 
 __all__ = [
+    # Data Models
     "LLMInput",
     "ClassificationOutput",
+    # Inbound Ports (Use Cases)
     "IClassifierUseCase",
-    "ILLMProvider",
+    # Application Strategies
     "IPromptBuilder",
     "IOutputParser",
     "ITextValidator",
-    "BasicTextValidator",
+    # Outbound Ports (Infrastructure)
+    "ILLMProvider",
+    "ITemplateLoader",
 ]
