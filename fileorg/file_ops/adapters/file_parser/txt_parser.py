@@ -2,7 +2,7 @@ from pathlib import Path
 
 import chardet
 
-from fileorg.file_ops.ports import IParser, ParserOutput
+from fileorg.file_ops.ports.parser_ports import IParser, ParserOutput
 
 
 class TxtParser(IParser):
