@@ -30,8 +30,8 @@ class CsvParser(IParser):
     def _truncate_content(self, content: str, char_limit: int):
         """Truncate content if it exceeds the character limit."""
         if len(content) > char_limit:
-            return content[:char_limit], True
-        return content, False
+            return content[:char_limit]
+        return content
 
     def parse(self, file_path: Path, char_limit: int) -> ParserOutput:
         """Extract content from CSV file with encoding detection and truncation."""
@@ -49,10 +49,10 @@ class CsvParser(IParser):
                     if len(content) >= char_limit or row_count >= 100:
                         break
 
-            truncated_content, is_truncated = self._truncate_content(content, char_limit)
-            return ParserOutput(success=True, content=truncated_content, istruncated=is_truncated, error="")
+            truncated_content = self._truncate_content(content, char_limit)
+            return ParserOutput(success=True, content=truncated_content, error="")
 
         except UnicodeDecodeError as e:
-            return ParserOutput(success=False, content="", istruncated=False, error=f"Encoding error: {e}")
+            return ParserOutput(success=False, content="", error=f"Encoding error: {e}")
         except Exception as e:
-            return ParserOutput(success=False, content="", istruncated=False, error=f"CSV parsing failed: {e}")
+            return ParserOutput(success=False, content="", error=f"CSV parsing failed: {e}")
