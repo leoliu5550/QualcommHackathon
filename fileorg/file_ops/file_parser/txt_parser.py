@@ -25,8 +25,8 @@ class TxtParser(IParser):
     def _truncate_content(self, content: str, char_limit: int):
         """Truncate content if it exceeds character limit."""
         if len(content) > char_limit:
-            return content[:char_limit], True
-        return content, False
+            return content[:char_limit]
+        return content
 
     def parse(self, file_path: Path, char_limit: int) -> ParserOutput:
         """Parse a plain text file, handle encoding, and truncate if needed."""
@@ -35,9 +35,9 @@ class TxtParser(IParser):
             with open(file_path, "r", encoding=encoding, errors="ignore") as f:
                 content = f.read()
 
-            truncated_content, is_truncated = self._truncate_content(content, char_limit)
+            truncated_content = self._truncate_content(content, char_limit)
 
             # ✅ 使用 istruncated 和 error
-            return ParserOutput(success=True, content=truncated_content, istruncated=is_truncated, error="")
+            return ParserOutput(success=True, content=truncated_content, error="")
         except Exception as e:
-            return ParserOutput(success=False, content="", istruncated=False, error=str(e))
+            return ParserOutput(success=False, content="", error=str(e))

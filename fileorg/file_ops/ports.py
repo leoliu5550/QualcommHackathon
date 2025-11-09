@@ -109,13 +109,11 @@ class ParserOutput:
     Attributes:
         success (bool): Whether the parsing succeeded.
         content (str): The extracted text content. Empty if parsing failed.
-        is_truncated (bool): Indicates whether the content was truncated (e.g., due to size limits).
         error (str): Error message if parsing failed, otherwise an empty string.
     """
 
     success: bool
     content: str
-    istruncated: bool
     error: str
 
 
