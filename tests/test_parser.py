@@ -46,7 +46,7 @@ class TestAdapterParser:
         assert output.success
         assert output.content[:4] == "Snow"
 
-    def test_MhmlParser(self):
+    def test_MhtmlParser(self):
         mhtml_parser = MhtmlParser()
         output = mhtml_parser.parse(file_path=self.mhtml_file, char_limit=10)
 

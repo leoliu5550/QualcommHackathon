@@ -24,12 +24,9 @@ class ParserFactoryAdapter(IParserFactory):
     def _register_default_parsers(self):
         self.register_parser(".txt", TxtParser)
         self.register_parser(".pdf", PdfParser)
-        self.register_parser(".txt", TxtParser)
-        self.register_parser(".html", HtmlParser)
         self.register_parser(".htm", HtmlParser)
         self.register_parser(".mhtml", MhtmlParser)
         self.register_parser(".pdf", PdfParser)
-        self.register_parser(".docx", WordParser)
         self.register_parser(".doc", WordParser)
         self.register_parser(".pptx", PptParser)
 
