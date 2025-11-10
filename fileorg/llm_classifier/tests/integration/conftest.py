@@ -176,22 +176,22 @@ def llama_prompt_builder():
 
 
 @pytest.fixture(scope="session")
-def json_output_parser():
-    """Create JSON output parser."""
-    from fileorg.llm_classifier.application.json_output_parser import JSONOutputParser
+def path_mapping_output_parser():
+    """Create path mapping output parser."""
+    from fileorg.llm_classifier.application.path_mapping_output_parser import PathMappingOutputParser
 
-    return JSONOutputParser()
+    return PathMappingOutputParser()
 
 
 @pytest.fixture(scope="session")
-def file_classifier(huggingface_provider, llama_prompt_builder, json_output_parser):
-    """Create file classifier with HuggingFace backend and JSON parser."""
+def file_classifier(huggingface_provider, llama_prompt_builder, path_mapping_output_parser):
+    """Create file classifier with HuggingFace backend and path mapping parser."""
     from fileorg.llm_classifier.application.file_classifier import FileClassifier
 
     return FileClassifier(
         llm_provider=huggingface_provider,
         prompt_builder=llama_prompt_builder,
-        output_parser=json_output_parser,
+        output_parser=path_mapping_output_parser,
     )
 
 

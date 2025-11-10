@@ -118,16 +118,16 @@ class TestBasicClassification:
         input_data = LLMInput(text=sample_files_json, max_tokens=4096)
 
         # Act
-        result = file_classifier.classify_with_categories(input_data, suggested_categories=suggested_categories_basic)
+        result = file_classifier.classify(input_data)
 
         # Assert
         assert result is not None
         assert result.raw_response
         assert len(result.raw_response) > 0
 
-        # Verify parsed classifications
-        assert result.classifications is not None
-        assert isinstance(result.classifications, dict)
+        # Verify parsed path mappings
+        assert result.path_mappings is not None
+        assert isinstance(result.path_mappings, dict)
 
         print(f"\n{'=' * 60}")
         print(f"Suggested Categories: {suggested_categories_basic}")
