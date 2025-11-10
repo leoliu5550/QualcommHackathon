@@ -1,6 +1,14 @@
-{{ instruction }}
+Analyze and categorize the following {{ files|length }} file(s):
+分析並分類以下 {{ files|length }} 個文件：
 
-Files to classify / 待分類文件:
-```json
-{{ file_data }}
-```
+{% for filepath, content in files.items() %}
+---
+**File Path / 文件路徑:** {{ filepath }}
+**Content Preview / 內容預覽:**
+{{ content[:800] }}{% if content|length > 800 %}...{% endif %}
+
+{% endfor %}
+---
+
+Categorize ALL {{ files|length }} files listed above. Return ONLY the JSON object.
+分類以上列出的所有 {{ files|length }} 個文件。僅返回 JSON 對象。

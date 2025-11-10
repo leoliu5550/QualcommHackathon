@@ -16,18 +16,18 @@ from fileorg.llm_classifier.ports import IPromptBuilder
 
 @pytest.fixture
 def sample_file_data_single():
-    """Provide sample JSON data with a single file."""
-    return json.dumps({"report.pdf": {"path": "/documents/report.pdf", "content": "Annual sales report for Q4 2024"}})
+    """Provide sample JSON data with a single file in flat format: {filepath: content}."""
+    return json.dumps({"/documents/report.pdf": "Annual sales report for Q4 2024"})
 
 
 @pytest.fixture
 def sample_file_data_batch():
-    """Provide sample JSON data with multiple files."""
+    """Provide sample JSON data with multiple files in flat format: {filepath: content}."""
     return json.dumps(
         {
-            "analysis.pdf": {"path": "/stats/analysis.pdf", "content": "Statistical analysis of customer data"},
-            "meeting_notes.docx": {"path": "/docs/meeting_notes.docx", "content": "Meeting notes from team sync"},
-            "data.csv": {"path": "/data/data.csv", "content": "timestamp,value,category\n2024-01-01,100,A\n"},
+            "/stats/analysis.pdf": "Statistical analysis of customer data",
+            "/docs/meeting_notes.docx": "Meeting notes from team sync",
+            "/data/data.csv": "timestamp,value,category\n2024-01-01,100,A\n",
         }
     )
 
@@ -203,7 +203,7 @@ class TestTokenLimitHandling:
     def test_respects_max_tokens_parameter(self, llama3b_builder):
         """Should truncate text when it exceeds max_tokens."""
         large_content = "A" * 100000
-        large_json = json.dumps({"large_file.txt": {"path": "/path", "content": large_content}})
+        large_json = json.dumps({"/path/large_file.txt": large_content})
 
         max_tokens = 1000
         result = llama3b_builder.build_prompt(large_json, "Classify", max_tokens=max_tokens)

@@ -90,8 +90,8 @@ class LlamaPromptBuilder(IPromptBuilder):
         Args:
             text: JSON-formatted string containing file data. Expected structure:
                   {
-                      "filename1": {"path": "...", "content": "..."},
-                      "filename2": {"path": "...", "content": "..."},
+                      "/path/to/file1.txt": "content of file 1",
+                      "/path/to/file2.pdf": "content of file 2",
                       ...
                   }
             instruction: Classification instruction in natural language
@@ -125,7 +125,7 @@ class LlamaPromptBuilder(IPromptBuilder):
             raise ValueError(f"Input text must be valid JSON format: {e}") from e
 
         # Truncate text to respect token limit (rough approximation: 1 token ≈ 4 characters)
-        truncated_text = self._truncate_text(text, file_data, max_tokens)
+        truncated_data = self._truncate_files(file_data, max_tokens)
 
         # Load templates
         system_template = self.template_loader.load_template(self.provider, self.version, "system")
@@ -136,7 +136,7 @@ class LlamaPromptBuilder(IPromptBuilder):
 
         # Render templates with context
         system_content = system_template.render(suggested_categories=categories)
-        user_content = user_template.render(instruction=instruction, file_data=truncated_text)
+        user_content = user_template.render(instruction=instruction, files=truncated_data)
 
         # Construct Llama chat format
         formatted_prompt = self._format_llama_chat(system_content, user_content)
@@ -144,22 +144,24 @@ class LlamaPromptBuilder(IPromptBuilder):
         # Return as single message (Llama processes the special tokens internally)
         return [{"role": "user", "content": formatted_prompt}]
 
-    def _truncate_text(self, text: str, file_data: dict, max_tokens: int) -> str:
+    def _truncate_files(self, file_data: dict, max_tokens: int) -> dict:
         """
-        Truncate text to respect token limit.
+        Truncate file data to respect token limit.
 
         Args:
-            text: Original JSON text
             file_data: Parsed file data dictionary
             max_tokens: Maximum token count
 
         Returns:
-            Truncated JSON string
+            Truncated file data dictionary
         """
         max_chars = max_tokens * 4
 
-        if len(text) <= max_chars:
-            return text
+        # Calculate current size
+        current_json = json.dumps(file_data, ensure_ascii=False)
+
+        if len(current_json) <= max_chars:
+            return file_data
 
         # Gracefully truncate by removing files from the data structure
         truncated_data = {}
@@ -175,7 +177,7 @@ class LlamaPromptBuilder(IPromptBuilder):
             else:
                 break
 
-        return json.dumps(truncated_data, ensure_ascii=False)
+        return truncated_data
 
     def _format_llama_chat(self, system_content: str, user_content: str) -> str:
         """

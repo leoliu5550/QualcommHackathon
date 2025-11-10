@@ -1,0 +1,20 @@
+{
+  "C:/Desktop/report.pdf": {
+    "new_relative_path": "Financial_Reports/report.pdf",
+    "category": "Financial Reports",
+    "summary": "Q4 financial report",
+    "reason": "Contains financial data"
+  },
+  "C:/Desktop/movie_list.txt": {
+    "new_relative_path": "Entertainment/movie_list.txt",
+    "category": "Entertainment",
+    "summary": "List of top-rated films",
+    "reason": "Contains entertainment-related content"
+  },
+  "C:/Desktop/study_notes.docx": {
+    "new_relative_path": "Education/study_notes.docx",
+    "category": "Education",
+    "summary": "Lecture notes on machine learning",
+    "reason": "Educational materials for study"
+  }
+}

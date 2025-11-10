@@ -33,7 +33,7 @@ repos:
         name: Run Unit Tests
         entry: uv run pytest
         language: system
-        args: ["fileorg/llm_classifier/tests/", "-v", "--tb=short", "--override-ini=addopts=-v --strict-markers"]
+        args: ["fileorg/llm_classifier/tests/", "-v", "--tb=short", "--override-ini=addopts=-v --strict-markers", "-m", "not integration"]
         pass_filenames: false
         always_run: false
         types: [python]

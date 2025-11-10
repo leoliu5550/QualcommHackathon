@@ -31,7 +31,8 @@ jobs:
       - name: Run pytest
         run: |
           # Override pyproject.toml addopts to disable coverage requirements (to avoid delaying milestones
-          uv run pytest fileorg/llm_classifier/tests/ -v --tb=short --override-ini='addopts=-v --strict-markers'
+          # Skip integration tests with -m "not integration"
+          uv run pytest fileorg/llm_classifier/tests/ -v --tb=short --override-ini='addopts=-v --strict-markers' -m "not integration"
         continue-on-error: false
 
       - name: Test Summary

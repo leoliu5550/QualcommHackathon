@@ -3,6 +3,8 @@ Text validation adapter implementation.
 """
 
 import re
+from pathlib import Path
+from typing import Dict
 
 from fileorg.llm_classifier.ports import ITextValidator
 
@@ -76,5 +78,86 @@ class BasicTextValidator(ITextValidator):
         # Check length constraint
         if len(text) > self.max_length:
             return False
+
+        return True
+
+    def validate_path(self, path: str) -> bool:
+        """
+        Validate file path format.
+
+        Checks:
+        - Path is non-empty
+        - Path appears to be absolute
+        - Filename is extractable
+
+        Args:
+            path: File path to validate
+
+        Returns:
+            True if path format is valid, False otherwise
+        """
+        if not path or not path.strip():
+            return False
+
+        # Check if path looks like an absolute path
+        # Support Windows (C:/), Unix (/), and common mount points
+        path_stripped = path.strip()
+        is_absolute = any(
+            [
+                path_stripped.startswith("C:/"),
+                path_stripped.startswith("C:\\"),
+                path_stripped.startswith("/"),
+                path_stripped.startswith("/mnt/"),
+                path_stripped.startswith("/Users/"),
+                path_stripped.startswith("/home/"),
+            ]
+        )
+
+        if not is_absolute:
+            return False
+
+        # Reject paths ending with separator (directory-only paths)
+        if path_stripped.endswith("/") or path_stripped.endswith("\\"):
+            return False
+
+        # Check that we can extract a filename
+        try:
+            filename = Path(path).name
+            if not filename or not filename.strip():
+                return False
+        except Exception:
+            return False
+
+        return True
+
+    def validate_paths_dict(self, data: Dict[str, str]) -> bool:
+        """
+        Validate dictionary of file paths to content.
+
+        Checks:
+        - Dictionary is non-empty
+        - All keys are valid paths
+        - All values are valid text content
+
+        Args:
+            data: Dictionary mapping file paths to content strings
+
+        Returns:
+            True if all paths and content are valid, False otherwise
+        """
+        if not data or not isinstance(data, dict):
+            return False
+
+        if len(data) == 0:
+            return False
+
+        for path, content in data.items():
+            # Validate path format
+            if not self.validate_path(path):
+                return False
+
+            # Validate content (allow empty content for some files)
+            if not isinstance(content, str):
+                return False
 
         return True

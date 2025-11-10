@@ -42,6 +42,7 @@ dependencies = [
     "beautifulsoup4>=4.14.2",
     "chardet>=5.2.0",
     "dotenv>=0.9.9",
+    "jinja2>=3.1.6",  # Required for prompt templates
     "loguru>=0.7.3",
     "mammoth>=1.11.0",
     "pdfplumber>=0.11.8",
@@ -79,13 +80,15 @@ docs = [
     # "mkdocs-minify-plugin>=0.7.2",
     # "pymdown-extensions>=10.5",
 ]
-# Non-NPU mode: Heavy dependencies for running models on CPU/GPU
-non-npu = [
-    # "torch>=2.0.0",
-    # "transformers>=4.35.0",
-    # "accelerate>=0.24.0",
-    # "sentencepiece>=0.1.99",  # Required for some tokenizers
-    # "protobuf>=3.20.0",  # Required for some models
+# GPU mode: Dependencies for running LLM models on GPU (for testing/development)
+# Install with: uv sync --extra gpu
+# Note: Install PyTorch with CUDA separately (see docs/GPU_TESTING.md)
+gpu = [
+    "torch>=2.5.1",           # PyTorch (install GPU version with --index-url)
+    "transformers>=4.30.0",   # HuggingFace Transformers for LLM inference
+    "accelerate>=0.20.0",     # Efficient model loading and inference
+    "sentencepiece>=0.1.99",  # Tokenizer support for Llama models
+    "protobuf>=3.20.0",       # Protocol buffers for model serialization
 ]
 
 [project.urls]
@@ -129,7 +132,13 @@ markers = [
     "scanner: 檔案掃描器測試",
     "organizer: 檔案組織器測試",
     "classifier: 檔案分類器測試",
+    "gpu: 需要 GPU/CUDA 支援的測試 (使用 -m 'not gpu' 跳過)",
 ]
+# Logging configuration for tests (enable detailed logs)
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(name)s - %(message)s"
+log_cli_date_format = "%H:%M:%S"
 
 [tool.bandit]
 exclude_dirs = [".venv", "tests", "docs"]

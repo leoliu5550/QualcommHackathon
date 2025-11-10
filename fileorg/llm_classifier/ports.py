@@ -1,8 +1,7 @@
 """
-LLM Classifier Ports - Business-Agnostic Interfaces
+LLM Classifier Ports - Interface Definitions
 
-Defines contracts for LLM-based text classification independent of specific use cases.
-Focus: Text input/output handling and model constraints.
+This module defines all interfaces following Hexagonal Architecture principles:
 """
 
 from __future__ import annotations
@@ -13,10 +12,6 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     import jinja2
-
-# ============================================================================
-# Input/Output Data Models
-# ============================================================================
 
 
 @dataclass
@@ -40,38 +35,72 @@ class LLMInput:
 @dataclass
 class ClassificationOutput:
     """
-    Classification result mapping classes to items.
+    File path mapping classification result.
 
-    Structure: {class_name: [item1, item2, ...], ...}
+    Maps files to organized paths with categorization metadata.
 
     Usage:
         output = ClassificationOutput(
-            classifications={"documents": ["file1.txt", "file2.pdf"]},
+            path_mappings={
+                "C:/Desktop/report.pdf": FileMapping(
+                    old_path="C:/Desktop/report.pdf",
+                    new_relative_path="Financial_Reports/report.pdf",
+                    category="Financial Reports",
+                    summary="Q4 earnings report",
+                    reason="Contains financial data"
+                )
+            },
             raw_response="..."
         )
 
     Args:
-        classifications: Dict mapping class names to lists of classified items
+        path_mappings: Dict mapping old paths to FileMapping objects
         raw_response: Original LLM text output (for debugging/logging)
-        metadata: Optional metadata (confidence scores, etc.)
+        metadata: Optional metadata (token counts, file count, etc.)
     """
 
-    classifications: Dict[str, List[str]]
+    path_mappings: Dict[str, "FileMapping"]
     raw_response: str
     metadata: Optional[Dict[str, float]] = None
 
 
-# ============================================================================
-# Inbound Ports - Use Cases
-# ============================================================================
+@dataclass
+class FileMapping:
+    """
+    Single file path mapping with metadata.
+
+    Maps an old absolute path to a new organized relative path with categorization info.
+
+    Usage:
+        mapping = FileMapping(
+            old_path="C:/Desktop/report.pdf",
+            new_relative_path="Financial_Reports/report.pdf",
+            category="Financial Reports",
+            summary="Q4 financial report",
+            reason="Contains financial data"
+        )
+
+    Args:
+        old_path: Original absolute file path
+        new_relative_path: New organized relative path (Category_Name/filename)
+        category: Original category name (spaces preserved)
+        summary: Brief content summary (1-2 sentences)
+        reason: Classification reasoning
+    """
+
+    old_path: str
+    new_relative_path: str
+    category: str
+    summary: str
+    reason: str
 
 
 class IClassifierUseCase(ABC):
     """
-    Text classification use case.
+    Text classification use case interface.
 
     Usage:
-        classifier = MyClassifier()
+        classifier = FileClassifier(llm_provider=..., prompt_builder=...)
         output = classifier.classify(LLMInput(text="..."))
         print(output.classifications)  # {"class_name": ["item1", ...]}
     """
@@ -90,20 +119,13 @@ class IClassifierUseCase(ABC):
         pass
 
 
-# ============================================================================
-# Outbound Ports - External Dependencies
-# ============================================================================
-
-
 class ILLMProvider(ABC):
     """
-    LLM inference provider (backend-agnostic).
+    LLM inference provider interface (Outbound Port).
 
     Usage:
-        llm = QualcommLLM(api_key="...")
+        llm = HuggingFaceProvider(model_name="meta-llama/Llama-3.2-3B-Instruct")
         response = llm.generate(messages=[{"role": "user", "content": "..."}])
-
-    Implementations: Qualcomm NPU, HuggingFace, OpenAI, etc.
     """
 
     @abstractmethod
@@ -123,36 +145,21 @@ class ILLMProvider(ABC):
 
 class IPromptBuilder(ABC):
     """
-    Prompt engineering interface for constructing LLM messages.
-
-    This interface defines HOW to build prompts from input text and instructions.
-    Different implementations can use different strategies:
-    - Template-based prompts (LlamaPromptBuilder using ITemplateLoader)
-    - Hardcoded prompts (for simple use cases)
-    - Dynamic prompts based on context
+    Prompt construction strategy interface (Application Strategy).
 
     Relationship with ITemplateLoader:
-        IPromptBuilder and ITemplateLoader are separate concerns:
-        - IPromptBuilder: WHAT messages to send to the LLM (prompt construction logic)
-        - ITemplateLoader: HOW to retrieve template content (I/O and caching)
-
-        This separation follows composition over inheritance:
-        - Template-based builders compose ITemplateLoader for flexible prompt management
-        - This is NOT redundant - it's clean architecture with clear boundaries
+        - IPromptBuilder: Application strategy - HOW to construct prompts (business logic)
+        - ITemplateLoader: Infrastructure port - WHERE to get template content (I/O)
 
     Usage:
-        # Template-based approach (recommended for production)
-        loader = Jinja2TemplateLoader(base_path="prompts/")
-        builder = LlamaPromptBuilder(
+        # Template-based approach (recommended)
+        loader = Jinja2TemplateLoader(base_path="prompts/")  # Adapter
+        builder = LlamaPromptBuilder(                        # Use Case strategy
             template_loader=loader,
             provider="llama3b",
             version="v1"
         )
         messages = builder.build_prompt(text="classify this", instruction="...")
-
-    Current Implementation:
-        - LlamaPromptBuilder: Jinja2 templates with version control, composes ITemplateLoader
-          Supports Llama 3B/8B with provider-specific optimizations and A/B testing via versions
     """
 
     @abstractmethod
@@ -177,24 +184,26 @@ class IPromptBuilder(ABC):
 
 class IOutputParser(ABC):
     """
-    Parse LLM text output into structured format.
+    LLM output parsing strategy interface (Application Strategy).
+
+    Parses LLM output to file path mappings.
 
     Usage:
-        parser = JSONOutputParser()
+        parser = PathMappingOutputParser()
         result = parser.parse(llm_response)
-        print(result)  # {"class_name": ["item1", "item2"]}
+        # Returns: {"C:/old/path": FileMapping(...)}
     """
 
     @abstractmethod
-    def parse(self, text: str) -> Dict[str, List[str]]:
+    def parse(self, text: str) -> Dict[str, "FileMapping"]:
         """
-        Parse LLM output to {class_name: [items]} format.
+        Parse LLM output to path mappings.
 
         Args:
             text: Raw LLM text output
 
         Returns:
-            Dict mapping class names to item lists
+            Dict[str, FileMapping] mapping old paths to FileMapping objects
 
         Raises:
             ValueError: If parsing fails
@@ -204,11 +213,12 @@ class IOutputParser(ABC):
 
 class ITextValidator(ABC):
     """
-    Validate and sanitize text outputs.
+    Text validation and sanitization strategy interface (Application Strategy).
 
     Usage:
-        validator = FileNameValidator()
-        safe_name = validator.sanitize("unsafe/name?")  # "unsafe_name"
+        validator = BasicTextValidator(max_length=150000)
+        safe_text = validator.sanitize("raw text...")
+        is_valid = validator.validate(safe_text)
     """
 
     @abstractmethod
@@ -240,7 +250,10 @@ class ITextValidator(ABC):
 
 class ITemplateLoader(ABC):
     """
-    Load and cache prompt templates from storage (filesystem, database, etc.).
+    Template storage and loading interface (Outbound Port).
+
+    This is an infrastructure port because it connects to external storage
+    (filesystem, database, cloud storage, etc.).
 
     Usage:
         # Standalone usage
@@ -248,13 +261,10 @@ class ITemplateLoader(ABC):
         template = loader.load_template(provider="llama3b", version="v1", template_type="system")
         content = template.render(suggested_categories=["doc", "code"])
 
-        # Composed with IPromptBuilder
+        # Composed with IPromptBuilder (application strategy)
         loader = Jinja2TemplateLoader(base_path="prompts/")
         builder = LlamaPromptBuilder(template_loader=loader, provider="llama3b", version="v1")
         messages = builder.build_prompt(text="...", instruction="...")
-
-    Implementations:
-        - Jinja2TemplateLoader: Filesystem-based with LRU caching
     """
 
     @abstractmethod
