@@ -1,5 +1,7 @@
 from typing import Dict, List, Optional, Type
 
+from fileorg.file_ops.adapters.file_parser.csv_parser import CsvParser
+from fileorg.file_ops.adapters.file_parser.excel_parser import ExcelParser
 from fileorg.file_ops.adapters.file_parser.html_parser import HtmlParser
 from fileorg.file_ops.adapters.file_parser.mhtml_parser import MhtmlParser
 from fileorg.file_ops.adapters.file_parser.pdf_parser import PdfParser
@@ -23,11 +25,16 @@ class ParserFactoryAdapter(IParserFactory):
 
     def _register_default_parsers(self):
         self.register_parser(".txt", TxtParser)
-        self.register_parser(".pdf", PdfParser)
+        self.register_parser(".json", TxtParser)
+        self.register_parser(".md", TxtParser)
+        self.register_parser(".csv", CsvParser)
+        self.register_parser(".xlsx", ExcelParser)
         self.register_parser(".htm", HtmlParser)
+        self.register_parser(".html", HtmlParser)
         self.register_parser(".mhtml", MhtmlParser)
         self.register_parser(".pdf", PdfParser)
         self.register_parser(".doc", WordParser)
+        self.register_parser(".docx", WordParser)
         self.register_parser(".pptx", PptParser)
 
     def register_parser(self, extension: str, parser_class: Type[IParser]):
