@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pdfplumber
 
-from fileorg.file_ops.ports import IParser, ParserOutput
+from fileorg.file_ops.ports.parser_ports import IParser, ParserOutput
 
 
 class PdfParser(IParser):

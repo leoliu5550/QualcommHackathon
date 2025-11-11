@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 
 from loguru import logger
 
-from fileorg.file_ops.ports import IFileScanner, ReportOutput, ScanOutput
+from fileorg.file_ops.ports.scanner_ports import IFileScanner, ReportOutput, ScanOutput
 
 
 class FileScanner(IFileScanner):

@@ -1,7 +1,7 @@
 # word_parser.py
 from pathlib import Path
 
-from fileorg.file_ops.ports import IParser, ParserOutput
+from fileorg.file_ops.ports.parser_ports import IParser, ParserOutput
 
 
 class WordParser(IParser):
