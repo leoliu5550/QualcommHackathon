@@ -11,7 +11,7 @@ from typing import Dict, Optional, Tuple
 
 import jinja2
 
-from fileorg.llm_classifier.ports import ITemplateLoader
+from fileorg.llm_classifier.ports.interfaces import ITemplateLoader
 
 
 class Jinja2TemplateLoader(ITemplateLoader):

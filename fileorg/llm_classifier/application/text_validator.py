@@ -3,8 +3,9 @@ Text validation adapter implementation.
 """
 
 import re
+from typing import Any, Optional
 
-from fileorg.llm_classifier.ports import ITextValidator
+from fileorg.llm_classifier.ports.interfaces import ITextValidator
 
 
 class BasicTextValidator(ITextValidator):
@@ -76,5 +77,75 @@ class BasicTextValidator(ITextValidator):
         # Check length constraint
         if len(text) > self.max_length:
             return False
+
+        return True
+
+    def validate_path(self, path: Optional[str]) -> bool:
+        """
+        Validate that a path is an absolute path with a filename.
+
+        Args:
+            path: Path string to validate.
+
+        Returns:
+            True if path is a valid absolute path with a filename, False otherwise.
+        """
+        # Reject None, empty strings, or whitespace-only strings
+        if path is None or not path or not path.strip():
+            return False
+
+        # Normalize path separators
+        normalized_path = path.replace("\\", "/")
+
+        # Check if it's an absolute path (Windows or Unix)
+        # Windows: starts with drive letter (e.g., C:/)
+        # Unix: starts with /
+        is_windows_absolute = bool(re.match(r"^[A-Za-z]:/", normalized_path))
+        is_unix_absolute = normalized_path.startswith("/")
+
+        if not (is_windows_absolute or is_unix_absolute):
+            return False
+
+        # Reject if path ends with a slash (directory only, no filename)
+        if normalized_path.endswith("/"):
+            return False
+
+        # Extract the filename (last component after final /)
+        filename = normalized_path.split("/")[-1]
+
+        # Ensure there's a filename present
+        if not filename or filename.strip() == "":
+            return False
+
+        return True
+
+    def validate_paths_dict(self, paths_dict: Any) -> bool:
+        """
+        Validate a dictionary of paths to content.
+
+        Args:
+            paths_dict: Dictionary with file paths as keys and content as values.
+
+        Returns:
+            True if dictionary is valid (non-empty, all paths valid, all values are strings),
+            False otherwise.
+        """
+        # Reject None or non-dictionary types
+        if paths_dict is None or not isinstance(paths_dict, dict):
+            return False
+
+        # Reject empty dictionaries
+        if not paths_dict:
+            return False
+
+        # Validate each path and content
+        for path, content in paths_dict.items():
+            # Validate the path
+            if not self.validate_path(path):
+                return False
+
+            # Validate that content is a string (can be empty)
+            if not isinstance(content, str):
+                return False
 
         return True
