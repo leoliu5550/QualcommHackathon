@@ -9,7 +9,7 @@ from fileorg.file_ops.adapters.file_parser.txt_parser import TxtParser
 from fileorg.file_ops.adapters.file_parser.word_parser import WordParser
 from fileorg.file_ops.adapters.parser_factory_adapter import ParserFactoryAdapter
 from fileorg.file_ops.application.parser_client import ParseFileClient
-from fileorg.file_ops.ports.parser_ports import ParserOutput
+from fileorg.file_ops.ports.parser_ports import MultiParserOutput, ParserOutput
 
 
 class TestParserClient:
@@ -24,10 +24,21 @@ class TestParserClient:
         assert output.content[:5] == "Small"
 
     def test_parse_multiple(self):
-        outputs = self.parser_file_client.parse_multiple(file_paths=self.file_pat)
-        for result in outputs:
-            assert isinstance(result, ParserOutput)
-            assert result.success
+        report_out = {
+            "root": ".",
+            "file_count": 1,
+            "total_size": 67,
+            "files": [
+                {
+                    "path": "tests/example_data/interview prepare/Ch4  Principles component analysis.pdf",
+                    "name": "Ch4  Principles component analysis.pdf",
+                    "size": 1339552,
+                }
+            ],
+        }
+        outputs = self.parser_file_client.parse_multiple(report_out=report_out)
+        print(outputs)
+        assert isinstance(outputs, MultiParserOutput)
 
 
 class TestAdapterParser:
