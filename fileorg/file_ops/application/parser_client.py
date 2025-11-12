@@ -6,15 +6,15 @@ Automatically loads appropriate parsers for different file types.
 """
 
 from pathlib import Path
-from typing import List
 
-from fileorg.file_ops.ports.parser_ports import IParserFactory, ParserOutput
+from fileorg.file_ops.ports.parser_ports import IParserFactory, MultiParserOutput, ParserOutput
+from fileorg.file_ops.ports.scanner_ports import ReportOutput
 
 
 class ParseFileClient:
     """Use case for parsing files using the injected parser factory."""
 
-    def __init__(self, parser_factory: IParserFactory, char_limit: int = 1000):
+    def __init__(self, parser_factory: IParserFactory, char_limit: int = 500):
         self.parser_factory = parser_factory
         self.char_limit = char_limit
 
@@ -29,5 +29,17 @@ class ParseFileClient:
 
         return parser.parse(path, self.char_limit)
 
-    def parse_multiple(self, file_paths: List[str | Path]) -> List[ParserOutput]:
-        return [self.parse(fp) for fp in file_paths]
+    def parse_multiple(self, report_out: ReportOutput) -> MultiParserOutput:
+        muti_parser_output = MultiParserOutput()
+        scanner_output = getattr(report_out, "files", None)
+
+        if not scanner_output:
+            return muti_parser_output
+
+        for file_info in scanner_output:
+            parse_result = self.parse(file_info.path)
+
+            if getattr(parse_result, "success", False):
+                muti_parser_output[file_info.path] = parse_result.content
+
+        return muti_parser_output

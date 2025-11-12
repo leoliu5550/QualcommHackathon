@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -21,6 +21,31 @@ class ParserOutput:
     success: bool
     content: str
     error: str
+
+
+class MultiParserOutput(Dict[str, str]):
+    """
+    Represents a mapping from file paths to their parsed text content.
+
+    This class is a dictionary subclass where:
+    - **Key**: Absolute file path (from ScanOutput.path)
+    - **Value**: Extracted text content (from ParserOutput.content, only for successful parses)
+
+    It is intended to store the output of the file parsing stage in a format
+    suitable for downstream processing (e.g., feeding into an LLM).
+
+    Example:
+        >>> output = MultiParserOutput()
+        >>> output["/home/user/docs/report.pdf"] = "First quarter sales report..."
+        >>> output["/home/user/docs/report.pdf"]
+        'First quarter sales report...'
+
+    Notes:
+        - Only include files where parsing succeeded (ParserOutput.success == True).
+        - Can be used and accessed like a normal Python dictionary.
+    """
+
+    pass
 
 
 class IParser(ABC):
