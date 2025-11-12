@@ -20,14 +20,25 @@ It recursively scans a target directory, collecting essential metadata (path, na
    * The module validates whether the target directory exists and is a valid folder.
    * Ignore patterns are configured (either user-provided or defaults).
 
+
 2. **Recursive Scanning (`scan` / `_scan`)**
 
    * The scanning starts from `root_dir` and descends into subdirectories.
+
    * For each item encountered:
 
      * If it matches any ignore pattern (`_is_ignored()`), it is skipped.
      * If it’s a directory, scanning continues recursively.
      * If it’s a file, metadata such as path, name, and size are collected.
+
+   * **Output:** `ScanOutput` — a list of file metadata dictionaries:
+
+    ```python
+    [
+        {'path': '/tests/example_data/file1.pdf', 'name': 'file1.pdf', 'size': 1339552},
+        ...
+    ]
+    ```
 
 3. **Report Generation (`generate_report`)**
 
@@ -35,12 +46,29 @@ It recursively scans a target directory, collecting essential metadata (path, na
 
      * Total file count (`file_count`)
      * Total file size (`total_size`)
-     * Detailed file list (`files`)
+     * Detailed file list (`files`) — the content of `scan()` is embedded here
+
+   * **Output:** `ReportOutput` — a dictionary with additional metadata:
+
+    ```python
+    {
+        'root': '/Users/leo/Documents/Projects',
+        'file_count': 15,
+        'total_size': 6744401,
+        'files': [ ... scan() output here ... ]
+    }
+    ```
+
+* **Key Difference:** Unlike `scan()`, `generate_report()` provides the overall summary and aggregates the results, but you do not need to call `scan()` beforehand unless you want the raw scan output separately.
 
 4. **Report Output (`save_report`)**
 
-   * Converts the generated report into JSON format and saves it to disk.
-   * Enables integration with other modules or external analysis tools.
+   * Converts a `ReportOutput` into JSON format and saves it to disk.
+   * **Behavior:** You can call `save_report()` directly with a specified file path; there is **no need to call `scan()` or `generate_report()` first**. You can also pass an existing `ReportOutput` if desired.
+
+```python
+scanner.save_report(output_path="scan_report.json")
+```
 
 ---
 
