@@ -31,11 +31,15 @@ class ParseFileClient:
 
     def parse_multiple(self, report_out: ReportOutput) -> MultiParserOutput:
         muti_parser_output = MultiParserOutput()
-        scanner_output = report_out.get("files", None)
+        scanner_output = getattr(report_out, "files", None)
 
-        for file_path_obj in scanner_output:
-            parse_result = self.parse(file_path_obj.get("path"))
-            if parse_result.error == "":
-                muti_parser_output.update({file_path_obj.get("path"): parse_result.content})
+        if not scanner_output:
+            return muti_parser_output
+
+        for file_info in scanner_output:
+            parse_result = self.parse(file_info.path)
+
+            if getattr(parse_result, "success", False):
+                muti_parser_output[file_info.path] = parse_result.content
 
         return muti_parser_output
