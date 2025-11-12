@@ -6,12 +6,11 @@ Requirements / 要求:
 1. Create clear and descriptive category names / 創建清晰且描述性的類別名稱
 2. Group similar files together / 將相似的文件分組在一起
 3. Consider file content, name, and extension / 考慮文件內容、名稱和副檔名
-4. Use your enhanced reasoning capabilities to identify subtle patterns and relationships / 使用您增強的推理能力來識別細微的模式和關係
 {% if suggested_categories %}
-5. You may reference these suggested categories, but can create new ones if needed / 你可以參考這些建議類別，但如果需要也可以創建新類別:
+4. You may reference these suggested categories, but can create new ones if needed / 你可以參考這些建議類別，但如果需要也可以創建新類別:
    {{ suggested_categories | join(", ") }}
 {% else %}
-5. Create categories dynamically based on file content / 根據文件內容動態創建類別
+4. Create categories dynamically based on file content / 根據文件內容動態創建類別
 {% endif %}
 
 Output Format / 輸出格式:
