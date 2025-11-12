@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from pathlib import Path
 
 from appdirs import user_data_dir
@@ -70,7 +71,9 @@ def setup_logger(ENV: str):
         if issubclass(exc_type, KeyboardInterrupt):
             sys.__excepthook__(exc_type, exc_value, exc_traceback)
             return
-        logger.exception("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+        formatted_exception = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        logger.error(f"Uncaught exception:\n{formatted_exception}")
 
     sys.excepthook = handle_exception
 
