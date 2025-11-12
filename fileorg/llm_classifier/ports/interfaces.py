@@ -1,98 +1,16 @@
 """
-LLM Classifier Ports - Interface Definitions
-
-This module defines all interfaces following Hexagonal Architecture principles:
+LLM Classifier Interfaces - Port Definitions
 """
 
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     import jinja2
 
-
-@dataclass
-class LLMInput:
-    """
-    Text input for LLM processing.
-
-    Usage:
-        input = LLMInput(text="content", max_tokens=150000)
-        result = llm.classify(input)
-
-    Args:
-        text: Input text content
-        max_tokens: Token limit (model-dependent, not business logic)
-    """
-
-    text: str
-    max_tokens: int = 150000
-
-
-@dataclass
-class ClassificationOutput:
-    """
-    File path mapping classification result.
-
-    Maps files to organized paths with categorization metadata.
-
-    Usage:
-        output = ClassificationOutput(
-            path_mappings={
-                "C:/Desktop/report.pdf": FileMapping(
-                    old_path="C:/Desktop/report.pdf",
-                    new_relative_path="Financial_Reports/report.pdf",
-                    category="Financial Reports",
-                    summary="Q4 earnings report",
-                    reason="Contains financial data"
-                )
-            },
-            raw_response="..."
-        )
-
-    Args:
-        path_mappings: Dict mapping old paths to FileMapping objects
-        raw_response: Original LLM text output (for debugging/logging)
-        metadata: Optional metadata (token counts, file count, etc.)
-    """
-
-    path_mappings: Dict[str, "FileMapping"]
-    raw_response: str
-    metadata: Optional[Dict[str, float]] = None
-
-
-@dataclass
-class FileMapping:
-    """
-    Single file path mapping with metadata.
-
-    Maps an old absolute path to a new organized relative path with categorization info.
-
-    Usage:
-        mapping = FileMapping(
-            old_path="C:/Desktop/report.pdf",
-            new_relative_path="Financial_Reports/report.pdf",
-            category="Financial Reports",
-            summary="Q4 financial report",
-            reason="Contains financial data"
-        )
-
-    Args:
-        old_path: Original absolute file path
-        new_relative_path: New organized relative path (Category_Name/filename)
-        category: Original category name (spaces preserved)
-        summary: Brief content summary (1-2 sentences)
-        reason: Classification reasoning
-    """
-
-    old_path: str
-    new_relative_path: str
-    category: str
-    summary: str
-    reason: str
+    from .models import ClassificationOutput, FileMapping, FileSummary, LLMInput
 
 
 class IClassifierUseCase(ABC):
@@ -106,7 +24,7 @@ class IClassifierUseCase(ABC):
     """
 
     @abstractmethod
-    def classify(self, input_data: LLMInput) -> ClassificationOutput:
+    def classify(self, input_data: "LLMInput") -> "ClassificationOutput":
         """
         Classify text input into categories.
 
@@ -178,6 +96,44 @@ class IPromptBuilder(ABC):
                 {"role": "system", "content": "You are a classifier..."},
                 {"role": "user", "content": "Classify this text..."}
             ]
+        """
+        pass
+
+
+class ISummaryParser(ABC):
+    """
+    Summary parsing strategy interface for Stage 1 (Application Strategy).
+
+    Parses LLM output from Stage 1 summarization to create FileSummary objects.
+    This interface is separate from IOutputParser because Stage 1 has different
+    responsibilities and return types than Stage 2.
+
+    Usage:
+        parser = SummaryOutputParser()
+        result = parser.parse(llm_response, file_path="/path/to/file.txt")
+        # Returns: FileSummary(file_path="...", summary="folder name", ...)
+    """
+
+    @abstractmethod
+    def parse(
+        self,
+        text: str,
+        file_path: Optional[str] = None,
+        raw_length: Optional[int] = None,
+    ) -> "FileSummary":
+        """
+        Parse LLM output to FileSummary object.
+
+        Args:
+            text: Raw LLM text output
+            file_path: File path for the summary
+            raw_length: Optional length of raw response for metadata
+
+        Returns:
+            FileSummary object containing file path and folder name
+
+        Raises:
+            ValueError: If parsing fails
         """
         pass
 

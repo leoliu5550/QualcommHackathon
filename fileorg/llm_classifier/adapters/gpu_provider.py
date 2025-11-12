@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 import torch
 from loguru import logger
 
-from fileorg.llm_classifier.ports import ILLMProvider
+from fileorg.llm_classifier.ports.interfaces import ILLMProvider
 
 
 class GPUProvider(ILLMProvider):

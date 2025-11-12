@@ -4,8 +4,6 @@ Unit tests for BasicTextValidator path validation functionality.
 Tests the new path validation methods.
 """
 
-import pytest
-
 from fileorg.llm_classifier.application.text_validator import BasicTextValidator
 
 

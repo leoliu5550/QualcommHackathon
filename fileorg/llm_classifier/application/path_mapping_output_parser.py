@@ -11,7 +11,8 @@ from typing import Dict
 
 from loguru import logger
 
-from fileorg.llm_classifier.ports import FileMapping, IOutputParser
+from fileorg.llm_classifier.ports.interfaces import IOutputParser
+from fileorg.llm_classifier.ports.models import FileMapping
 
 
 class PathMappingOutputParser(IOutputParser):

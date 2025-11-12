@@ -10,20 +10,18 @@ Supports two scenarios:
 """
 
 import json
-from typing import List, Optional
+from typing import Optional
 
 from loguru import logger
 
-from fileorg.llm_classifier.ports import (
-    ClassificationOutput,
-    FileMapping,
+from fileorg.llm_classifier.ports.interfaces import (
     IClassifierUseCase,
     ILLMProvider,
     IOutputParser,
     IPromptBuilder,
     ITextValidator,
-    LLMInput,
 )
+from fileorg.llm_classifier.ports.models import ClassificationOutput, LLMInput
 
 
 class FileClassifier(IClassifierUseCase):
@@ -117,10 +115,10 @@ class FileClassifier(IClassifierUseCase):
             files_dict = json.loads(input_data.text)
             if not self.validator.validate_paths_dict(files_dict):
                 raise ValueError("Invalid file paths or content in input. Ensure all keys are absolute paths.")
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as err:
             # If not JSON, fall back to basic text validation
             if not self.validator.validate(input_data.text):
-                raise ValueError("Input text validation failed")
+                raise ValueError("Input text validation failed") from err
 
         logger.debug("Input validation passed")
 
@@ -151,9 +149,7 @@ class FileClassifier(IClassifierUseCase):
         try:
             # Step 2: Build prompt
             logger.debug("Building prompt...")
-            prompt_messages = self.prompt_builder.build_prompt(
-                text=input_data.text, instruction=self.instruction, max_tokens=input_data.max_tokens
-            )
+            prompt_messages = self.prompt_builder.build_prompt(text=input_data.text, instruction=self.instruction, max_tokens=input_data.max_tokens)
 
             logger.debug(f"Prompt built: {len(prompt_messages)} messages")
 
@@ -189,4 +185,3 @@ class FileClassifier(IClassifierUseCase):
         except Exception as e:
             logger.error(f"Unexpected error during classification: {e}")
             raise RuntimeError(f"Classification failed: {e}") from e
-

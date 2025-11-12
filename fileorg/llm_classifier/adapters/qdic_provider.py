@@ -9,7 +9,7 @@ from typing import Dict, List
 
 from loguru import logger
 
-from fileorg.llm_classifier.ports import ILLMProvider
+from fileorg.llm_classifier.ports.interfaces import ILLMProvider
 
 
 class QDICProvider(ILLMProvider):

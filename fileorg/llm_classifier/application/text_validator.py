@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Dict
 
-from fileorg.llm_classifier.ports import ITextValidator
+from fileorg.llm_classifier.ports.interfaces import ITextValidator
 
 
 class BasicTextValidator(ITextValidator):
