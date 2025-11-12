@@ -4,7 +4,7 @@ Pytest configuration and fixtures for LLM classifier tests.
 
 import pytest
 
-from fileorg.llm_classifier.application.text_validator import BasicTextValidator
+from fileorg.llm_classifier.adapters.text_validator import BasicTextValidator
 
 
 @pytest.fixture

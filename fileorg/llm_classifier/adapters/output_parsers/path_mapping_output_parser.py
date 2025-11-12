@@ -4,13 +4,12 @@ Path Mapping Output Parser Implementation.
 Parses LLM output and assembles file path mappings.
 """
 
-import json
-import re
 from pathlib import Path
 from typing import Dict
 
 from loguru import logger
 
+from fileorg.llm_classifier.infrastructure import extract_json_from_llm_output
 from fileorg.llm_classifier.ports.interfaces import IOutputParser
 from fileorg.llm_classifier.ports.models import FileMapping
 
@@ -38,6 +37,8 @@ class PathMappingOutputParser(IOutputParser):
         """
         Parse LLM output to path mappings.
 
+        Uses shared extract_json_from_llm_output() utility for JSON extraction.
+
         Args:
             text: Raw LLM output text (may contain JSON in markdown)
 
@@ -48,8 +49,8 @@ class PathMappingOutputParser(IOutputParser):
             ValueError: If parsing fails or required fields are missing
         """
         try:
-            # Step 1: Extract JSON from response
-            json_data = self._extract_json(text)
+            # Step 1: Extract JSON from response using shared utility
+            json_data = extract_json_from_llm_output(text, strict=False)
 
             # Step 2: Validate and assemble mappings
             mappings = {}
@@ -64,63 +65,12 @@ class PathMappingOutputParser(IOutputParser):
             logger.info(f"Successfully parsed {len(mappings)} file mappings")
             return mappings
 
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON parsing failed: {e}")
-            raise ValueError(f"Invalid JSON in LLM output: {e}") from e
+        except ValueError as e:
+            logger.error(f"Path mapping parsing failed: {e}")
+            raise
         except Exception as e:
             logger.error(f"Path mapping parsing failed: {e}")
             raise ValueError(f"Failed to parse LLM output: {e}") from e
-
-    def _extract_json(self, text: str) -> Dict:
-        """
-        Extract JSON from text, handling markdown code blocks.
-
-        Supports:
-        - Plain JSON: {"key": "value"}
-        - Markdown: ```json\n{...}\n```
-        - Markdown: ```\n{...}\n```
-
-        Args:
-            text: Raw text containing JSON
-
-        Returns:
-            Parsed JSON dictionary
-
-        Raises:
-            json.JSONDecodeError: If JSON is invalid
-        """
-        if not text or not text.strip():
-            raise ValueError("Empty response from LLM")
-
-        # Try to extract JSON from markdown code block
-        # Pattern: ```json ... ``` or ``` ... ```
-        code_block_pattern = r"```(?:json)?\s*\n?(.*?)\n?```"
-        matches = re.findall(code_block_pattern, text, re.DOTALL)
-
-        if matches:
-            # Use the first code block found
-            json_text = matches[0].strip()
-            logger.debug("Extracted JSON from markdown code block")
-        else:
-            # Try to find JSON object directly
-            # Look for content between first { and last }
-            json_pattern = r"\{.*\}"
-            matches = re.findall(json_pattern, text, re.DOTALL)
-            if matches:
-                json_text = matches[0].strip()
-                logger.debug("Extracted JSON from text")
-            else:
-                json_text = text.strip()
-
-        # Parse JSON
-        try:
-            data = json.loads(json_text)
-            if not isinstance(data, dict):
-                raise ValueError("Expected JSON object, got other type")
-            return data
-        except json.JSONDecodeError as e:
-            logger.error(f"JSON decode error: {e}\nText: {json_text[:200]}...")
-            raise
 
     def _validate_fields(self, info: Dict, old_path: str) -> None:
         """
