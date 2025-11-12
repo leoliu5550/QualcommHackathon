@@ -8,7 +8,7 @@ with proper chat template formatting and version-controlled templates.
 import json
 from typing import Dict, List, Optional
 
-from fileorg.llm_classifier.ports import IPromptBuilder, ITemplateLoader
+from fileorg.llm_classifier.ports.interfaces import IPromptBuilder, ITemplateLoader
 
 
 class LlamaPromptBuilder(IPromptBuilder):

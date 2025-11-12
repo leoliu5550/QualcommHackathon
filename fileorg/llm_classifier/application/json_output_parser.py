@@ -9,7 +9,7 @@ import json
 import re
 from typing import Dict, List
 
-from fileorg.llm_classifier.ports import IOutputParser
+from fileorg.llm_classifier.ports.interfaces import IOutputParser
 
 
 class JSONOutputParser(IOutputParser):
