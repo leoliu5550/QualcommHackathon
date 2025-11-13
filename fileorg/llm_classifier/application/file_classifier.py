@@ -38,10 +38,10 @@ class FileClassifier(IClassifierUseCase):
     5. Return structured path mapping results
 
     Example:
-        >>> from fileorg.llm_classifier.adapters import GPUProvider
-        >>> from fileorg.llm_classifier.adapters.prompt_builder import LlamaPromptBuilder
-        >>> from fileorg.llm_classifier.application.path_mapping_output_parser import PathMappingOutputParser
-        >>> from fileorg.llm_classifier.application.text_validator import BasicTextValidator
+        >>> from fileorg.llm_classifier.adapters import BasicTextValidator
+        >>> from fileorg.llm_classifier.adapters.llm_providers import GPUProvider
+        >>> from fileorg.llm_classifier.adapters.output_parsers import PathMappingOutputParser
+        >>> from fileorg.llm_classifier.adapters.prompt_builders import LlamaPromptBuilder
         >>>
         >>> classifier = FileClassifier(
         ...     llm_provider=GPUProvider(),

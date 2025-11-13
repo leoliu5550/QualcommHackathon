@@ -7,7 +7,7 @@ interface and properly extracts and validates JSON from LLM outputs.
 
 import pytest
 
-from fileorg.llm_classifier.application.json_output_parser import JSONOutputParser
+from fileorg.llm_classifier.adapters.output_parsers import JSONOutputParser
 from fileorg.llm_classifier.ports import IOutputParser
 
 

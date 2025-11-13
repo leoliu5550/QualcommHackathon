@@ -1,9 +1,10 @@
 """
-Application Layer (Business Logic).
+Application Layer (Use Cases).
+
+This layer contains use cases that orchestrate business logic.
+Parsers and builders have been moved to the adapters layer.
 """
 
-from fileorg.llm_classifier.application.json_output_parser import JSONOutputParser
-from fileorg.llm_classifier.application.llama_prompt_builder import LlamaPromptBuilder
-from fileorg.llm_classifier.application.text_validator import BasicTextValidator
+from fileorg.llm_classifier.application.file_classifier import FileClassifier
 
-__all__ = ["LlamaPromptBuilder", "BasicTextValidator", "JSONOutputParser"]
+__all__ = ["FileClassifier"]

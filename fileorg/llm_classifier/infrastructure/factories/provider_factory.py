@@ -11,9 +11,7 @@ from typing import Optional
 
 from loguru import logger
 
-from fileorg.llm_classifier.adapters.gpu_provider import GPUProvider
-from fileorg.llm_classifier.adapters.mps_provider import MPSProvider
-from fileorg.llm_classifier.adapters.qdic_provider import QDICProvider
+from fileorg.llm_classifier.adapters.llm_providers import GPUProvider, MPSProvider, QDICProvider
 from fileorg.llm_classifier.ports.interfaces import ILLMProvider
 
 

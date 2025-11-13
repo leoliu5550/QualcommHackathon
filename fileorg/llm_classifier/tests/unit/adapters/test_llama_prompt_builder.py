@@ -9,8 +9,8 @@ import json
 
 import pytest
 
+from fileorg.llm_classifier.adapters.prompt_builders import LlamaPromptBuilder
 from fileorg.llm_classifier.adapters.template_loader import Jinja2TemplateLoader
-from fileorg.llm_classifier.application.llama_prompt_builder import LlamaPromptBuilder
 from fileorg.llm_classifier.ports import IPromptBuilder
 
 
