@@ -38,7 +38,7 @@ def temp_template_dir(tmp_path):
 @pytest.fixture
 def loader(temp_template_dir):
     """Provide a template loader with temporary template directory."""
-    return Jinja2TemplateLoader(base_path=str(temp_template_dir))
+    return Jinja2TemplateLoader(base_path=temp_template_dir)
 
 
 class TestJinja2TemplateLoaderInterface:
@@ -191,12 +191,12 @@ class TestPathHandling:
 
     def test_custom_base_path(self, temp_template_dir):
         """Should use custom base path when provided."""
-        loader = Jinja2TemplateLoader(base_path=str(temp_template_dir))
-        assert str(loader.base_path) == str(temp_template_dir)
+        loader = Jinja2TemplateLoader(base_path=temp_template_dir)
+        assert loader.base_path == temp_template_dir
 
     def test_relative_base_path(self, temp_template_dir):
         """Should handle relative base paths."""
-        loader = Jinja2TemplateLoader(base_path=str(temp_template_dir))
+        loader = Jinja2TemplateLoader(base_path=temp_template_dir)
         assert loader.base_path.exists()
 
 
@@ -210,7 +210,7 @@ class TestEdgeCases:
         provider_dir.mkdir(parents=True)
         (provider_dir / "system.jinja2").write_text("Invalid {{ syntax")
 
-        loader = Jinja2TemplateLoader(base_path=str(tmp_path))
+        loader = Jinja2TemplateLoader(base_path=tmp_path)
 
         with pytest.raises(ValueError, match="Invalid template syntax"):
             loader.load_template("test_provider", "v1", "system")
@@ -221,7 +221,7 @@ class TestEdgeCases:
         provider_dir.mkdir(parents=True)
         (provider_dir / "system.jinja2").write_text("")
 
-        loader = Jinja2TemplateLoader(base_path=str(tmp_path))
+        loader = Jinja2TemplateLoader(base_path=tmp_path)
         template = loader.load_template("test_provider", "v1", "system")
 
         assert template.render() == ""
