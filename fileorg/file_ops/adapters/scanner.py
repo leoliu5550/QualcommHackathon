@@ -115,14 +115,19 @@ class FileScanner(IFileScanner):
                 - "total_size" (int): Total file size in bytes
                 - "files" (List[Dict]): Detailed file list (path, name, size)
         """
-        files = self.scan()
-        total_size = sum(int(f["size"]) for f in files)
-        report = {
-            "root": str(self.root_dir),
-            "file_count": len(files),
-            "total_size": total_size,
-            "files": files,
-        }
+        file_dicts = self.scan()
+
+        # Convert dict list to ScanOutput dataclass list
+        scan_outputs = [ScanOutput(path=f["path"], name=f["name"], size=f["size"]) for f in file_dicts]
+
+        total_size = sum(f.size for f in scan_outputs)
+
+        report = ReportOutput(
+            root=str(self.root_dir),
+            file_count=len(scan_outputs),
+            total_size=total_size,
+            files=scan_outputs,
+        )
         return report
 
     def save_report(self, output_path: str) -> None:
@@ -132,8 +137,17 @@ class FileScanner(IFileScanner):
             output_path (str): Path to the JSON file to write.
         """
         report = self.generate_report()
+
+        # Convert dataclass to dict for JSON serialization
+        report_dict = {
+            "root": report.root,
+            "file_count": report.file_count,
+            "total_size": report.total_size,
+            "files": [{"path": f.path, "name": f.name, "size": f.size} for f in report.files],
+        }
+
         with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(report, f, indent=4, ensure_ascii=False)
+            json.dump(report_dict, f, indent=4, ensure_ascii=False)
 
 
 def main():
@@ -144,9 +158,9 @@ def main():
     report = scanner.generate_report()
 
     logger.debug("\n=== File Scan Report ===")
-    logger.debug(f"Root Directory: {report['root']}")
-    logger.debug(f"Total Files: {report['file_count']}")
-    logger.debug(f"Total Size: {report['total_size']} bytes")
+    logger.debug(f"Root Directory: {report.root}")
+    logger.debug(f"Total Files: {report.file_count}")
+    logger.debug(f"Total Size: {report.total_size} bytes")
 
     output_file = "scan_report.json"
     scanner.save_report(output_file)
