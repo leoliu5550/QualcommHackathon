@@ -4,7 +4,7 @@ Path Mapping Output Parser Implementation.
 Parses LLM output and assembles file path mappings.
 """
 
-from pathlib import Path
+from pathlib import PurePosixPath, PureWindowsPath
 from typing import Dict
 
 from loguru import logger
@@ -102,7 +102,7 @@ class PathMappingOutputParser(IOutputParser):
         3. Combine to: "Category_Name/filename"
 
         Args:
-            old_path: Original absolute file path
+            old_path: Original absolute file path (Windows or Unix format)
             info: File information from LLM (category, summary, reason)
 
         Returns:
@@ -112,8 +112,14 @@ class PathMappingOutputParser(IOutputParser):
             ValueError: If path assembly fails
         """
         try:
-            # Extract filename from absolute path
-            filename = Path(old_path).name
+            # Extract filename from absolute path with cross-platform support
+            # Use PureWindowsPath for Windows paths (e.g., "C:\Users\...")
+            # Use PurePosixPath for Unix paths (e.g., "/home/...")
+            if self._is_windows_path(old_path):
+                filename = PureWindowsPath(old_path).name
+            else:
+                filename = PurePosixPath(old_path).name
+
             if not filename:
                 raise ValueError(f"Cannot extract filename from path: {old_path}")
 
@@ -139,3 +145,25 @@ class PathMappingOutputParser(IOutputParser):
         except Exception as e:
             logger.error(f"Path assembly failed for {old_path}: {e}")
             raise ValueError(f"Failed to assemble path for {old_path}: {e}") from e
+
+    def _is_windows_path(self, path: str) -> bool:
+        """
+        Determine if a path is a Windows path.
+
+        Windows paths are identified by:
+        - Drive letter pattern: C:, D:, etc.
+        - Backslashes: C:\\Users\\...
+
+        Args:
+            path: Path string to check
+
+        Returns:
+            True if this is a Windows path, False for Unix paths
+        """
+        # Check for Windows drive letter (e.g., "C:", "D:")
+        if len(path) >= 2 and path[1] == ":":
+            return True
+        # Check for backslash path separator (Windows-specific)
+        if "\\" in path:
+            return True
+        return False
