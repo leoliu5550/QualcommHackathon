@@ -96,7 +96,7 @@ Repository = "https://github.com/leoliu5550/QualcommHackathon.git"
 Issues = "https://github.com/leoliu5550/QualcommHackathon/issues"
 
 [project.scripts]
-fileorg = "fileorg.cli:main"
+fileorg = "fileorg.main:main"
 
 [tool.setuptools.packages.find]
 include = ["fileorg*"]
