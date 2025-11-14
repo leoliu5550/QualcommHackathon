@@ -27,12 +27,12 @@ class Jinja2TemplateLoader(ITemplateLoader):
     Usage:
         # Standalone usage
         loader = Jinja2TemplateLoader(base_path="prompts/")
-        system_tmpl = loader.load_template("llama3b", "v1", "system")
+        system_tmpl = loader.load_template("llama3b", "v1", "classification_system")
         content = system_tmpl.render(suggested_categories=["Docs", "Code"])
 
         # Composed with prompt builder (recommended)
         loader = Jinja2TemplateLoader(base_path="prompts/")
-        builder = LlamaPromptBuilder(template_loader=loader, provider="llama3b")
+        builder = ClassificationPromptBuilder(template_loader=loader, provider="llama3b")
 
     Thread-safety: Not thread-safe due to cache. Use separate instances
     in multi-threaded environments or add locking.

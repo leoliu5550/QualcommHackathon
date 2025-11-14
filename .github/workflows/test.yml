@@ -30,8 +30,9 @@ jobs:
 
       - name: Run pytest
         run: |
-          # Override pyproject.toml addopts to disable coverage requirements (to avoid delaying milestones
-          uv run pytest fileorg/llm_classifier/tests/ -v --tb=short --override-ini='addopts=-v --strict-markers'
+          # Override pyproject.toml addopts to disable coverage requirements (to avoid delaying milestones)
+          # Exclude GPU and slow tests from CI/CD (use -m "not gpu and not slow")
+          uv run pytest fileorg/llm_classifier/tests/ -v --tb=short -m "not gpu and not slow" --override-ini='addopts=-v --strict-markers'
         continue-on-error: false
 
       - name: Test Summary

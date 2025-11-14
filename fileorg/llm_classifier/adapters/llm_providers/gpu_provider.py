@@ -127,13 +127,14 @@ class GPUProvider(ILLMProvider):
             inputs = self._tokenizer(formatted_prompt, return_tensors="pt", truncation=True, max_length=max_tokens).to(self.device)
 
             # Generate
+            # For JSON output, we need enough tokens (at least 512 for structured responses)
+            generation_tokens = min(max(max_tokens, 512), 2048)
             with torch.no_grad():
                 outputs = self._model.generate(
                     **inputs,
-                    max_new_tokens=min(max_tokens, 2048),  # Limit generation length
-                    do_sample=True,
-                    temperature=0.7,
-                    top_p=0.9,
+                    max_new_tokens=generation_tokens,
+                    do_sample=False,  # Use greedy decoding for more reliable JSON output
+                    temperature=1.0,  # Keep temperature at 1.0 for greedy decoding
                     pad_token_id=self._tokenizer.eos_token_id,
                 )
 
