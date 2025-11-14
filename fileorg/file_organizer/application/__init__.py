@@ -1,1 +1,0 @@
-"""File organizer application layer."""
