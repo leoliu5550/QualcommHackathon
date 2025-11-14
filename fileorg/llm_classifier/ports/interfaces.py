@@ -74,7 +74,7 @@ class IPromptBuilder(ABC):
 
     This interface defines HOW to build prompts from input text and instructions.
     Different implementations can use different strategies:
-    - Template-based prompts (LlamaPromptBuilder using ITemplateLoader)
+    - Template-based prompts (using ITemplateLoader)
     - Hardcoded prompts (for simple use cases)
     - Dynamic prompts based on context
 
@@ -90,16 +90,16 @@ class IPromptBuilder(ABC):
     Usage:
         # Template-based approach (recommended for production)
         loader = Jinja2TemplateLoader(base_path="prompts/")
-        builder = LlamaPromptBuilder(
+        builder = ClassificationPromptBuilder(
             template_loader=loader,
             provider="llama3b",
             version="v1"
         )
         messages = builder.build_prompt(text="classify this", instruction="...")
 
-    Current Implementation:
-        - LlamaPromptBuilder: Jinja2 templates with version control, composes ITemplateLoader
-          Supports Llama 3B/8B with provider-specific optimizations and A/B testing via versions
+    Current Implementations:
+        - ClassificationPromptBuilder: Jinja2 templates for classification tasks
+        - SummaryPromptBuilder: Jinja2 templates for file summarization tasks
     """
 
     @abstractmethod
@@ -230,12 +230,12 @@ class ITemplateLoader(ABC):
     Usage:
         # Standalone usage
         loader = Jinja2TemplateLoader(base_path="prompts/")
-        template = loader.load_template(provider="llama3b", version="v1", template_type="system")
+        template = loader.load_template(provider="llama3b", version="v1", template_type="classification_system")
         content = template.render(suggested_categories=["doc", "code"])
 
         # Composed with IPromptBuilder
         loader = Jinja2TemplateLoader(base_path="prompts/")
-        builder = LlamaPromptBuilder(template_loader=loader, provider="llama3b", version="v1")
+        builder = ClassificationPromptBuilder(template_loader=loader, provider="llama3b", version="v1")
         messages = builder.build_prompt(text="...", instruction="...")
 
     Implementations:

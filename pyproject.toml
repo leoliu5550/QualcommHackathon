@@ -121,11 +121,14 @@ addopts = [
     "--cov=fileorg",
     "--cov-report=html",
     "--cov-report=term-missing",
+    "-m",
+    "not gpu and not slow",  # Exclude GPU and slow tests by default
 ]
 markers = [
     "unit: 單元測試",
     "integration: 整合測試",
-    "slow: 執行時間較長的測試",
+    "slow: 執行時間較長的測試 (預設排除)",
+    "gpu: 需要 GPU 的測試 (預設排除，僅供手動測試)",
     "parser: 檔案解析器測試",
     "scanner: 檔案掃描器測試",
     "organizer: 檔案組織器測試",

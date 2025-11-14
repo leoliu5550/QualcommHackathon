@@ -69,17 +69,21 @@ class ClassificationOutput:
                     reason="Contains financial data"
                 )
             },
-            raw_response="..."
+            raw_responses={
+                "stage1_summaries": "...",
+                "stage2_classification": "..."
+            }
         )
 
     Args:
         path_mappings: Dict mapping old paths to FileMapping objects
-        raw_response: Original LLM text output (for debugging/logging)
+        raw_responses: Dict containing raw LLM outputs from both stages
+                       Keys: "stage1_summaries", "stage2_classification"
         metadata: Optional metadata (token counts, file count, etc.)
     """
 
     path_mappings: Dict[str, "FileMapping"]
-    raw_response: str
+    raw_responses: Dict[str, str]
     metadata: Optional[Dict[str, Any]] = None
 
 

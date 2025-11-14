@@ -34,3 +34,11 @@ try:
 except ImportError:
     # QDIC-specific dependencies not available
     pass
+
+try:
+    from .turu_provider import TURUProvider  # noqa: F401
+
+    __all__.append("TURUProvider")
+except ImportError:
+    # httpx not available or TURU provider dependencies missing
+    pass

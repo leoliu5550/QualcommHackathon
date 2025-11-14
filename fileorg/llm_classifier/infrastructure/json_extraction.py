@@ -119,6 +119,17 @@ def _extract_json_string(text: str, strict: bool = False) -> str:
         if _is_valid_json(potential_json):
             return potential_json
 
+    # Strategy 5: Try to fix incomplete JSON (missing closing braces)
+    if first_brace != -1:
+        # Extract from first { to end
+        potential_json = text[first_brace:]
+
+        # Try adding closing braces
+        for suffix in ["\n}", "}", "\n}\n", " }"]:
+            fixed_json = potential_json.rstrip() + suffix
+            if _is_valid_json(fixed_json):
+                return fixed_json
+
     raise ValueError('Could not extract valid JSON from output. Expected format: {"key": "value"} or JSON in markdown code blocks')
 
 

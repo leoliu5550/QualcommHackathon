@@ -7,6 +7,12 @@ and properly handles basic initialization and configuration.
 
 from unittest.mock import patch
 
+import pytest
+
+# Skip entire module if GPU dependencies are not available
+pytest.importorskip("torch")
+pytest.importorskip("transformers")
+
 import torch
 
 from fileorg.llm_classifier.adapters.llm_providers import GPUProvider

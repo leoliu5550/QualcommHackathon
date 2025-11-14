@@ -18,17 +18,17 @@ This directory contains Jinja2 prompt templates used for file classification, or
 
    ```python
    # Use v1
-   builder = LlamaPromptBuilder(loader, provider="llama3b", version="v1")
+   builder = ClassificationPromptBuilder(loader, provider="llama3b", version="v1")
 
    # Switch to v2
-   builder = LlamaPromptBuilder(loader, provider="llama3b", version="v2")
+   builder = ClassificationPromptBuilder(loader, provider="llama3b", version="v2")
    ```
 
 3. **A/B Testing**: Create two builders simultaneously to compare different versions
 
    ```python
-   builder_v1 = LlamaPromptBuilder(loader, provider="llama3b", version="v1")
-   builder_v2 = LlamaPromptBuilder(loader, provider="llama3b", version="v2")
+   builder_v1 = ClassificationPromptBuilder(loader, provider="llama3b", version="v1")
+   builder_v2 = ClassificationPromptBuilder(loader, provider="llama3b", version="v2")
    ```
 
 ### Version Naming Recommendations
@@ -39,9 +39,11 @@ This directory contains Jinja2 prompt templates used for file classification, or
 
 ## Template Files
 
-### system.jinja2
+Templates are organized by task type (classification, summary) with separate system and user prompts.
 
-System prompt defining the AI assistant’s role and task requirements.
+### classification_system.jinja2
+
+System prompt for file classification tasks.
 
 **Available Variables:**
 
@@ -57,9 +59,9 @@ Suggested categories: {{ suggested_categories | join(", ") }}
 {% endif %}
 ```
 
-### user.jinja2
+### classification_user.jinja2
 
-User prompt containing the specific classification instruction and file data.
+User prompt for classification tasks containing file data.
 
 **Available Variables:**
 
@@ -75,6 +77,14 @@ Files to classify:
 ```json
 {{ file_data }}
 ````
+
+### summary_system.jinja2
+
+System prompt for file summarization tasks.
+
+### summary_user.jinja2
+
+User prompt for summarization tasks containing file content.
 
 ````
 
@@ -103,21 +113,10 @@ To add support for a new LLM provider (e.g., GPT-4, Claude):
            pass
    ```
 
-## Llama 3 Special Format
+## Prompt Format
 
-Llama 3 uses a special chat template format:
-
-```
-<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-
-{system_content}<|eot_id|><|start_header_id|>user<|end_header_id|>
-
-{user_content}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
-
-```
-
-This format is automatically handled by `LlamaPromptBuilder`.
-You only need to provide plain text content in the templates.
+Templates should provide plain text content. Model-specific formatting (such as special tokens)
+is handled by the respective PromptBuilder implementations.
 
 ## Best Practices
 

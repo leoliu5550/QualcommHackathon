@@ -1,19 +1,22 @@
 """
-Llama-specific prompt builder adapter using Jinja2 templates.
+Summary prompt builder adapter for Stage 1 keyword extraction.
 
-This module provides prompt builders for Llama model family (3B, 8B, etc.)
-with proper chat template formatting and version-controlled templates.
+This module provides prompt builders for extracting 1-2 word keywords
+from individual file contents using Llama model family.
 """
 
 import json
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from fileorg.llm_classifier.ports.interfaces import IPromptBuilder, ITemplateLoader
 
 
-class LlamaPromptBuilder(IPromptBuilder):
+class SummaryPromptBuilder(IPromptBuilder):
     """
-    Prompt builder for Llama model family with Jinja2 template support.
+    Prompt builder for Stage 1 keyword extraction from file contents.
+
+    Generates prompts that instruct the LLM to extract 1-2 word keywords
+    that best describe the file content.
 
     Llama Chat Format:
         Constructs prompts using the official Llama 3 chat template format:
@@ -23,23 +26,16 @@ class LlamaPromptBuilder(IPromptBuilder):
 
         {user_content}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
-    Version Control:
-        Supports version-controlled templates (v1, v2, etc.) for:
-        - A/B testing different prompt strategies
-        - Gradual rollout of improvements
-        - Model-specific optimizations (llama3b vs llama8b)
-
     Usage:
         loader = Jinja2TemplateLoader(base_path="prompts/")
-        builder = LlamaPromptBuilder(
+        builder = SummaryPromptBuilder(
             template_loader=loader,
             provider="llama3b",
-            version="v1",
-            suggested_categories=["Documents", "Code"]
+            version="v2"
         )
         messages = builder.build_prompt(
-            text='{"file.txt": {"path": "/path", "content": "..."}}',
-            instruction="Classify files"
+            text='{"file.txt": "content..."}',
+            instruction="Extract keyword"
         )
 
     Thread-safety: Safe if template_loader is thread-safe or not shared.
@@ -56,16 +52,14 @@ class LlamaPromptBuilder(IPromptBuilder):
         template_loader: ITemplateLoader,
         provider: str = "llama3b",
         version: str = "v1",
-        suggested_categories: Optional[List[str]] = None,
     ):
         """
-        Initialize Llama prompt builder.
+        Initialize Summary prompt builder.
 
         Args:
             template_loader: Template loader implementing ITemplateLoader
             provider: Provider name matching template directory (e.g., "llama3b", "llama8b")
-            version: Template version to use (e.g., "v1", "v2")
-            suggested_categories: Optional category suggestions to pass to templates
+            version: Template version to use (e.g., "v1")
 
         Raises:
             FileNotFoundError: If templates for provider/version don't exist
@@ -73,32 +67,24 @@ class LlamaPromptBuilder(IPromptBuilder):
         self.template_loader = template_loader
         self.provider = provider
         self.version = version
-        self.suggested_categories = suggested_categories or []
 
         # Validate that templates exist at initialization
-        if not template_loader.template_exists(provider, version, "system"):
-            raise FileNotFoundError(f"System template not found for {provider}/{version}")
-        if not template_loader.template_exists(provider, version, "user"):
-            raise FileNotFoundError(f"User template not found for {provider}/{version}")
+        if not template_loader.template_exists(provider, version, "summary_system"):
+            raise FileNotFoundError(f"Summary system template not found for {provider}/{version}")
+        if not template_loader.template_exists(provider, version, "summary_user"):
+            raise FileNotFoundError(f"Summary user template not found for {provider}/{version}")
 
-    def build_prompt(
-        self, text: str, instruction: str, max_tokens: int = 150000, suggested_categories: Optional[List[str]] = None
-    ) -> List[Dict[str, str]]:
+    def build_prompt(self, text: str, instruction: str, max_tokens: int = 150000) -> List[Dict[str, str]]:
         """
-        Build Llama-formatted prompt from file data and instruction.
+        Build Llama-formatted prompt for keyword extraction.
 
         Args:
-            text: JSON-formatted string containing file data. Expected structure:
+            text: JSON-formatted string containing single file data. Expected structure:
                   {
-                      "filename1": {"path": "...", "content": "..."},
-                      "filename2": {"path": "...", "content": "..."},
-                      ...
+                      "file_path": "file content..."
                   }
-            instruction: Classification instruction in natural language
+            instruction: Keyword extraction instruction in natural language
             max_tokens: Maximum tokens for input text. Text will be truncated if exceeded.
-            suggested_categories: Optional list of category names to suggest to LLM.
-                                 If None, uses categories from initialization.
-                                 If provided, overrides initialization categories.
 
         Returns:
             Single-element list with complete Llama-formatted prompt:
@@ -120,22 +106,19 @@ class LlamaPromptBuilder(IPromptBuilder):
         """
         # Validate and parse JSON input
         try:
-            file_data = json.loads(text)
+            json.loads(text)
         except json.JSONDecodeError as e:
             raise ValueError(f"Input text must be valid JSON format: {e}") from e
 
         # Truncate text to respect token limit (rough approximation: 1 token ≈ 4 characters)
-        truncated_text = self._truncate_text(text, file_data, max_tokens)
+        truncated_text = self._truncate_text(text, max_tokens)
 
         # Load templates
-        system_template = self.template_loader.load_template(self.provider, self.version, "system")
-        user_template = self.template_loader.load_template(self.provider, self.version, "user")
-
-        # Use provided categories or fall back to initialization categories
-        categories = suggested_categories if suggested_categories is not None else self.suggested_categories
+        system_template = self.template_loader.load_template(self.provider, self.version, "summary_system")
+        user_template = self.template_loader.load_template(self.provider, self.version, "summary_user")
 
         # Render templates with context
-        system_content = system_template.render(suggested_categories=categories)
+        system_content = system_template.render()
         user_content = user_template.render(instruction=instruction, file_data=truncated_text)
 
         # Construct Llama chat format
@@ -144,13 +127,12 @@ class LlamaPromptBuilder(IPromptBuilder):
         # Return as single message (Llama processes the special tokens internally)
         return [{"role": "user", "content": formatted_prompt}]
 
-    def _truncate_text(self, text: str, file_data: dict, max_tokens: int) -> str:
+    def _truncate_text(self, text: str, max_tokens: int) -> str:
         """
         Truncate text to respect token limit.
 
         Args:
             text: Original JSON text
-            file_data: Parsed file data dictionary
             max_tokens: Maximum token count
 
         Returns:
@@ -161,21 +143,20 @@ class LlamaPromptBuilder(IPromptBuilder):
         if len(text) <= max_chars:
             return text
 
-        # Gracefully truncate by removing files from the data structure
-        truncated_data = {}
-        current_size = 2  # Account for opening and closing braces
+        # Truncate content while preserving JSON structure
+        try:
+            file_data = json.loads(text)
+            for file_path, content in file_data.items():
+                if isinstance(content, str):
+                    # Truncate the content string
+                    truncated_content = content[:max_chars]
+                    file_data[file_path] = truncated_content
+                    break  # Only process the first file
 
-        for filename, metadata in file_data.items():
-            entry_json = json.dumps({filename: metadata})
-            entry_size = len(entry_json) + 2  # +2 for comma and space
-
-            if current_size + entry_size <= max_chars:
-                truncated_data[filename] = metadata
-                current_size += entry_size
-            else:
-                break
-
-        return json.dumps(truncated_data, ensure_ascii=False)
+            return json.dumps(file_data, ensure_ascii=False)
+        except Exception:
+            # Fallback to simple truncation
+            return text[:max_chars]
 
     def _format_llama_chat(self, system_content: str, user_content: str) -> str:
         """
