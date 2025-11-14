@@ -8,16 +8,25 @@ A command-line tool that can be installed in development mode or globally using 
 
 Install `fileorg` into your current virtual environment. Code changes will be immediately reflected without reinstallation, making this ideal for active development.
 
+**Basic installation (without LLM dependencies):**
 ```bash
 uv pip install -e .
 ```
 
-**Usage:**
+**With LLM support (CPU/GPU mode, installs torch, transformers, etc.):**
 ```bash
-fileorg -p tests/example_data/entertainment --output tests --preview --char-limit 100
+uv pip install -e .[non-npu]
 ```
 
-> **Note:** The executable will be located at `.venv/bin/fileorg`
+**Usage:**
+```bash
+fileorg organize --path tests/example_data/entertainment --preview --char-limit 100
+```
+
+> **Note:**
+> - The executable will be located at `.venv/bin/fileorg`
+> - If using CPU/GPU mode, you need `[non-npu]` dependencies
+> - If using TURU API server, basic installation is sufficient
 
 ---
 
@@ -25,8 +34,14 @@ fileorg -p tests/example_data/entertainment --output tests --preview --char-limi
 
 Install as a standalone tool with an independent execution environment. The `fileorg` command will be available system-wide from `~/.local/bin`.
 
+**Basic installation:**
 ```bash
 uv tool install .
+```
+
+**With LLM support (CPU/GPU mode):**
+```bash
+uv tool install .[non-npu]
 ```
 
 **Verify installation:**
@@ -39,7 +54,7 @@ uv tool list
 
 **Usage:**
 ```bash
-fileorg -p tests/example_data/entertainment --output tests --preview --char-limit 100
+fileorg organize --path tests/example_data/entertainment --preview --char-limit 100
 ```
 
 > **Tip:** If you encounter a "No such file or directory" error, the virtual environment path from a previous installation may be invalid. Run `uv tool uninstall fileorg` and reinstall.
@@ -64,8 +79,14 @@ uv tool uninstall fileorg
 
 For quick testing, debugging, or parameter validation without installation, run the module directly:
 
+**Basic (without LLM):**
 ```bash
-uv run -m fileorg.main -p tests/example_data/entertainment --output tests --preview --char-limit 100
+uv run -m fileorg.main organize --path tests/example_data/entertainment --preview --char-limit 100
+```
+
+**With LLM support:**
+```bash
+uv run --extra non-npu -m fileorg.main organize --path tests/example_data/entertainment --preview --char-limit 100
 ```
 
 > 💡 **Advantage:** This creates a temporary execution environment without installing anything, perfect for rapid development iterations.
@@ -134,12 +155,22 @@ fileorg = "fileorg.main:main"
 
 ## Quick Start Example
 
+### Organize Files
 ```bash
-fileorg -p tests/example_data/entertainment --output tests --preview --char-limit 100
+fileorg organize --path tests/example_data/entertainment --preview --char-limit 100
 ```
 
 This command:
 - Processes files from `tests/example_data/entertainment`
-- Outputs results to `tests`
-- Shows a preview before execution
+- Creates backup in `tests/example_data/entertainment/.backup`
+- Shows a preview before execution (no actual file movement)
 - Limits character processing to 100 characters
+
+### Restore Files
+```bash
+fileorg restore --path tests/example_data/entertainment
+```
+
+This command:
+- Restores files from `tests/example_data/entertainment/.backup`
+- Moves all files back to their original locations

@@ -73,10 +73,9 @@ class LocalFileOrganizer(IFileOrganizer):
         if not root_path.exists():
             raise IOError(f"Root directory does not exist: {root_dir}")
 
-        # Prepare backup directory
+        # Prepare backup directory (create even in preview mode)
         backup_dir = root_path / ".backup"
-        if not dry_run:
-            backup_dir.mkdir(exist_ok=True)
+        backup_dir.mkdir(exist_ok=True)
 
         # Prepare file path tracking
         path_mappings = classification_output.path_mappings
@@ -89,11 +88,18 @@ class LocalFileOrganizer(IFileOrganizer):
             new_relative_path = file_mapping.new_relative_path
             new_path = root_path / new_relative_path
 
-            # Track paths for backup
+            # Convert to relative paths for backup (relative to root_dir)
+            try:
+                old_path_relative = old_path.relative_to(root_path)
+            except ValueError:
+                # If old_path is outside root_path, use absolute path as fallback
+                old_path_relative = old_path
+
+            # Track paths for backup (using relative paths)
             file_path_record = FilePathRecord(
-                initial_path=str(old_path),
-                original=str(old_path),
-                new=str(new_path),
+                initial_path=str(old_path_relative),
+                original=str(old_path_relative),
+                new=str(new_relative_path),
             )
             file_path_records.append(file_path_record)
 
@@ -121,15 +127,15 @@ class LocalFileOrganizer(IFileOrganizer):
             )
             operations.append(op_status)
 
-        # Create backup record
-        if not dry_run:
-            backup = FilePathBackup(
-                timestamp=datetime.now().isoformat(),
-                file_paths=file_path_records,
-            )
-            self._save_backup(backup, backup_dir / "file_paths.json")
+        # Create backup record (always create, even in preview mode)
+        backup = FilePathBackup(
+            timestamp=datetime.now().isoformat(),
+            file_paths=file_path_records,
+        )
+        self._save_backup(backup, backup_dir / "file_paths.json")
 
-            # Clean up empty directories
+        # Clean up empty directories (only in non-preview mode)
+        if not dry_run:
             self._cleanup_empty_directories(root_path)
 
         # Calculate statistics
@@ -180,8 +186,20 @@ class LocalFileOrganizer(IFileOrganizer):
 
         # Restore each file
         for record in backup.file_paths:
-            initial_path = Path(record.initial_path)
-            new_path = Path(record.new)
+            # Convert relative paths back to absolute paths
+            initial_path_rel = Path(record.initial_path)
+            new_path_rel = Path(record.new)
+
+            # Resolve to absolute paths relative to root_dir
+            if initial_path_rel.is_absolute():
+                initial_path = initial_path_rel  # Fallback for old absolute paths
+            else:
+                initial_path = root_path / initial_path_rel
+
+            if new_path_rel.is_absolute():
+                new_path = new_path_rel  # Fallback for old absolute paths
+            else:
+                new_path = root_path / new_path_rel
 
             # Try to locate the file (might have been manually moved)
             current_path = self._find_file(new_path, root_path)

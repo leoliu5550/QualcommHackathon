@@ -9,7 +9,7 @@ from loguru import logger
 FILEORG_ENV = "fileorg"
 
 
-def setup_logger(ENV: str):
+def setup_logger(ENV=None):
     """Initializes the Loguru logger with specific settings for development and production.
 
     The logging setup includes:
@@ -19,10 +19,16 @@ def setup_logger(ENV: str):
     4. Configuring file output (with rotation, retention, and compression).
     5. Overriding the default exception hook to capture uncaught exceptions.
 
+    Args:
+        ENV: Optional environment override. If None, reads from FILEORG_ENV env var.
+
     Returns:
         The configured loguru.logger instance.
     """
-    ENV = os.getenv("FILEORG_ENV", "production").lower()  # dev / prod
+    if ENV is None:
+        ENV = os.getenv("FILEORG_ENV", "production").lower()  # dev / prod
+    else:
+        ENV = str(ENV).lower() if ENV else "production"
     IS_DEV = ENV == "development"
 
     # --- 設定 log 目錄 ---
@@ -37,19 +43,20 @@ def setup_logger(ENV: str):
     # --- 移除預設 handler ---
     logger.remove()
 
-    # --- 開發模式：輸出到 console ---
-    if IS_DEV:
-        logger.add(
-            sys.stdout,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-            "<level>{level: <8}</level> | "
-            "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
-            "<level>{message}</level>",
-            level="DEBUG",
-            colorize=True,
-            backtrace=True,
-            diagnose=True,
-        )
+    # --- Console 輸出（所有模式） ---
+    logger.add(
+        sys.stdout,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
+        "<level>{level: <8}</level> | "
+        "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+        "<level>{message}</level>"
+        if IS_DEV
+        else "<level>{message}</level>",
+        level="DEBUG" if IS_DEV else "INFO",
+        colorize=True,
+        backtrace=IS_DEV,
+        diagnose=IS_DEV,
+    )
 
     # --- 共用的檔案輸出 ---
     logger.add(

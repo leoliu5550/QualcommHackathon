@@ -11,7 +11,6 @@ from typing import Optional
 
 from loguru import logger
 
-from fileorg.llm_classifier.adapters.llm_providers import GPUProvider, MPSProvider, QDICProvider
 from fileorg.llm_classifier.ports.interfaces import ILLMProvider
 
 
@@ -70,16 +69,33 @@ class ProviderFactory:
             return False
 
     @staticmethod
+    def _check_turu_available() -> bool:
+        """Check if TURU API server is available."""
+        try:
+            import httpx
+
+            with httpx.Client(timeout=1.0) as client:
+                response = client.get("http://127.0.0.1:8000/v1/models")
+                return response.status_code == 200
+        except Exception:
+            return False
+
+    @staticmethod
     def _detect_best_provider() -> str:
         """
         Auto-detect the best available provider.
 
         Priority:
-        1. QAIC (Qualcomm AI Engine)
-        2. CUDA (NVIDIA GPU)
-        3. MPS (Apple Silicon)
-        4. CPU (fallback)
+        1. TURU (Local API server)
+        2. QAIC (Qualcomm AI Engine)
+        3. CUDA (NVIDIA GPU)
+        4. MPS (Apple Silicon)
+        5. CPU (fallback)
         """
+        if ProviderFactory._check_turu_available():
+            logger.info("Detected TURU API server")
+            return "turu"
+
         if ProviderFactory._check_qaic_available():
             logger.info("Detected Qualcomm AI Engine (QAIC)")
             return "qaic"
@@ -135,31 +151,81 @@ class ProviderFactory:
         provider_type = provider_type.lower()
 
         # Create the appropriate provider
-        if provider_type == "gpu" or provider_type == "cuda":
+        if provider_type == "turu":
+            logger.info("Creating TURUProvider")
+            try:
+                import os
+
+                from fileorg.llm_classifier.adapters.llm_providers.turu_provider import TURUProvider
+
+                # Load TURU configuration from environment variables
+                turu_config = {
+                    "api_key": os.getenv("TURU_API_KEY", "API_KEY"),
+                    "base_url": os.getenv("TURU_BASE_URL", "http://127.0.0.1:8000/v1"),
+                    "model": os.getenv("TURU_MODEL", ".bot/Llama 3.1 8B @NPU"),
+                    "temperature": float(os.getenv("TURU_TEMPERATURE", "0.1")),
+                    "timeout": float(os.getenv("TURU_TIMEOUT", "600.0")),
+                }
+
+                # Override with any kwargs provided
+                turu_config.update(kwargs)
+
+                logger.info(f"TURU config: model={turu_config['model']}, url={turu_config['base_url']}")
+                return TURUProvider(**turu_config)
+            except ImportError as e:
+                raise RuntimeError(f"TURUProvider not available: {e}") from e
+
+        elif provider_type == "gpu" or provider_type == "cuda":
             if not ProviderFactory._check_cuda_available():
                 logger.warning("CUDA not available. Falling back to CPU. GPUProvider will use CPU mode.")
             logger.info(f"Creating GPUProvider with model={model_name}")
-            return GPUProvider(model_name=model_name, **kwargs)
+            try:
+                from fileorg.llm_classifier.adapters.llm_providers.gpu_provider import GPUProvider
+
+                return GPUProvider(model_name=model_name, **kwargs)
+            except ImportError as e:
+                raise RuntimeError(f"GPUProvider not available: {e}") from e
 
         elif provider_type == "mps":
             if not ProviderFactory._check_mps_available():
                 logger.warning("MPS not available. Falling back to CPU. MPSProvider will use CPU mode.")
             logger.info(f"Creating MPSProvider with model={model_name}")
-            return MPSProvider(model_name=model_name, **kwargs)
+            try:
+                from fileorg.llm_classifier.adapters.llm_providers.mps_provider import MPSProvider
+
+                return MPSProvider(model_name=model_name, **kwargs)
+            except ImportError as e:
+                raise RuntimeError(f"MPSProvider not available: {e}") from e
 
         elif provider_type == "qaic" or provider_type == "qualcomm":
             if not ProviderFactory._check_qaic_available():
                 logger.warning("QAIC not available. Falling back to CPU. QDICProvider will use CPU mode.")
             logger.info(f"Creating QDICProvider with model={model_name}")
-            return QDICProvider(model_name=model_name, **kwargs)
+            try:
+                from fileorg.llm_classifier.adapters.llm_providers.qdic_provider import QDICProvider
+
+                return QDICProvider(model_name=model_name, **kwargs)
+            except ImportError as e:
+                raise RuntimeError(f"QDICProvider not available: {e}") from e
 
         elif provider_type == "cpu":
             # Use GPUProvider with CPU fallback
             logger.info(f"Creating GPUProvider (CPU mode) with model={model_name}")
-            return GPUProvider(model_name=model_name, device="cpu", **kwargs)
+            try:
+                from fileorg.llm_classifier.adapters.llm_providers.gpu_provider import GPUProvider
+
+                return GPUProvider(model_name=model_name, device="cpu", **kwargs)
+            except ImportError as e:
+                error_msg = (
+                    f"No LLM provider available. Please either:\n"
+                    f"  1. Start TURU API server at http://127.0.0.1:8000\n"
+                    f"  2. Install torch: pip install torch\n"
+                    f"\nOriginal error: {e}"
+                )
+                raise RuntimeError(error_msg) from e
 
         else:
-            raise ValueError(f"Invalid provider_type: {provider_type}. Valid options: 'gpu', 'mps', 'qaic', 'cpu', or None for auto-detect")
+            raise ValueError(f"Invalid provider_type: {provider_type}. Valid options: 'turu', 'gpu', 'mps', 'qaic', 'cpu', or None for auto-detect")
 
     @staticmethod
     def get_available_providers() -> dict:
@@ -170,6 +236,11 @@ class ProviderFactory:
             Dict with provider availability and details
         """
         return {
+            "turu": {
+                "available": ProviderFactory._check_turu_available(),
+                "name": "TURU API Server",
+                "description": "Local HTTP API server (recommended)",
+            },
             "qaic": {
                 "available": ProviderFactory._check_qaic_available(),
                 "name": "Qualcomm AI Engine Direct",
