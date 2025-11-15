@@ -6,7 +6,8 @@ from fileorg.cli.adapters.progress_display import ProgressDisplay
 from fileorg.cli.argument_parser import build_parser, parse_args_to_dataclass
 from fileorg.logger_config import setup_logger
 
-setup_logger(ENV=load_dotenv())
+load_dotenv()
+setup_logger()
 
 
 def main():

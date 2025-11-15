@@ -189,3 +189,6 @@ compete_report/
 
 # Test outputs
 test-results*/
+
+# temp file
+temp*
