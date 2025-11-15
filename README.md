@@ -38,37 +38,84 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ### Installation Options
 
-#### Option 1: Basic Installation (TURU API Mode)
+Choose the installation method that best fits your use case:
 
-For use with TURU API server (lightweight, no PyTorch):
+| Use Case | Installation | Size | Startup Speed | Best For |
+|----------|-------------|------|---------------|----------|
+| **NPU Acceleration** | Option 1 | ~2 GB | Fastest | Qualcomm hardware with TURU |
+| **Lightweight Runtime** | Option 2 | ~2 GB | Fast | Production deployment |
+| **Full Local LLM** | Option 3 | ~10 GB | Slow | Development & customization |
+
+---
+
+#### Option 1: TURU API Mode (NPU Acceleration)
+
+**Best for:** Qualcomm NPU hardware with TURU server running
 
 ```bash
+# Install lightweight runtime
 uv pip install -e .
+
+# Use with TURU server (see TURU configuration section below)
+fileorg organize --path /path/to/directory
 ```
 
-#### Option 2: Full Installation (GPU/CPU Mode)
+> **Note:** TURU server must be running at `http://127.0.0.1:8000` (see [TURU Configuration](#using-turu-api-server-npu-acceleration))
 
-For running LLM locally with PyTorch (recommended for most users):
+---
+
+#### Option 2: ONNX Runtime (Lightweight & Fast)
+
+**Best for:** Production use without heavy PyTorch dependencies
 
 ```bash
+# 1. Install lightweight runtime (~2 GB, NO PyTorch)
+uv pip install -e .
+
+# 2. Download pre-exported ONNX model (~6 GB, one-time)
+python scripts/download_onnx_model.py
+
+# 3. Start using immediately
+fileorg organize --path /path/to/directory
+```
+
+**Benefits:**
+- 5-10x faster startup than PyTorch
+- 80% smaller installation size
+- Multi-platform: CUDA, CoreML, Qualcomm NPU, CPU
+
+<details>
+<summary><b>Advanced: Export your own models</b> (developers only)</summary>
+
+```bash
+# Install export dependencies (~10 GB)
+uv pip install -e '.[llm-export]'
+
+# Export model
+fileorg-export-llm --yes
+```
+</details>
+
+---
+
+#### Option 3: PyTorch Full Installation (GPU/CPU)
+
+**Best for:** Development or when you need full PyTorch flexibility
+
+```bash
+# Install with PyTorch dependencies (~10 GB)
 uv pip install -e .[non-npu]
 ```
 
-This installs additional dependencies:
-- `torch` (PyTorch with CUDA support)
-- `transformers` (HuggingFace models)
-- `accelerate` (Model acceleration)
-- `numpy`, `sentencepiece`, `protobuf`
-
-**For GPU support (NVIDIA):**
+<details>
+<summary><b>NVIDIA GPU Support</b></summary>
 
 ```bash
-# Uninstall CPU-only PyTorch first (if already installed)
+# If you need CUDA 12.1 support, reinstall PyTorch:
 uv pip uninstall torch torchvision torchaudio
-
-# Install PyTorch with CUDA 12.1 support
 uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 ```
+</details>
 
 ## Quick Start
 
@@ -87,7 +134,7 @@ fileorg organize --path /path/to/directory --char-limit 1000
 
 **What happens:**
 1. **Checks for existing backup** - If `.backup/file_paths.json` exists, prompts:
-   - **Option 1**: Use existing backup (fast, skip LLM) ⚡
+   - **Option 1**: Use existing backup (fast, skip LLM)
    - **Option 2**: Re-organize (run full LLM classification again)
    - **Option 3**: Restore (undo previous organization)
    - **Option 4**: Cancel
@@ -114,70 +161,56 @@ fileorg restore --path /path/to/directory
 2. Moves all files back to their original locations
 3. Removes empty directories
 
-## LLM Provider Selection
+## LLM Provider Auto-Detection
 
-FileOrg automatically detects the best available LLM provider in this priority order:
+FileOrg **automatically selects** the best available LLM provider:
 
-1. **TURU API** (if running at `http://127.0.0.1:8000`) - Recommended
-2. **QAIC** (Qualcomm AI Engine) - For Qualcomm hardware
-3. **CUDA GPU** (NVIDIA) - For NVIDIA GPUs
-4. **MPS** (Apple Silicon) - For M1/M2/M3 Macs
-5. **CPU** (fallback) - Slowest, requires PyTorch
+| Priority | Provider | Hardware | Speed |
+|----------|----------|----------|-------|
+| 1 | **TURU API** | Qualcomm NPU | Fastest |
+| 2 | **ONNX Runtime** | CUDA/CoreML/QNN/CPU | Fast |
+| 3 | **QAIC** | Qualcomm AI Engine | Fast |
+| 4 | **CUDA** | NVIDIA GPU | Medium |
+| 5 | **MPS** | Apple Silicon | Medium |
+| 6 | **CPU** | Any (fallback) | Slow |
+
+> **No configuration needed** - FileOrg will use the fastest available option automatically.
 
 ### Using TURU API Server (NPU Acceleration)
 
 TURU provides the fastest inference using Qualcomm NPU hardware.
 
+<details>
+<summary><b>TURU Setup & Configuration</b></summary>
+
 **1. Start TURU Server**
-
 ```bash
-# Start TURU server in another terminal
-# Default: http://127.0.0.1:8000
-# (See TURU documentation for setup instructions)
+# Start TURU server in another terminal (default: http://127.0.0.1:8000)
+# See TURU documentation for setup instructions
 ```
 
-**2. Configure TURU (Optional)**
+**2. Configure Environment (Optional)**
 
-Create `.env` file to customize TURU settings:
+Create `.env` file to customize settings:
 
 ```bash
-# Copy example configuration
 cp .env.example .env
-
-# Edit .env with your settings
-nano .env
 ```
 
-**Available environment variables:**
-
+Edit with your preferences:
 ```bash
-# TURU API endpoint (default: http://127.0.0.1:8000/v1)
 TURU_BASE_URL=http://127.0.0.1:8000/v1
-
-# NPU model to use (default: .bot/Llama 3.1 8B @NPU)
-TURU_MODEL=.bot/Llama 3.1 8B @NPU
-
-# API key (default: API_KEY)
+TURU_MODEL=.bot/Llama 3.1 8B @NPU      # Options: Llama 3.1 8B, Llama 3.2 3B, Qwen 2.5 7B
 TURU_API_KEY=API_KEY
-
-# Temperature for sampling (default: 0.1)
 TURU_TEMPERATURE=0.1
-
-# Request timeout in seconds (default: 600.0)
 TURU_TIMEOUT=600.0
 ```
 
 **3. Run FileOrg**
-
 ```bash
-# FileOrg will auto-detect TURU server
-fileorg organize --path /path/to/directory
+fileorg organize --path /path/to/directory  # Auto-detects TURU
 ```
-
-**Common NPU Models:**
-- `.bot/Llama 3.1 8B @NPU` (default, recommended)
-- `.bot/Llama 3.2 3B @NPU` (faster, lower accuracy)
-- `.bot/Qwen 2.5 7B @NPU` (alternative)
+</details>
 
 ### Character Limit
 

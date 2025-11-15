@@ -1,0 +1,10 @@
+# Ignore all model directories (each model has its own folder)
+# Models are large and should be exported locally
+*/
+
+# Keep documentation files
+!README.md
+!.gitignore
+
+# If you want to track specific models, add exceptions like:
+# !Llama-3.2-3B-Instruct/README.md
