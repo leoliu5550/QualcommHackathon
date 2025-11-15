@@ -21,9 +21,9 @@ from fileorg.organizer.application.organizer_use_case import FileOrganizerUseCas
 from fileorg.organizer.ports import ExecutionResult
 
 
-class FileOrganizer:
+class FileCoordinator:
     """
-    Main file organizer orchestrating the complete 6-phase workflow.
+    Main file coordinator orchestrating the complete 6-phase workflow.
 
     Phases:
         1. Scan: Discover files in the target directory
@@ -36,7 +36,7 @@ class FileOrganizer:
 
     def __init__(self, args):
         """
-        Initialize FileOrganizer with all dependencies.
+        Initialize FileCoordinator with all dependencies.
 
         Args:
             args: Parsed command-line arguments containing:
