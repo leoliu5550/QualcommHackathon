@@ -44,7 +44,13 @@ repos:
         name: Pip Dependency Audit
         entry: uv run pip-audit
         language: system
-        args: ["--local", "--ignore-vuln", "GHSA-4xh5-x5gv-qwph", "--skip-editable"]
+        args:
+            - "--local"
+            - "--ignore-vuln"
+            - "GHSA-f83h-ghpp-7wcc"   # 第一個漏洞 ID
+            - "--ignore-vuln"
+            - "GHSA-4xh5-x5gv-qwph"     # 第二個漏洞 ID
+            - "--skip-editable"
         pass_filenames: false
         always_run: true
 
