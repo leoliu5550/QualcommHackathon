@@ -84,6 +84,7 @@ class TestInitialization:
         assert provider.model_kwargs["load_in_8bit"] is True
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available on this machine")
 class TestDeviceDetection:
     """Test device detection logic."""
 
@@ -176,6 +177,7 @@ class TestMessageFormatting:
         assert "USER:" in formatted
 
 
+@pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available on this machine")
 class TestGetDeviceInfo:
     """Test device information retrieval."""
 
@@ -184,7 +186,9 @@ class TestGetDeviceInfo:
     @patch("torch.cuda.get_device_name", return_value="NVIDIA RTX 4090")
     @patch("torch.cuda.memory_allocated", return_value=1024**3)
     @patch("torch.cuda.memory_reserved", return_value=2 * 1024**3)
-    def test_get_device_info_cuda(self, mock_mem_res, mock_mem_alloc, mock_name, mock_count, mock_cuda):
+    @patch("torch.cuda.is_bf16_supported", return_value=True)
+    @patch("torch.cuda.current_device", return_value=0)
+    def test_get_device_info_cuda(self, mock_current, mock_bf16, mock_mem_res, mock_mem_alloc, mock_name, mock_count, mock_cuda):
         """Should return complete device info for CUDA."""
         provider = GPUProvider(device="cuda")
         info = provider.get_device_info()

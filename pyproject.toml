@@ -49,6 +49,7 @@ dependencies = [
     "pdfplumber>=0.11.8",
     "python-docx>=1.2.0",
     "python-pptx>=1.0.2",
+    "pdfminer-six>=20251107",
 ]
 
 [project.optional-dependencies]
@@ -87,8 +88,8 @@ non-npu = [
     "transformers>=4.35.0",
     "accelerate>=0.24.0",
     "numpy>=1.24.0",
-    "sentencepiece>=0.1.99",  # Required for some tokenizers
-    "protobuf>=3.20.0",  # Required for some models
+    "sentencepiece>=0.1.99", # Required for some tokenizers
+    "protobuf>=3.20.0",      # Required for some models
 ]
 
 [project.urls]
@@ -124,7 +125,7 @@ addopts = [
     "--cov-report=html",
     "--cov-report=term-missing",
     "-m",
-    "not gpu and not slow",  # Exclude GPU and slow tests by default
+    "not gpu and not slow",      # Exclude GPU and slow tests by default
 ]
 markers = [
     "unit: 單元測試",

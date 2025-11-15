@@ -12,8 +12,8 @@ def test_scanner_reads_all_files(test_data_path):
 
     assert scanner.root_dir == expected_path
     scanner_result = scanner.generate_report()
-    assert len(scanner_result.get("files", None)) == scanner_result.get("file_count", None)
-    assert scanner_result.get("files", None) is not None
+    assert len(scanner_result.files) == scanner_result.file_count
+    assert scanner_result.files is not None
 
 
 @pytest.mark.scanner
