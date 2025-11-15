@@ -2,7 +2,7 @@ import json
 
 from loguru import logger
 
-from fileorg.cli.progress_display import ProgressDisplay
+from fileorg.cli.ports import OrganizeArgs, ProgressPort, RestoreArgs
 from fileorg.file_ops.adapters.parser_factory_adapter import ParserFactoryAdapter
 from fileorg.file_ops.adapters.scanner import FileScanner
 from fileorg.file_ops.application.parser_client import ParseFileClient
@@ -32,9 +32,12 @@ class FileCoordinator:
         4. Backup: Create restoration point (integrated in Phase 5)
         5. Execute: Move files to organized locations
         6. Report: Generate organization report (TODO)
+
+    Args:
+        args (OrganizeArgs | RestoreArgs): Parsed CLI arguments as dataclass.
     """
 
-    def __init__(self, args):
+    def __init__(self, args: OrganizeArgs | RestoreArgs, progress: ProgressPort):
         """
         Initialize FileCoordinator with all dependencies.
 
@@ -46,7 +49,7 @@ class FileCoordinator:
                 - char_limit: Character limit for parsing
         """
         self.args = args
-        self.progress = ProgressDisplay()
+        self.progress = progress
 
         # Components initialized on-demand based on user choice
         self.parser_factory = None
@@ -117,13 +120,13 @@ class FileCoordinator:
             raise RuntimeError(f"Organizer initialization failed: {e}") from e
 
     def run(self):
-        """Execute the appropriate command (organize or restore)."""
-        if self.args.command == "organize":
+        """Execute the appropriate command (organize or restore) based on dataclass type."""
+        if isinstance(self.args, OrganizeArgs):
             self.run_organize()
-        elif self.args.command == "restore":
+        elif isinstance(self.args, RestoreArgs):
             self.run_restore()
         else:
-            raise ValueError(f"Unknown command: {self.args.command}")
+            raise ValueError(f"Unknown argument type: {type(self.args)}")
 
     def _prompt_existing_backup(self, backup_path):
         """
