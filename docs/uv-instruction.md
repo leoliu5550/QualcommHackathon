@@ -245,6 +245,38 @@ uv lock --python-platform darwin
 uv lock --universal
 ```
 
+### 6.3. Exporting `requirements.txt` for pip Users
+
+While UV manages dependencies natively using `pyproject.toml` and `uv.lock`, sometimes you need to provide a standard `requirements.txt` for users who rely on **pip** directly.
+
+```bash
+# Export all dependencies to requirements.txt
+uv pip compile pyproject.toml -o requirements.txt
+
+# Export a specific optional group (extras)
+uv pip compile pyproject.toml --extra non-npu -o requirements.txt
+```
+
+**Notes:**
+
+* The generated `requirements.txt` is fully compatible with `pip install -r requirements.txt`.
+* You can export multiple files for different extras:
+
+```bash
+uv pip compile pyproject.toml --extra dev -o requirements-dev.txt
+uv pip compile pyproject.toml --extra docs -o requirements-docs.txt
+```
+
+* This is especially useful for **CI/CD pipelines** or projects where some contributors cannot use UV directly.
+
+**Example usage with pip:**
+
+```bash
+pip install -r requirements.txt
+```
+
+This workflow allows pip users to install the exact dependencies defined in your UV-managed project, ensuring compatibility across environments.
+
 ---
 
 ## 7. Package Installation and Management
