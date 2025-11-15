@@ -42,3 +42,11 @@ try:
 except ImportError:
     # httpx not available or TURU provider dependencies missing
     pass
+
+try:
+    from .onnx_provider import OnnxProvider  # noqa: F401
+
+    __all__.append("OnnxProvider")
+except ImportError:
+    # onnxruntime or tokenizers not available
+    pass

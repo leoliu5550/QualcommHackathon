@@ -49,6 +49,9 @@ dependencies = [
     "pdfplumber>=0.11.8",
     "python-docx>=1.2.0",
     "python-pptx>=1.0.2",
+    # ONNX Runtime for lightweight LLM inference
+    "onnxruntime-gpu>=1.16.0",
+    "tokenizers>=0.15.0",
 ]
 
 [project.optional-dependencies]
@@ -81,7 +84,18 @@ docs = [
     # "mkdocs-minify-plugin>=0.7.2",
     # "pymdown-extensions>=10.5",
 ]
-# Non-NPU mode: Heavy dependencies for running models on CPU/GPU
+# LLM Export: Dependencies for exporting models to ONNX (development only)
+# Note: Models are exported in FP16 (preserving original precision), no additional quantization needed
+llm-export = [
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "optimum[onnxruntime]>=1.16.0",
+    "accelerate>=0.24.0",
+    "sentencepiece>=0.1.99",  # Required for some tokenizers
+    "protobuf>=3.20.0",  # Required for some models
+]
+
+# Non-NPU mode: Heavy dependencies for running models on CPU/GPU (backward compatibility)
 non-npu = [
     "torch>=2.0.0",
     "transformers>=4.35.0",
@@ -99,6 +113,7 @@ Issues = "https://github.com/leoliu5550/QualcommHackathon/issues"
 
 [project.scripts]
 fileorg = "fileorg.main:main"
+fileorg-export-llm = "fileorg.llm_classifier.infrastructure.export_model:main"
 
 [tool.setuptools.packages.find]
 include = ["fileorg*"]
