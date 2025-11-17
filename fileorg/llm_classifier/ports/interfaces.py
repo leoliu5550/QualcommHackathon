@@ -277,3 +277,93 @@ class ITemplateLoader(ABC):
             True if template exists and is accessible, False otherwise
         """
         pass
+
+
+class IFileIdMapper(ABC):
+    """
+    File ID mapping interface for converting file paths to stable identifiers.
+
+    This interface follows the Single Responsibility Principle (SRP) by focusing
+    solely on ID generation and path mapping. It solves the double-space filename
+    bug by providing stable IDs that aren't affected by LLM text normalization.
+
+    Usage:
+        # Create mapper and generate IDs for files
+        mapper = SequentialFileIdMapper()
+        file_paths = ["/path/file1.txt", "/path/file2.txt"]
+        id_map = mapper.create_mappings(file_paths)
+        # Result: {"A001": "/path/file1.txt", "A002": "/path/file2.txt"}
+
+        # Convert to ID-based representation for LLM
+        id_content_map = {file_id: content[path] for file_id, path in id_map.items()}
+
+        # Later, retrieve original path from ID
+        original_path = mapper.get_path("A001")  # "/path/file1.txt"
+
+    Implementations:
+        - SequentialFileIdMapper: Simple A001, A002... scheme (recommended)
+        - UUIDFileIdMapper: UUID-based IDs (for distributed systems)
+        - HashFileIdMapper: Content-hash based IDs (for deduplication)
+    """
+
+    @abstractmethod
+    def create_mappings(self, file_paths: List[str]) -> Dict[str, str]:
+        """
+        Create ID mappings for a list of file paths.
+
+        Args:
+            file_paths: List of absolute file paths to map
+
+        Returns:
+            Dictionary mapping file IDs to original paths
+            Example: {"A001": "/path/file1.txt", "A002": "/path/file2.txt"}
+
+        Raises:
+            ValueError: If file_paths is empty or contains duplicates
+        """
+        pass
+
+    @abstractmethod
+    def get_path(self, file_id: str) -> Optional[str]:
+        """
+        Retrieve original file path for a given file ID.
+
+        Args:
+            file_id: The file identifier (e.g., "A001")
+
+        Returns:
+            Original file path if found, None otherwise
+        """
+        pass
+
+    @abstractmethod
+    def get_id(self, file_path: str) -> Optional[str]:
+        """
+        Retrieve file ID for a given file path.
+
+        Args:
+            file_path: The absolute file path
+
+        Returns:
+            File ID if found, None otherwise
+        """
+        pass
+
+    @abstractmethod
+    def get_all_mappings(self) -> Dict[str, str]:
+        """
+        Get all current ID-to-path mappings.
+
+        Returns:
+            Dictionary of all current mappings {file_id: file_path}
+        """
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        """
+        Clear all mappings and reset internal state.
+
+        Useful for processing new batches of files in the same session.
+        """
+        pass

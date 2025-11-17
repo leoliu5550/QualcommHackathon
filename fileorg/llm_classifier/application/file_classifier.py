@@ -14,6 +14,7 @@ from loguru import logger
 
 from fileorg.llm_classifier.ports.interfaces import (
     IClassifierUseCase,
+    IFileIdMapper,
     ILLMProvider,
     IOutputParser,
     IPromptBuilder,
@@ -65,6 +66,7 @@ class FileClassifier(IClassifierUseCase):
         classification_prompt_builder: IPromptBuilder,
         classification_parser: IOutputParser,
         validator: Optional[ITextValidator] = None,
+        file_id_mapper: Optional[IFileIdMapper] = None,
     ):
         """
         Initialize file classifier with dependency injection.
@@ -83,6 +85,9 @@ class FileClassifier(IClassifierUseCase):
             classification_prompt_builder: Prompt builder for Stage 2 classification
             classification_parser: Parser for Stage 2 output (file mappings)
             validator: Optional text/path validator (ITextValidator)
+            file_id_mapper: Optional file ID mapper for stable file tracking (IFileIdMapper)
+                           When provided, uses file IDs instead of paths to prevent
+                           LLM normalization issues (e.g., double-space filenames)
 
         Note:
             All concrete adapters are injected from outside, not created here.
@@ -95,11 +100,13 @@ class FileClassifier(IClassifierUseCase):
         self.classification_prompt_builder = classification_prompt_builder
         self.classification_parser = classification_parser
         self.validator = validator
+        self.file_id_mapper = file_id_mapper
 
         logger.info(
             f"Initialized FileClassifier (two-stage) with "
             f"provider={llm_provider.__class__.__name__}, "
-            f"validator={'enabled' if validator else 'disabled'}"
+            f"validator={'enabled' if validator else 'disabled'}, "
+            f"file_id_mapper={'enabled' if file_id_mapper else 'disabled'}"
         )
 
     def classify(self, input_data: LLMInput) -> ClassificationOutput:
@@ -186,6 +193,11 @@ class FileClassifier(IClassifierUseCase):
             2. Generate keyword using llm_provider
             3. Parse keyword using summary_parser
 
+        If file_id_mapper is enabled:
+            - Uses stable file IDs (A001, A002, ...) instead of full paths
+            - Prevents LLM text normalization issues (e.g., double spaces)
+            - LLM sees {"A001": "content"} instead of {"path/with  spaces": "content"}
+
         Args:
             input_data: LLMInput containing file contents
                        Format: {"absolute_path": "content", ...}
@@ -212,13 +224,32 @@ class FileClassifier(IClassifierUseCase):
             raise ValueError(f"Input text must be valid JSON format: {e}") from e
 
         try:
+            # If file_id_mapper is enabled, create ID mappings upfront
+            id_to_path = None
+            if self.file_id_mapper:
+                file_paths = list(files.keys())
+                id_to_path = self.file_id_mapper.create_mappings(file_paths)
+                logger.debug(f"Created {len(id_to_path)} file ID mappings")
+
             # Process each file independently
             summaries = {}
             raw_responses = []
 
             for file_path, content in files.items():
-                # Build single-file input
-                single_file_input = json.dumps({file_path: content}, ensure_ascii=False)
+                # Determine what identifier to use for LLM
+                if self.file_id_mapper:
+                    # Use stable file ID instead of path
+                    file_id = self.file_id_mapper.get_id(file_path)
+                    if not file_id:
+                        raise ValueError(f"File ID not found for path: {file_path}")
+                    llm_identifier = file_id
+                    logger.debug(f"Using file ID '{file_id}' for path: {file_path}")
+                else:
+                    # Legacy path-based approach
+                    llm_identifier = file_path
+
+                # Build single-file input (using ID or path)
+                single_file_input = json.dumps({llm_identifier: content}, ensure_ascii=False)
 
                 # Build prompt for keyword extraction
                 # Note: The prompt builder decides the actual prompt format
@@ -237,12 +268,19 @@ class FileClassifier(IClassifierUseCase):
                 raw_responses.append(raw_response)
 
                 # Parse keyword into FileSummary
-                # Note: The parser decides how to extract the keyword
+                # Note: The parser receives the LLM identifier (ID or path)
                 summary = self.summary_parser.parse(
                     text=raw_response,
-                    file_path=file_path,
+                    file_path=llm_identifier,  # Use ID if mapper enabled, path otherwise
                     raw_length=len(raw_response),
                 )
+
+                # Update FileSummary with actual path and ID
+                if self.file_id_mapper:
+                    # Store actual path and file ID
+                    summary.file_path = file_path  # Restore original path
+                    summary.file_id = llm_identifier  # Store the file ID
+
                 summaries[file_path] = summary
 
                 # Use repr() to avoid UnicodeEncodeError on Windows console
@@ -272,6 +310,11 @@ class FileClassifier(IClassifierUseCase):
             2. Generate classification using llm_provider
             3. Parse into FileMapping objects using classification_parser
 
+        If file_id_mapper is enabled:
+            - Sends file IDs to LLM instead of paths
+            - Maps results back to original paths after parsing
+            - Includes file IDs in FileMapping objects
+
         Args:
             summaries: Dict mapping file paths to FileSummary objects
             max_tokens: Maximum tokens for LLM input
@@ -291,8 +334,21 @@ class FileClassifier(IClassifierUseCase):
         logger.debug("Stage 2: Classifying files based on keywords")
 
         try:
-            # Build keyword dict: {file_path: keyword}
-            keyword_dict = {path: summary.summary for path, summary in summaries.items()}
+            # Build keyword dict for LLM
+            # Use file IDs if mapper is enabled, otherwise use paths
+            if self.file_id_mapper:
+                # Use file IDs as keys: {file_id: keyword}
+                keyword_dict = {}
+                for path, summary in summaries.items():
+                    file_id = summary.file_id or self.file_id_mapper.get_id(path)
+                    if not file_id:
+                        raise ValueError(f"File ID not found for path: {path}")
+                    keyword_dict[file_id] = summary.summary
+                logger.debug(f"Using {len(keyword_dict)} file IDs for Stage 2")
+            else:
+                # Legacy: Use file paths as keys: {file_path: keyword}
+                keyword_dict = {path: summary.summary for path, summary in summaries.items()}
+
             keyword_json = json.dumps(keyword_dict, ensure_ascii=False)
 
             # Build classification prompt
@@ -315,7 +371,38 @@ class FileClassifier(IClassifierUseCase):
 
             # Parse into path mappings
             # Note: The parser decides how to extract and structure the results
-            path_mappings = self.classification_parser.parse(raw_response)
+            # Parser receives ID-based output if mapper is enabled
+            parsed_mappings = self.classification_parser.parse(raw_response)
+
+            # Convert ID-based mappings back to path-based mappings if needed
+            if self.file_id_mapper:
+                import os
+
+                path_mappings = {}
+                for identifier, mapping in parsed_mappings.items():
+                    # Identifier is a file ID, convert to original path
+                    original_path = self.file_id_mapper.get_path(identifier)
+                    if not original_path:
+                        raise ValueError(f"Original path not found for file ID: {identifier}")
+
+                    # Extract filename from original path
+                    filename = os.path.basename(original_path)
+
+                    # Reassemble new_relative_path with actual filename
+                    # Category is already normalized in the mapping
+                    category_normalized = mapping.category.replace(" ", "_")
+                    new_relative_path = f"{category_normalized}/{filename}"
+
+                    # Update mapping with correct path, file ID, and new path
+                    mapping.old_path = original_path
+                    mapping.new_relative_path = new_relative_path
+                    mapping.file_id = identifier
+                    path_mappings[original_path] = mapping
+
+                    logger.debug(f"Mapped {identifier} -> {original_path} -> {new_relative_path}")
+            else:
+                # Legacy: Mappings already use paths as keys
+                path_mappings = parsed_mappings
 
             logger.info(f"Stage 2 complete: {len(path_mappings)} files classified")
             return path_mappings, raw_response
