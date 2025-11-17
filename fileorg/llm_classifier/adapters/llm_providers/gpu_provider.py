@@ -25,7 +25,7 @@ class GPUProvider(ILLMProvider):
         self,
         model_name: str = "meta-llama/Llama-3.2-3B-Instruct",
         device: Optional[str] = None,
-        torch_dtype: Optional[torch.dtype] = None,
+        dtype: Optional[torch.dtype] = None,
         **model_kwargs,
     ):
         """
@@ -34,19 +34,19 @@ class GPUProvider(ILLMProvider):
         Args:
             model_name: HuggingFace model identifier
             device: Device to use ('cuda', 'cpu', or None for auto-detection)
-            torch_dtype: Torch data type (default: auto-detect based on device)
+            dtype: Torch data type (default: auto-detect based on device)
             **model_kwargs: Additional arguments passed to AutoModelForCausalLM.from_pretrained
         """
         self.model_name = model_name
         self.device = device or self._get_device()
-        self.torch_dtype = torch_dtype or self._get_dtype()
+        self.dtype = dtype or self._get_dtype()
         self.model_kwargs = model_kwargs
 
         # Lazy loading - model and tokenizer are loaded on first use
         self._model = None
         self._tokenizer = None
 
-        logger.info(f"Initialized GPUProvider (NVIDIA CUDA) with model={model_name}, device={self.device}, dtype={self.torch_dtype}")
+        logger.info(f"Initialized GPUProvider (NVIDIA CUDA) with model={model_name}, device={self.device}, dtype={self.dtype}")
 
     def _get_device(self) -> str:
         """Auto-detect best available device."""
@@ -64,7 +64,7 @@ class GPUProvider(ILLMProvider):
         return torch.float32
 
     def _load_model(self):
-        """Lazy load model and tokenizer."""
+        """Lazy load model and tokenizer with cache-first strategy."""
         if self._model is not None:
             return
 
@@ -73,21 +73,37 @@ class GPUProvider(ILLMProvider):
 
             logger.info(f"Loading model {self.model_name}...")
 
-            # Load tokenizer
-            self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)  # nosec B615
+            # Try to load from local cache first
+            try:
+                logger.debug("Attempting to load from local cache...")
+                # Load tokenizer from cache
+                self._tokenizer = AutoTokenizer.from_pretrained(self.model_name, local_files_only=True)  # nosec B615
 
-            # Load model
-            self._model = AutoModelForCausalLM.from_pretrained(  # nosec B615
-                self.model_name, torch_dtype=self.torch_dtype, device_map=self.device if self.device == "cuda" else None, **self.model_kwargs
-            )
+                # Load model from cache
+                self._model = AutoModelForCausalLM.from_pretrained(
+                    self.model_name,
+                    dtype=self.dtype,
+                    device_map=self.device if self.device == "cuda" else None,
+                    local_files_only=True,
+                    **self.model_kwargs,
+                )  # nosec B615
+                logger.success(f"Model loaded from cache on {self.device}")
+
+            except (OSError, ValueError) as cache_error:
+                # Cache miss - download model
+                logger.warning(f"Cache miss: {cache_error}. Downloading model...")
+                self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)  # nosec B615
+
+                self._model = AutoModelForCausalLM.from_pretrained(
+                    self.model_name, dtype=self.dtype, device_map=self.device if self.device == "cuda" else None, **self.model_kwargs
+                )  # nosec B615
+                logger.success(f"Model downloaded and loaded on {self.device}")
 
             # Move to device if not using device_map
             if self.device != "cuda":
                 self._model = self._model.to(self.device)
 
             self._model.eval()  # Set to evaluation mode
-
-            logger.success(f"Model loaded successfully on {self.device}")
 
         except ImportError as e:
             logger.error("transformers library not installed. Install with: pip install transformers torch")
@@ -174,7 +190,7 @@ class GPUProvider(ILLMProvider):
         """Get device information for debugging."""
         info = {
             "device": self.device,
-            "dtype": str(self.torch_dtype),
+            "dtype": str(self.dtype),
             "cuda_available": torch.cuda.is_available(),
         }
 
