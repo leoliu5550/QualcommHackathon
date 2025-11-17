@@ -83,6 +83,7 @@ class TestInitialization:
         assert "load_in_8bit" in provider.model_kwargs
         assert provider.model_kwargs["load_in_8bit"] is True
 
+
 @pytest.mark.gpu
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available on this machine")
 class TestDeviceDetection:
@@ -175,6 +176,7 @@ class TestMessageFormatting:
         formatted = provider._format_messages_fallback(messages)
 
         assert "USER:" in formatted
+
 
 @pytest.mark.gpu
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available on this machine")
