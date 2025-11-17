@@ -176,7 +176,7 @@ class TestMessageFormatting:
 
         assert "USER:" in formatted
 
-
+@pytest.mark.gpu
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available on this machine")
 class TestGetDeviceInfo:
     """Test device information retrieval."""
