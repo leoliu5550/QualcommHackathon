@@ -12,6 +12,7 @@ from fileorg.llm_classifier.adapters.output_parsers.path_mapping_output_parser i
 from fileorg.llm_classifier.adapters.output_parsers.summary_output_parser import SummaryOutputParser
 from fileorg.llm_classifier.adapters.prompt_builders.classification_prompt_builder import ClassificationPromptBuilder
 from fileorg.llm_classifier.adapters.prompt_builders.summary_prompt_builder import SummaryPromptBuilder
+from fileorg.llm_classifier.adapters.sequential_file_id_mapper import SequentialFileIdMapper
 from fileorg.llm_classifier.adapters.template_loader import Jinja2TemplateLoader
 from fileorg.llm_classifier.application.file_classifier import FileClassifier
 from fileorg.llm_classifier.infrastructure.factories.provider_factory import ProviderFactory
@@ -91,15 +92,21 @@ class FileCoordinator:
             self.path_mapping_parser = PathMappingOutputParser()
             logger.debug("Output parsers initialized")
 
-            # 5. Initialize classifier with all dependencies
+            # 5. Initialize file ID mapper for stable file tracking
+            # Fixes Issue #112: Double-space filename bug
+            self.file_id_mapper = SequentialFileIdMapper(prefix="A", id_width=3)
+            logger.debug("File ID mapper initialized (fixes double-space filename bug)")
+
+            # 6. Initialize classifier with all dependencies
             self.classifier = FileClassifier(
                 llm_provider=self.llm_provider,
                 summary_prompt_builder=self.summary_builder,
                 summary_parser=self.summary_parser,
                 classification_prompt_builder=self.classification_builder,
                 classification_parser=self.path_mapping_parser,
+                file_id_mapper=self.file_id_mapper,
             )
-            logger.success("FileClassifier initialized successfully")
+            logger.success("FileClassifier initialized successfully with file ID mapping")
 
         except Exception as e:
             logger.error(f"Failed to initialize classifier: {e}")
