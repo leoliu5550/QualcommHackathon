@@ -32,22 +32,35 @@ class FileSummary:
     Single file summary result from Stage 1.
 
     Represents the summarization output for a single file.
+    Now supports file IDs to prevent path matching issues (e.g., double spaces).
 
     Usage:
+        # New ID-based approach (recommended)
         summary = FileSummary(
             file_path="C:/Desktop/report.pdf",
             summary="Q4 financial report with earnings data",
+            file_id="A001",
             metadata={"tokens": 150, "time_ms": 234}
+        )
+
+        # Legacy path-only approach (backward compatible)
+        summary = FileSummary(
+            file_path="C:/Desktop/report.pdf",
+            summary="Q4 financial report",
+            metadata={"tokens": 150}
         )
 
     Args:
         file_path: Absolute path of the file
         summary: Brief content summary (1-2 sentences)
+        file_id: Optional stable file identifier (e.g., "A001")
+                 Use this to avoid LLM path normalization issues
         metadata: Optional metadata (tokens, processing time, etc.)
     """
 
     file_path: str
     summary: str
+    file_id: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
 
@@ -93,8 +106,20 @@ class FileMapping:
     Single file path mapping with metadata.
 
     Maps an old absolute path to a new organized relative path with categorization info.
+    Now supports file IDs for stable tracking through LLM processing.
 
     Usage:
+        # New ID-based approach (recommended)
+        mapping = FileMapping(
+            old_path="C:/Desktop/report.pdf",
+            new_relative_path="Financial_Reports/report.pdf",
+            category="Financial Reports",
+            summary="Q4 financial report",
+            reason="Contains financial data",
+            file_id="A001"
+        )
+
+        # Legacy path-only approach (backward compatible)
         mapping = FileMapping(
             old_path="C:/Desktop/report.pdf",
             new_relative_path="Financial_Reports/report.pdf",
@@ -109,6 +134,8 @@ class FileMapping:
         category: Original category name (spaces preserved)
         summary: Brief content summary (1-2 sentences)
         reason: Classification reasoning
+        file_id: Optional stable file identifier (e.g., "A001")
+                 Use this to track files through LLM processing stages
     """
 
     old_path: str
@@ -116,3 +143,4 @@ class FileMapping:
     category: str
     summary: str
     reason: str
+    file_id: Optional[str] = None
