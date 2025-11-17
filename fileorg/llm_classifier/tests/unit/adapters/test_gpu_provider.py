@@ -46,7 +46,7 @@ class TestInitialization:
 
         assert provider.model_name == "meta-llama/Llama-3.2-3B-Instruct"
         assert provider.device == "cuda"
-        assert provider.torch_dtype == torch.bfloat16
+        assert provider.dtype == torch.bfloat16
         assert provider._model is None
         assert provider._tokenizer is None
 
@@ -71,9 +71,9 @@ class TestInitialization:
     @patch("fileorg.llm_classifier.adapters.llm_providers.gpu_provider.logger")
     def test_custom_dtype_initialization(self, mock_logger):
         """Should initialize with custom dtype."""
-        provider = GPUProvider(torch_dtype=torch.float32)
+        provider = GPUProvider(dtype=torch.float32)
 
-        assert provider.torch_dtype == torch.float32
+        assert provider.dtype == torch.float32
 
     @patch("fileorg.llm_classifier.adapters.llm_providers.gpu_provider.logger")
     def test_model_kwargs_initialization(self, mock_logger):
