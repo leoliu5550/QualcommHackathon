@@ -152,6 +152,7 @@ class LocalFileOrganizer(IFileOrganizer):
             skipped_count=skipped_count,
             operations=operations,
             backup_dir=str(backup_dir),
+            backup=backup,
             execution_time=execution_time,
         )
 

@@ -20,6 +20,7 @@ from fileorg.llm_classifier.ports.models import ClassificationOutput, LLMInput
 from fileorg.organizer.adapters.local_executor import LocalFileOrganizer
 from fileorg.organizer.application.organizer_use_case import FileOrganizerUseCase
 from fileorg.organizer.ports import ExecutionResult
+from fileorg.report_generator.adapters.html_visualizer import HtmlReportGenerator
 
 
 class FileCoordinator:
@@ -57,6 +58,7 @@ class FileCoordinator:
         self.parser_file_client = None
         self.classifier = None
         self.organizer_use_case = None
+        self.report_generator = None
 
     def _init_parser(self):
         """Initialize file parser on-demand."""
@@ -122,6 +124,16 @@ class FileCoordinator:
             local_organizer = LocalFileOrganizer()
             self.organizer_use_case = FileOrganizerUseCase(local_organizer)
             logger.success("FileOrganizerUseCase initialized successfully")
+        except Exception as e:
+            logger.error(f"Failed to initialize organizer: {e}")
+            raise RuntimeError(f"Organizer initialization failed: {e}") from e
+
+    def _init_report_generator(self):
+        if self.report_generator is None:
+            return  # Already initialized
+        try:
+            logger.info("Initializing report generator...")
+            self.report_generator = HtmlReportGenerator()
         except Exception as e:
             logger.error(f"Failed to initialize organizer: {e}")
             raise RuntimeError(f"Organizer initialization failed: {e}") from e
@@ -311,6 +323,7 @@ class FileCoordinator:
         self._init_parser()
         self._init_classifier()
         self._init_organizer()
+        self._init_report_generator()
 
         try:
             # === Phase 1: Scan ===
@@ -376,7 +389,7 @@ class FileCoordinator:
             # === Phase 6: Generate Report (TODO) ===
             logger.info("=== Phase 6: Generating report ===")
             self.progress.update("Generating report...")
-
+            self.report_generator.generate_html(report=exec_result.backup, root_dir=root_dir)
             # TODO: Integrate report_generator module when available
             # report_output = self.report_generator.generate_report(
             #     classification_output=classification_output,

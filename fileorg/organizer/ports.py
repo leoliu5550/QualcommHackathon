@@ -47,48 +47,6 @@ class OperationStatus:
 
 
 @dataclass
-class ExecutionResult:
-    """
-    Complete summary of file organization execution.
-
-    Aggregates results from all file operations with statistics and backup information.
-
-    Usage:
-        Returned by organizer after executing operations, used for logging and display.
-
-    Example:
-        ```python
-        result = ExecutionResult(
-            total_count=10,
-            success_count=8,
-            failed_count=1,
-            skipped_count=1,
-            operations=[status1, status2, ...],
-            backup_dir="C:/Users/user/Documents/.backup",
-            execution_time=2.5
-        )
-        ```
-
-    Args:
-        total_count: Total number of planned file operations
-        success_count: Number of successfully moved files
-        failed_count: Number of failed file operations
-        skipped_count: Number of skipped operations
-        operations: Detailed status for each file operation
-        backup_dir: Path to the .backup directory containing file_paths.json
-        execution_time: Total execution time in seconds
-    """
-
-    total_count: int
-    success_count: int
-    failed_count: int
-    skipped_count: int
-    operations: List[OperationStatus]
-    backup_dir: str
-    execution_time: float
-
-
-@dataclass
 class FilePathRecord:
     """
     Single file path record with three stages of tracking.
@@ -138,6 +96,51 @@ class FilePathBackup:
 
     timestamp: str
     file_paths: List[FilePathRecord]
+
+
+@dataclass
+class ExecutionResult:
+    """
+    Complete summary of file organization execution.
+
+    Aggregates results from all file operations with statistics and backup information.
+
+    Usage:
+        Returned by organizer after executing operations, used for logging and display.
+
+    Example:
+        ```python
+        result = ExecutionResult(
+            total_count=10,
+            success_count=8,
+            failed_count=1,
+            skipped_count=1,
+            operations=[status1, status2, ...],
+            backup_dir="C:/Users/user/Documents/.backup",
+            backup: FilePathBackup,
+            execution_time=2.5
+        )
+        ```
+
+    Args:
+        total_count: Total number of planned file operations
+        success_count: Number of successfully moved files
+        failed_count: Number of failed file operations
+        skipped_count: Number of skipped operations
+        operations: Detailed status for each file operation
+        backup_dir: Path to the .backup directory containing file_paths.json
+        backup: FilePathBackup
+        execution_time: Total execution time in seconds
+    """
+
+    total_count: int
+    success_count: int
+    failed_count: int
+    skipped_count: int
+    operations: List[OperationStatus]
+    backup_dir: str
+    backup: FilePathBackup
+    execution_time: float
 
 
 class IFileOrganizer(ABC):
