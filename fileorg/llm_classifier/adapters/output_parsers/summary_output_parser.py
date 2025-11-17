@@ -52,13 +52,36 @@ class SummaryOutputParser(ISummaryParser):
             # Step 1: Extract JSON from response using shared utility
             json_data = extract_json_from_llm_output(text, strict=False)
 
+            # Debug logging for troubleshooting
+            logger.debug(f"Extracted JSON keys: {list(json_data.keys())}")
+            logger.debug(f"Looking for key: {file_path}")
+
             # Step 2: Extract keyword for the specified file_path
             if file_path and file_path not in json_data:
-                raise ValueError(f"File path '{file_path}' not found in LLM output")
+                # Log the actual LLM response for debugging
+                logger.error(f"LLM raw response (first 500 chars): {text[:500]}")
+                logger.error(f"Expected key '{file_path}' not found in JSON keys: {list(json_data.keys())}")
 
-            # Get the first file path if not specified
-            target_path = file_path if file_path else list(json_data.keys())[0]
-            keyword = json_data[target_path]
+                # Try to be more flexible ONLY when the expected key looks like a file ID
+                # This helps with file ID mapping but maintains strict behavior for file paths
+                is_file_id_format = (
+                    len(json_data) == 1
+                    and file_path
+                    and len(file_path) < 10  # File IDs are short (e.g., A001)
+                    and not ("/" in file_path or "\\" in file_path)  # Not a path
+                )
+
+                if is_file_id_format:
+                    actual_key = list(json_data.keys())[0]
+                    logger.warning(f"Using single available key '{actual_key}' instead of file ID '{file_path}'")
+                    target_path = actual_key
+                    keyword = json_data[actual_key]
+                else:
+                    raise ValueError(f"File path '{file_path}' not found in LLM output. Available keys: {list(json_data.keys())}")
+            else:
+                # Get the first file path if not specified
+                target_path = file_path if file_path else list(json_data.keys())[0]
+                keyword = json_data[target_path]
 
             # Step 3: Validate keyword format
             self._validate_keyword(keyword, target_path)

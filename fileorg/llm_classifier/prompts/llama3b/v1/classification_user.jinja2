@@ -1,8 +1,11 @@
 {{ instruction }}
 
-Files with extracted keywords:
+Input JSON with file keywords (DO NOT modify the keys):
 ```json
 {{ file_summaries }}
 ```
 
-Please classify these files into categories based on their keywords.
+Task: Classify each file into a category based on its keyword.
+
+IMPORTANT: Your output must be valid JSON with the EXACT SAME KEYS from the input above.
+For each key, provide: {"<exact-key-from-input>": {"category": "...", "summary": "...", "reason": "..."}}
