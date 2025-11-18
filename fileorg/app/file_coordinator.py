@@ -2,7 +2,7 @@ import json
 
 from loguru import logger
 
-from fileorg.cli.progress_display import ProgressDisplay
+from fileorg.cli.ports import OrganizeArgs, ProgressPort, RestoreArgs
 from fileorg.file_ops.adapters.parser_factory_adapter import ParserFactoryAdapter
 from fileorg.file_ops.adapters.scanner import FileScanner
 from fileorg.file_ops.application.parser_client import ParseFileClient
@@ -12,6 +12,7 @@ from fileorg.llm_classifier.adapters.output_parsers.path_mapping_output_parser i
 from fileorg.llm_classifier.adapters.output_parsers.summary_output_parser import SummaryOutputParser
 from fileorg.llm_classifier.adapters.prompt_builders.classification_prompt_builder import ClassificationPromptBuilder
 from fileorg.llm_classifier.adapters.prompt_builders.summary_prompt_builder import SummaryPromptBuilder
+from fileorg.llm_classifier.adapters.sequential_file_id_mapper import SequentialFileIdMapper
 from fileorg.llm_classifier.adapters.template_loader import Jinja2TemplateLoader
 from fileorg.llm_classifier.application.file_classifier import FileClassifier
 from fileorg.llm_classifier.infrastructure.factories.provider_factory import ProviderFactory
@@ -21,9 +22,9 @@ from fileorg.organizer.application.organizer_use_case import FileOrganizerUseCas
 from fileorg.organizer.ports import ExecutionResult
 
 
-class FileOrganizer:
+class FileCoordinator:
     """
-    Main file organizer orchestrating the complete 6-phase workflow.
+    Main file coordinator orchestrating the complete 6-phase workflow.
 
     Phases:
         1. Scan: Discover files in the target directory
@@ -32,11 +33,14 @@ class FileOrganizer:
         4. Backup: Create restoration point (integrated in Phase 5)
         5. Execute: Move files to organized locations
         6. Report: Generate organization report (TODO)
+
+    Args:
+        args (OrganizeArgs | RestoreArgs): Parsed CLI arguments as dataclass.
     """
 
-    def __init__(self, args):
+    def __init__(self, args: OrganizeArgs | RestoreArgs, progress: ProgressPort):
         """
-        Initialize FileOrganizer with all dependencies.
+        Initialize FileCoordinator with all dependencies.
 
         Args:
             args: Parsed command-line arguments containing:
@@ -46,7 +50,7 @@ class FileOrganizer:
                 - char_limit: Character limit for parsing
         """
         self.args = args
-        self.progress = ProgressDisplay()
+        self.progress = progress
 
         # Components initialized on-demand based on user choice
         self.parser_factory = None
@@ -88,15 +92,21 @@ class FileOrganizer:
             self.path_mapping_parser = PathMappingOutputParser()
             logger.debug("Output parsers initialized")
 
-            # 5. Initialize classifier with all dependencies
+            # 5. Initialize file ID mapper for stable file tracking
+            # Fixes Issue #112: Double-space filename bug
+            self.file_id_mapper = SequentialFileIdMapper(prefix="A", id_width=3)
+            logger.debug("File ID mapper initialized (fixes double-space filename bug)")
+
+            # 6. Initialize classifier with all dependencies
             self.classifier = FileClassifier(
                 llm_provider=self.llm_provider,
                 summary_prompt_builder=self.summary_builder,
                 summary_parser=self.summary_parser,
                 classification_prompt_builder=self.classification_builder,
                 classification_parser=self.path_mapping_parser,
+                file_id_mapper=self.file_id_mapper,
             )
-            logger.success("FileClassifier initialized successfully")
+            logger.success("FileClassifier initialized successfully with file ID mapping")
 
         except Exception as e:
             logger.error(f"Failed to initialize classifier: {e}")
@@ -117,13 +127,13 @@ class FileOrganizer:
             raise RuntimeError(f"Organizer initialization failed: {e}") from e
 
     def run(self):
-        """Execute the appropriate command (organize or restore)."""
-        if self.args.command == "organize":
+        """Execute the appropriate command (organize or restore) based on dataclass type."""
+        if isinstance(self.args, OrganizeArgs):
             self.run_organize()
-        elif self.args.command == "restore":
+        elif isinstance(self.args, RestoreArgs):
             self.run_restore()
         else:
-            raise ValueError(f"Unknown command: {self.args.command}")
+            raise ValueError(f"Unknown argument type: {type(self.args)}")
 
     def _prompt_existing_backup(self, backup_path):
         """

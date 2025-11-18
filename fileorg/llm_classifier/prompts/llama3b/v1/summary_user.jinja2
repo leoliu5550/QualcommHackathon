@@ -1,8 +1,11 @@
 {{ instruction }}
 
-File to analyze:
+Input JSON (DO NOT modify the key):
 ```json
 {{ file_data }}
 ```
 
-Please extract 1-2 word keywords for this file based on its content.
+Task: Extract 1-2 word keywords describing the content.
+
+IMPORTANT: Your output must be valid JSON with the EXACT SAME KEY from the input above. Output format:
+{"<exact-key-from-input>": "your keywords here"}

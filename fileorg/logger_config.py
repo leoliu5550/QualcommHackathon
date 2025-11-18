@@ -9,7 +9,7 @@ from loguru import logger
 FILEORG_ENV = "fileorg"
 
 
-def setup_logger(ENV=None):
+def setup_logger():
     """Initializes the Loguru logger with specific settings for development and production.
 
     The logging setup includes:
@@ -25,14 +25,13 @@ def setup_logger(ENV=None):
     Returns:
         The configured loguru.logger instance.
     """
-    if ENV is None:
-        ENV = os.getenv("FILEORG_ENV", "production").lower()  # dev / prod
-    else:
-        ENV = str(ENV).lower() if ENV else "production"
-    IS_DEV = ENV == "development"
+    # ENV is typically a boolean from load_dotenv(), but we always read from env var
+    # regardless of whether .env was successfully loaded
+    env_value = os.getenv("FILEORG_ENV", "production").lower()  # dev / prod
+    is_dev = env_value == "development"
 
     # --- 設定 log 目錄 ---
-    if IS_DEV:
+    if env_value != "production":
         log_dir = Path("logs")
     else:
         log_dir = Path(user_data_dir(FILEORG_ENV)) / "logs"
@@ -50,12 +49,12 @@ def setup_logger(ENV=None):
         "<level>{level: <8}</level> | "
         "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
         "<level>{message}</level>"
-        if IS_DEV
+        if is_dev
         else "<level>{message}</level>",
-        level="DEBUG" if IS_DEV else "INFO",
+        level="DEBUG" if is_dev else "ERROR",
         colorize=True,
-        backtrace=IS_DEV,
-        diagnose=IS_DEV,
+        backtrace=is_dev,
+        diagnose=is_dev,
     )
 
     # --- 共用的檔案輸出 ---
@@ -66,11 +65,11 @@ def setup_logger(ENV=None):
         compression="zip",
         encoding="utf-8",
         enqueue=True,
-        level="DEBUG" if IS_DEV else "INFO",
+        level="DEBUG" if is_dev else "INFO",
         colorize=False,
-        backtrace=IS_DEV,
-        diagnose=IS_DEV,
-        serialize=not IS_DEV,  # 生產可用 JSON 結構化輸出
+        backtrace=is_dev,
+        diagnose=is_dev,
+        serialize=not is_dev,  # 生產可用 JSON 結構化輸出
     )
 
     # --- 捕捉全域例外 ---
@@ -84,5 +83,5 @@ def setup_logger(ENV=None):
 
     sys.excepthook = handle_exception
 
-    logger.info(f"Logger initialized in {ENV} mode. Logs stored in: {log_dir}")
+    logger.info(f"Logger initialized in {env_value} mode. Logs stored in: {log_dir}")
     return logger

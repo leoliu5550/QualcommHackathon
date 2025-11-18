@@ -57,7 +57,7 @@ class QDICProvider(ILLMProvider):
             return False
 
     def _load_model(self):
-        """Lazy load model and tokenizer with QAIC optimization."""
+        """Lazy load model and tokenizer with QAIC optimization and cache-first strategy."""
         if self._model is not None:
             return
 
@@ -66,8 +66,14 @@ class QDICProvider(ILLMProvider):
 
             logger.info(f"Loading model {self.model_name} for QAIC...")
 
-            # Load tokenizer
-            self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)  # nosec B615
+            # Try to load tokenizer from cache first
+            try:
+                logger.debug("Attempting to load tokenizer from local cache...")
+                self._tokenizer = AutoTokenizer.from_pretrained(self.model_name, local_files_only=True)  # nosec B615
+                logger.debug("Tokenizer loaded from cache")
+            except (OSError, ValueError):
+                logger.warning("Tokenizer cache miss. Downloading...")
+                self._tokenizer = AutoTokenizer.from_pretrained(self.model_name)  # nosec B615
 
             # Check QAIC availability
             if not self._check_qaic_available():
@@ -78,11 +84,21 @@ class QDICProvider(ILLMProvider):
                 import torch
                 from transformers import AutoModelForCausalLM
 
-                self._model = AutoModelForCausalLM.from_pretrained(  # nosec B615
-                    self.model_name, torch_dtype=torch.float32, low_cpu_mem_usage=True, **self.model_kwargs
-                )
+                # Try cache first, then download
+                try:
+                    logger.debug("Attempting to load model from local cache...")
+                    self._model = AutoModelForCausalLM.from_pretrained(
+                        self.model_name, dtype=torch.float32, low_cpu_mem_usage=True, local_files_only=True, **self.model_kwargs
+                    )  # nosec B615
+                    logger.success("Model loaded from cache (CPU fallback mode)")
+                except (OSError, ValueError):
+                    logger.warning("Model cache miss. Downloading...")
+                    self._model = AutoModelForCausalLM.from_pretrained(
+                        self.model_name, dtype=torch.float32, low_cpu_mem_usage=True, **self.model_kwargs
+                    )  # nosec B615
+                    logger.success("Model downloaded (CPU fallback mode)")
+
                 self._model.eval()
-                logger.info("Using CPU fallback mode")
                 return
 
             # TODO: Implement actual QAIC model loading
@@ -92,16 +108,24 @@ class QDICProvider(ILLMProvider):
                 "QAIC model loading not fully implemented. Please compile model for QAIC using qaic-exec or similar tools. Falling back to CPU mode."
             )
 
-            # Fallback implementation
+            # Fallback implementation with cache-first
             import torch
             from transformers import AutoModelForCausalLM
 
-            self._model = AutoModelForCausalLM.from_pretrained(  # nosec B615
-                self.model_name, torch_dtype=torch.float32 if not self.use_quantization else torch.int8, low_cpu_mem_usage=True, **self.model_kwargs
-            )
-            self._model.eval()
+            dtype = torch.float32 if not self.use_quantization else torch.int8
 
-            logger.success("Model loaded (fallback mode)")
+            try:
+                logger.debug("Attempting to load model from local cache...")
+                self._model = AutoModelForCausalLM.from_pretrained(
+                    self.model_name, dtype=dtype, low_cpu_mem_usage=True, local_files_only=True, **self.model_kwargs
+                )  # nosec B615
+                logger.success("Model loaded from cache (fallback mode)")
+            except (OSError, ValueError):
+                logger.warning("Model cache miss. Downloading...")
+                self._model = AutoModelForCausalLM.from_pretrained(self.model_name, dtype=dtype, low_cpu_mem_usage=True, **self.model_kwargs)  # nosec B615
+                logger.success("Model downloaded (fallback mode)")
+
+            self._model.eval()
 
         except ImportError as e:
             logger.error("Required libraries not installed. Install with: pip install transformers torch")
