@@ -182,7 +182,7 @@ class ONNXModelDownloader:
 
                     print(f"   Found {len(parts)} parts")
                     return True, parts
-        except Exception:
+        except Exception:  # nosec B110: Intentionally ignore errors when checking for split files
             pass
 
         return False, []
