@@ -1,0 +1,329 @@
+name: Release ONNX Model
+
+# This workflow exports an ONNX model with INT8 quantization and uploads it to GitHub Releases
+#
+# IMPORTANT NOTE: GitHub has a 2GB file size limit for release assets.
+# For models >2GB, consider:
+# 1. Split the archive into parts using `split` command
+# 2. Use Git LFS (requires additional setup)
+# 3. Host on external storage (HuggingFace Hub) and link from Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      model_name:
+        description: 'HuggingFace model ID (e.g., meta-llama/Llama-3.2-3B-Instruct)'
+        required: true
+        default: 'meta-llama/Llama-3.2-3B-Instruct'
+        type: string
+
+      release_tag:
+        description: 'Release tag (e.g., model-v1.0.0)'
+        required: true
+        default: 'model-v1.0.0'
+        type: string
+
+      release_name:
+        description: 'Release name (e.g., "Llama 3.2 3B INT8 v1.0.0")'
+        required: false
+        default: ''
+        type: string
+
+      skip_validation:
+        description: 'Skip model validation (faster but not recommended)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  export-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120  # 2 hours max (large models may take time)
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+
+      - name: Install export dependencies
+        run: |
+          uv pip install --system -e '.[llm-export]'
+
+      - name: Display system info
+        run: |
+          echo "Python version: $(python --version)"
+          echo "uv version: $(uv --version)"
+          echo "Disk space:"
+          df -h
+          echo "Memory:"
+          free -h
+
+      - name: Export model to ONNX with INT8 quantization
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}  # Required for gated models like Llama
+        run: |
+          # Build export command
+          EXPORT_CMD="fileorg-export-llm --model ${{ inputs.model_name }} --yes"
+
+          # Add skip-validation flag if requested
+          if [ "${{ inputs.skip_validation }}" = "true" ]; then
+            EXPORT_CMD="$EXPORT_CMD --skip-validation"
+          fi
+
+          echo "Running: $EXPORT_CMD"
+          $EXPORT_CMD
+
+      - name: Verify exported model
+        run: |
+          MODEL_DIR="fileorg/llm_classifier/models/$(basename ${{ inputs.model_name }})"
+          echo "Checking model directory: $MODEL_DIR"
+
+          if [ ! -d "$MODEL_DIR" ]; then
+            echo "ERROR: Model directory not found: $MODEL_DIR"
+            exit 1
+          fi
+
+          ls -lah "$MODEL_DIR"
+
+          # Check required files
+          if [ ! -f "$MODEL_DIR/tokenizer.json" ]; then
+            echo "ERROR: tokenizer.json not found"
+            exit 1
+          fi
+
+          ONNX_FILES=$(find "$MODEL_DIR" -name "*.onnx")
+          if [ -z "$ONNX_FILES" ]; then
+            echo "ERROR: No ONNX files found"
+            exit 1
+          fi
+
+          echo "✅ Model exported successfully"
+          echo "ONNX files:"
+          echo "$ONNX_FILES"
+
+      - name: Create archive and calculate checksum
+        id: archive
+        run: |
+          MODEL_FOLDER=$(basename ${{ inputs.model_name }})
+          MODEL_DIR="fileorg/llm_classifier/models/$MODEL_FOLDER"
+          ARCHIVE_NAME="${MODEL_FOLDER,,}-int8.tar.gz"  # lowercase
+          CHECKSUM_FILE="${ARCHIVE_NAME}.sha256"
+
+          echo "Creating archive: $ARCHIVE_NAME"
+
+          # Create tar.gz archive
+          cd fileorg/llm_classifier/models
+          tar -czf "../../../$ARCHIVE_NAME" "$MODEL_FOLDER"
+          cd ../../..
+
+          # Get archive size
+          ARCHIVE_SIZE=$(stat -f%z "$ARCHIVE_NAME" 2>/dev/null || stat -c%s "$ARCHIVE_NAME")
+          ARCHIVE_SIZE_MB=$((ARCHIVE_SIZE / 1024 / 1024))
+          ARCHIVE_SIZE_GB=$((ARCHIVE_SIZE / 1024 / 1024 / 1024))
+
+          echo "Archive created: $ARCHIVE_NAME"
+          echo "Size: $ARCHIVE_SIZE bytes ($ARCHIVE_SIZE_MB MB / ${ARCHIVE_SIZE_GB}.x GB)"
+
+          # Calculate checksum of original archive BEFORE splitting
+          echo "Calculating SHA256 of original archive..."
+          sha256sum "$ARCHIVE_NAME" > "$CHECKSUM_FILE"
+          ORIGINAL_CHECKSUM=$(cut -d' ' -f1 "$CHECKSUM_FILE")
+          echo "Original checksum: $ORIGINAL_CHECKSUM"
+
+          # Split if file is >2GB (GitHub limit)
+          SPLIT_NEEDED=false
+          if [ $ARCHIVE_SIZE -gt 2147483648 ]; then
+            echo "⚠️  Archive size ($ARCHIVE_SIZE_MB MB) exceeds GitHub's 2GB limit"
+            echo "📦 Splitting archive into 1.8GB parts..."
+
+            # Split into 1.8GB parts (1887436800 bytes)
+            split -b 1887436800 "$ARCHIVE_NAME" "${ARCHIVE_NAME}.part"
+
+            # Count parts
+            PART_COUNT=$(ls -1 ${ARCHIVE_NAME}.part* | wc -l)
+            echo "✅ Split into $PART_COUNT parts"
+
+            # List parts
+            ls -lh ${ARCHIVE_NAME}.part*
+
+            # Update checksum file with parts checksums (append)
+            echo "" >> "$CHECKSUM_FILE"
+            echo "# Split parts:" >> "$CHECKSUM_FILE"
+            sha256sum ${ARCHIVE_NAME}.part* >> "$CHECKSUM_FILE"
+
+            # Remove original (we'll upload parts only)
+            rm "$ARCHIVE_NAME"
+
+            SPLIT_NEEDED=true
+            CHECKSUM="(see ${CHECKSUM_FILE} - original: $ORIGINAL_CHECKSUM)"
+          else
+            CHECKSUM="$ORIGINAL_CHECKSUM"
+          fi
+
+          echo "Final checksum info: $CHECKSUM"
+
+          # Set outputs
+          echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
+          echo "archive_size=$ARCHIVE_SIZE" >> $GITHUB_OUTPUT
+          echo "archive_size_mb=$ARCHIVE_SIZE_MB" >> $GITHUB_OUTPUT
+          echo "split_needed=$SPLIT_NEEDED" >> $GITHUB_OUTPUT
+          echo "checksum=$CHECKSUM" >> $GITHUB_OUTPUT
+          echo "checksum_file=$CHECKSUM_FILE" >> $GITHUB_OUTPUT
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          MODEL_FOLDER=$(basename ${{ inputs.model_name }})
+          ARCHIVE_SIZE_MB="${{ steps.archive.outputs.archive_size_mb }}"
+          CHECKSUM="${{ steps.archive.outputs.checksum }}"
+          SPLIT_NEEDED="${{ steps.archive.outputs.split_needed }}"
+          ARCHIVE_NAME="${{ steps.archive.outputs.archive_name }}"
+
+          # Determine release name
+          RELEASE_NAME="${{ inputs.release_name }}"
+          if [ -z "$RELEASE_NAME" ]; then
+            RELEASE_NAME="$MODEL_FOLDER INT8 - ${{ inputs.release_tag }}"
+          fi
+
+          # Determine download instructions based on split
+          CHECKSUM_FILE="${{ steps.archive.outputs.checksum_file }}"
+
+          if [ "$SPLIT_NEEDED" = "true" ]; then
+            DOWNLOAD_INSTRUCTIONS="# Download all parts
+          wget https://github.com/\${{ github.repository }}/releases/download/${{ inputs.release_tag }}/${ARCHIVE_NAME}.partaa
+          wget https://github.com/\${{ github.repository }}/releases/download/${{ inputs.release_tag }}/${ARCHIVE_NAME}.partab
+          # Add more parts if needed
+
+          # Download checksum
+          wget https://github.com/\${{ github.repository }}/releases/download/${{ inputs.release_tag }}/${CHECKSUM_FILE}
+
+          # Verify checksums (first line is original, rest are parts)
+          sha256sum -c ${CHECKSUM_FILE}
+
+          # Merge parts and extract
+          cat ${ARCHIVE_NAME}.part* > ${ARCHIVE_NAME}
+          tar -xzf ${ARCHIVE_NAME} -C fileorg/llm_classifier/models/"
+          else
+            DOWNLOAD_INSTRUCTIONS="# Download archive
+          wget https://github.com/\${{ github.repository }}/releases/download/${{ inputs.release_tag }}/${ARCHIVE_NAME}
+
+          # Download checksum
+          wget https://github.com/\${{ github.repository }}/releases/download/${{ inputs.release_tag }}/${CHECKSUM_FILE}
+
+          # Verify checksum
+          sha256sum -c ${CHECKSUM_FILE}
+
+          # Extract to models directory
+          tar -xzf ${ARCHIVE_NAME} -C fileorg/llm_classifier/models/"
+          fi
+
+          # Create release notes
+          cat > release_notes.md << EOF
+          # $RELEASE_NAME
+
+          Pre-exported ONNX model with INT8 dynamic quantization for efficient inference.
+
+          ## Model Information
+          - **HuggingFace ID**: \`${{ inputs.model_name }}\`
+          - **Precision**: INT8 (Dynamic Quantization, Per-Channel)
+          - **Archive Size**: ~${ARCHIVE_SIZE_MB} MB
+          - **Split into parts**: $([ "$SPLIT_NEEDED" = "true" ] && echo "Yes (>2GB)" || echo "No (single file)")
+          - **SHA256**: ${CHECKSUM}
+
+          ## What's Included
+          - ONNX model file(s) (\`.onnx\`)
+          - Tokenizer (\`tokenizer.json\`)
+          - Configuration files (\`config.json\`, \`generation_config.json\`)
+
+          ## Installation
+
+          ### Option 1: Automatic Download (Recommended)
+          \`\`\`bash
+          # Install fileorg with ONNX support
+          pip install fileorg[onnx]
+
+          # Download model (automatically handles split files)
+          fileorg-download-model --tag ${{ inputs.release_tag }}
+          \`\`\`
+
+          ### Option 2: Manual Download
+          \`\`\`bash
+          $DOWNLOAD_INSTRUCTIONS
+          \`\`\`
+
+          ## Usage
+          The model will be automatically detected by the ONNX provider. Just run:
+          \`\`\`bash
+          fileorg /path/to/files
+          \`\`\`
+
+          ## System Requirements
+          - **RAM**: 8GB+ recommended
+          - **Disk**: ${ARCHIVE_SIZE_MB}MB free space
+          - **Dependencies**: \`onnxruntime-gpu\` or \`onnxruntime\`, \`tokenizers\`
+
+          ## Hardware Acceleration
+          Supports:
+          - NVIDIA GPU (CUDA)
+          - Qualcomm NPU (QNN)
+          - Apple Silicon (CoreML)
+          - CPU (fallback)
+
+          ---
+
+          📝 Generated by [release-model workflow](https://github.com/\${{ github.repository }}/actions/workflows/release-model.yml)
+          EOF
+
+          echo "release_name=$RELEASE_NAME" >> $GITHUB_OUTPUT
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: ${{ steps.release_notes.outputs.release_name }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: |
+            ${{ steps.archive.outputs.archive_name }}*
+            ${{ steps.archive.outputs.checksum_file }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Note: Using wildcard (${{ steps.archive.outputs.archive_name }}*) to upload:
+        # - Single file if not split: model-name-int8.tar.gz
+        # - All parts if split: model-name-int8.tar.gz.partaa, model-name-int8.tar.gz.partab, etc.
+
+      - name: Upload artifacts for debugging
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: model-export-logs
+          path: |
+            *.log
+            release_notes.md
+          retention-days: 7
+
+      - name: Cleanup
+        if: always()
+        run: |
+          echo "Disk space after export:"
+          df -h
+
+          echo "Cleaning up large files..."
+          rm -rf fileorg/llm_classifier/models/*/
+
+          echo "Final disk space:"
+          df -h

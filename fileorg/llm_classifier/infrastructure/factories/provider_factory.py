@@ -90,25 +90,79 @@ class ProviderFactory:
             return False
 
     @staticmethod
+    def _validate_model_dir(model_dir) -> bool:
+        """
+        Check if a directory contains a valid ONNX model.
+
+        Args:
+            model_dir: Path to model directory
+
+        Returns:
+            True if directory contains valid ONNX model, False otherwise
+        """
+        if not model_dir.exists() or not model_dir.is_dir():
+            return False
+
+        # Check for required files
+        onnx_files = list(model_dir.glob("*.onnx"))
+        tokenizer_file = model_dir / "tokenizer.json"
+
+        return len(onnx_files) > 0 and tokenizer_file.exists()
+
+    @staticmethod
     def _check_onnx_available() -> bool:
-        """Check if ONNX Runtime and model files are available."""
+        """
+        Check if ONNX Runtime and model files are available.
+
+        Auto-detection strategy:
+        1. Check environment variable ONNX_MODEL_NAME
+        2. Scan models/ directory for any exported models
+        3. If multiple models found, select most recently modified
+        """
         try:
+            import os
             from pathlib import Path
 
             import onnxruntime  # noqa: F401
 
-            # Check if default model directory exists
             models_base_dir = Path(__file__).parent.parent.parent / "models"
-            default_model_dir = models_base_dir / "Llama-3.2-3B-Instruct"
 
-            if not default_model_dir.exists():
+            # Strategy 1: Check environment variable
+            model_name = os.getenv("ONNX_MODEL_NAME")
+            if model_name:
+                model_dir = models_base_dir / model_name
+                if ProviderFactory._validate_model_dir(model_dir):
+                    logger.info(f"Using ONNX model from ONNX_MODEL_NAME: {model_name}")
+                    return True
+                else:
+                    logger.warning(f"ONNX_MODEL_NAME set to '{model_name}' but model not found or invalid")
+
+            # Strategy 2: Scan models/ directory for any exported models
+            if not models_base_dir.exists():
                 return False
 
-            # Check if ONNX files and tokenizer exist
-            onnx_files = list(default_model_dir.glob("*.onnx"))
-            tokenizer_file = default_model_dir / "tokenizer.json"
+            valid_models = []
+            for item in models_base_dir.iterdir():
+                if item.is_dir() and ProviderFactory._validate_model_dir(item):
+                    # Get last modification time
+                    mtime = item.stat().st_mtime
+                    valid_models.append((item, mtime))
 
-            return len(onnx_files) > 0 and tokenizer_file.exists()
+            if not valid_models:
+                logger.debug("No ONNX models found in models/ directory")
+                return False
+
+            # Sort by modification time (most recent first)
+            valid_models.sort(key=lambda x: x[1], reverse=True)
+            selected_model = valid_models[0][0]
+
+            if len(valid_models) > 1:
+                logger.info(f"Found {len(valid_models)} ONNX models, selected most recent: {selected_model.name}")
+            else:
+                logger.info(f"Auto-detected ONNX model: {selected_model.name}")
+
+            return True
+
         except ImportError:
             return False
 

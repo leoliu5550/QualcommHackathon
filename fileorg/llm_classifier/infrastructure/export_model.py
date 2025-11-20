@@ -1,8 +1,8 @@
 """
 LLM Model Exporter - Export HuggingFace models to ONNX format.
 
-This script exports LLM models (e.g., Llama 3.2 3B) to ONNX format with FP16 quantization
-for efficient runtime inference using ONNX Runtime.
+This script exports LLM models (e.g., Llama 3.2 3B) to ONNX format with INT8 quantization
+for efficient runtime inference using ONNX Runtime. Supports FP16 and INT8 quantization.
 """
 
 import argparse
@@ -18,15 +18,28 @@ class LLMExporter:
     DEFAULT_MODEL = "meta-llama/Llama-3.2-3B-Instruct"
     DEFAULT_OUTPUT_DIR = Path(__file__).parent.parent / "models"
 
-    def __init__(self, model_name: str, output_dir: Path):
+    def __init__(
+        self,
+        model_name: str,
+        output_dir: Path,
+        quantize: bool = True,
+        skip_validation: bool = False,
+        validation_samples: int = 5,
+    ):
         """
         Initialize exporter.
 
         Args:
             model_name: HuggingFace model identifier (e.g., "meta-llama/Llama-3.2-3B-Instruct")
             output_dir: Base output directory (models will be saved in models/{model_name}/)
+            quantize: If True, quantize to INT8 (default); if False, keep FP16
+            skip_validation: Skip automatic validation of quantized model
+            validation_samples: Number of samples to use for validation (default: 5)
         """
         self.model_name = model_name
+        self.quantize = quantize
+        self.skip_validation = skip_validation
+        self.validation_samples = validation_samples
 
         # Extract clean model name for folder (e.g., "Llama-3.2-3B-Instruct")
         self.model_folder_name = model_name.split("/")[-1]
@@ -183,6 +196,63 @@ class LLMExporter:
             logger.success(f"ONNX model files saved to {self.output_dir}")
             logger.info(f"Generated ONNX files: {[f.name for f in onnx_files]}")
 
+            # Step 2.5: Quantization (if enabled)
+            precision = "FP16"  # Default
+            if self.quantize:
+                logger.info("\n" + "=" * 70)
+
+                # Create backup of FP16 model for validation
+                fp16_backup_dir = None
+                if not self.skip_validation:
+                    import shutil
+
+                    fp16_backup_dir = self.output_dir.parent / f"{self.model_folder_name}_fp16_backup"
+                    logger.info(f"Creating FP16 backup for validation: {fp16_backup_dir}")
+                    if fp16_backup_dir.exists():
+                        shutil.rmtree(fp16_backup_dir)
+                    shutil.copytree(self.output_dir, fp16_backup_dir)
+
+                # Quantize to INT8
+                quantize_success = self.quantize_model()
+
+                if quantize_success:
+                    precision = "INT8"
+
+                    # Validate quantized model
+                    if not self.skip_validation and fp16_backup_dir:
+                        validation_passed = self.validate_quantized_model(fp16_backup_dir)
+
+                        if not validation_passed:
+                            logger.warning("Validation failed - reverting to FP16 model")
+                            # Restore FP16 model
+                            import shutil
+
+                            shutil.rmtree(self.output_dir)
+                            fp16_backup_dir.rename(self.output_dir)
+                            precision = "FP16"
+                        else:
+                            # Clean up backup
+                            import shutil
+
+                            shutil.rmtree(fp16_backup_dir)
+                    elif fp16_backup_dir:
+                        # Clean up backup even if validation skipped
+                        import shutil
+
+                        shutil.rmtree(fp16_backup_dir)
+                else:
+                    logger.warning("Quantization failed - keeping FP16 model")
+                    precision = "FP16"
+                    if fp16_backup_dir:
+                        import shutil
+
+                        shutil.rmtree(fp16_backup_dir)
+
+                logger.info("=" * 70 + "\n")
+
+            # Update onnx_files list after potential quantization
+            onnx_files = list(self.output_dir.glob("*.onnx"))
+
             # Export tokenizer
             logger.info(f"Exporting tokenizer to {self.tokenizer_output_path}...")
 
@@ -216,10 +286,13 @@ class LLMExporter:
                 file_size = onnx_file.stat().st_size / 1024 / 1024
                 total_size += file_size
                 logger.info(f"  - {onnx_file.name}: {file_size:.2f} MB")
-            logger.info(f"Total model size: {total_size:.2f} MB")
+            logger.info(f"Total model size: {total_size:.2f} MB (~{total_size / 1024:.1f} GB)")
             logger.info(f"Tokenizer: {self.tokenizer_output_path.name}")
             logger.info(f"  Size: {self.tokenizer_output_path.stat().st_size / 1024:.2f} KB")
-            logger.info("Precision: FP16 (preserved from original model)")
+            logger.info(f"Precision: {precision}")
+            if precision == "INT8":
+                logger.info("  Quantization: Dynamic (weights only, per-channel)")
+                logger.info("  Size reduction: ~50% compared to FP16")
             logger.info("=" * 70)
             logger.info("\nNext steps:")
             logger.info("  1. Runtime dependencies already installed: onnxruntime-gpu, tokenizers")
@@ -231,6 +304,149 @@ class LLMExporter:
 
         except Exception as e:
             logger.error(f"Export failed: {e}")
+            logger.exception(e)
+            return False
+
+    def quantize_model(self) -> bool:
+        """
+        Quantize exported ONNX model to INT8 using dynamic quantization.
+
+        Returns:
+            True if quantization successful, False otherwise
+        """
+        try:
+            logger.info("Step 2.5/3: Quantizing model to INT8 (dynamic quantization)...")
+
+            from optimum.onnxruntime import ORTQuantizer
+            from optimum.onnxruntime.configuration import AutoQuantizationConfig
+
+            # Create quantizer from exported model
+            quantizer = ORTQuantizer.from_pretrained(str(self.output_dir))
+
+            # Dynamic quantization configuration
+            # - is_static=False: No calibration data needed
+            # - per_channel=True: Better accuracy with slightly larger size
+            dqconfig = AutoQuantizationConfig.arm64(is_static=False, per_channel=True)
+
+            logger.info("Quantization config: Dynamic (weights only), per-channel")
+
+            # Create temporary directory for quantized output
+            temp_quantized_dir = self.output_dir.parent / f"{self.model_folder_name}_quantized_temp"
+            temp_quantized_dir.mkdir(parents=True, exist_ok=True)
+
+            # Quantize model
+            quantizer.quantize(
+                save_dir=str(temp_quantized_dir),
+                quantization_config=dqconfig,
+            )
+
+            logger.info("Quantization complete, replacing FP16 model with INT8 version...")
+
+            # Move quantized ONNX files back to original location
+            for onnx_file in temp_quantized_dir.glob("*.onnx"):
+                target_file = self.output_dir / onnx_file.name
+                if target_file.exists():
+                    target_file.unlink()  # Remove old FP16 version
+                onnx_file.replace(target_file)
+
+            # Clean up temporary directory
+            import shutil
+
+            shutil.rmtree(temp_quantized_dir)
+
+            logger.success("Model quantized to INT8 successfully")
+            return True
+
+        except Exception as e:
+            logger.error(f"Quantization failed: {e}")
+            logger.exception(e)
+            logger.warning("Keeping FP16 model instead")
+            return False
+
+    def validate_quantized_model(self, fp16_model_dir: Path) -> bool:
+        """
+        Validate INT8 model accuracy against FP16 baseline.
+
+        Args:
+            fp16_model_dir: Path to FP16 baseline model
+
+        Returns:
+            True if validation passed, False otherwise
+        """
+        try:
+            logger.info(f"Step 2.75/3: Validating INT8 model ({self.validation_samples} samples)...")
+
+            import numpy as np
+            import onnxruntime as ort
+            from tokenizers import Tokenizer
+
+            # Test prompts for file classification
+            test_prompts = [
+                "Classify this file: 2023_report.pdf",
+                "What category is this: vacation_photo.jpg",
+                "Organize: meeting_notes.txt",
+                "File type: budget_2024.xlsx",
+                "Categorize: presentation.pptx",
+                "Classify: backup_20230101.tar.gz",
+                "What is: README.md",
+                "Organize file: invoice_march.pdf",
+                "Category for: family_video.mp4",
+                "File classification: setup.exe",
+            ][: self.validation_samples]
+
+            # Load tokenizer
+            tokenizer = Tokenizer.from_file(str(self.tokenizer_output_path))
+
+            # Load FP16 model
+            fp16_onnx_file = next(fp16_model_dir.glob("*.onnx"))
+            fp16_session = ort.InferenceSession(str(fp16_onnx_file))
+
+            # Load INT8 model
+            int8_onnx_file = next(self.output_dir.glob("*.onnx"))
+            int8_session = ort.InferenceSession(str(int8_onnx_file))
+
+            # Collect errors
+            mse_errors = []
+
+            for prompt in test_prompts:
+                # Tokenize
+                encoding = tokenizer.encode(prompt)
+                input_ids = np.array([encoding.ids], dtype=np.int64)
+
+                # Run FP16 model
+                fp16_outputs = fp16_session.run(None, {"input_ids": input_ids})
+                fp16_logits = fp16_outputs[0]
+
+                # Run INT8 model
+                int8_outputs = int8_session.run(None, {"input_ids": input_ids})
+                int8_logits = int8_outputs[0]
+
+                # Calculate MSE
+                mse = np.mean((fp16_logits - int8_logits) ** 2)
+                mse_errors.append(mse)
+
+            # Calculate average MSE
+            avg_mse = np.mean(mse_errors)
+            max_mse = np.max(mse_errors)
+
+            logger.info("Validation results:")
+            logger.info(f"  Average MSE: {avg_mse:.6f}")
+            logger.info(f"  Max MSE: {max_mse:.6f}")
+
+            # Threshold: MSE should be very small (< 0.01 is acceptable)
+            THRESHOLD = 0.01
+            passed = avg_mse < THRESHOLD
+
+            if passed:
+                logger.success(f"✓ Validation PASSED (MSE {avg_mse:.6f} < {THRESHOLD})")
+            else:
+                logger.error(f"✗ Validation FAILED (MSE {avg_mse:.6f} >= {THRESHOLD})")
+                logger.warning("INT8 model may have significant accuracy degradation")
+
+            return passed
+
+        except Exception as e:
+            logger.error(f"Validation failed: {e}")
             logger.exception(e)
             return False
 
@@ -246,16 +462,31 @@ class LLMExporter:
         logger.debug("Keeping all exported files for model inspection")
 
 
-def show_welcome_message(model_name: str = "meta-llama/Llama-3.2-3B-Instruct"):
+def show_welcome_message(model_name: str = "meta-llama/Llama-3.2-3B-Instruct", quantize: bool = True):
     """Display welcome message and documentation reminder."""
     # Extract model size info
-    model_size = "~6GB" if "3B" in model_name else "~12GB" if "8B" in model_name else "varies"
+    fp16_size = "~6GB" if "3B" in model_name else "~15GB" if "8B" in model_name else "varies"
+    int8_size = "~3GB" if "3B" in model_name else "~8GB" if "8B" in model_name else "varies"
+    model_size = int8_size if quantize else fp16_size
+
+    # Warning for large models
+    large_model_warning = ""
+    if "8B" in model_name or "70B" in model_name:
+        large_model_warning = (
+            "\n⚠️  WARNING: Large model detected (8B+ parameters)\n"
+            "   - Export may take 30+ minutes\n"
+            "   - Requires 32GB+ RAM\n"
+            "   - Disk space: 15-30GB\n"
+        )
 
     logger.info("\n" + "=" * 70)
     logger.info("LLM Model Exporter - ONNX Export Tool")
     logger.info("=" * 70)
     logger.info(f"Target Model: {model_name}")
     logger.info(f"Estimated Size: {model_size}")
+    logger.info(f"Precision: {'INT8 (Dynamic Quantization)' if quantize else 'FP16'}")
+    if large_model_warning:
+        logger.warning(large_model_warning)
     logger.warning(
         "\nIMPORTANT: This tool requires understanding of the export process.\n"
         "Please read the documentation before proceeding:\n"
@@ -266,9 +497,10 @@ def show_welcome_message(model_name: str = "meta-llama/Llama-3.2-3B-Instruct"):
     logger.info(
         "\nThis tool will:\n"
         "  1. Download the model from HuggingFace\n"
-        "  2. Export to ONNX format (FP16, preserves original precision)\n"
+        f"  2. Export to ONNX format ({'INT8 quantized' if quantize else 'FP16'})\n"
         "  3. Export the tokenizer to JSON format\n"
-        "  4. Save to fileorg/llm_classifier/models/{model_name}/\n"
+        f"{'  4. Validate quantized model accuracy (can skip with --skip-validation)' if quantize else ''}\n"
+        f"  {'5' if quantize else '4'}. Save to fileorg/llm_classifier/models/{{model_name}}/\n"
     )
     logger.info("=" * 70 + "\n")
 
@@ -294,24 +526,35 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Export default model (Llama 3.2 3B - recommended)
+  # Export default model with INT8 quantization (recommended)
   fileorg-export-llm --yes
 
-  # Export smaller model (faster, less capable)
+  # Export FP16 (preserve original precision)
+  fileorg-export-llm --fp16 --yes
+
+  # Export with quantization but skip validation (faster)
+  fileorg-export-llm --skip-validation --yes
+
+  # Export smaller model
   fileorg-export-llm --model meta-llama/Llama-3.2-1B-Instruct --yes
 
   # Export to custom directory
   fileorg-export-llm --output ./my-models --yes
 
 Recommended Models:
-  - meta-llama/Llama-3.2-1B-Instruct  (~1.5GB, fastest)
-  - meta-llama/Llama-3.2-3B-Instruct  (~6GB, recommended, default)
+  - meta-llama/Llama-3.2-1B-Instruct  (~1.5GB FP16 / ~0.8GB INT8)
+  - meta-llama/Llama-3.2-3B-Instruct  (~6GB FP16 / ~3GB INT8, default)
 
 Note: Larger models (8B+) require HuggingFace authentication and more resources.
 
+Quantization:
+  By default, models are exported with INT8 dynamic quantization (~50% size reduction).
+  Use --fp16 to preserve original FP16 precision.
+  Quantized models are automatically validated against FP16 baseline.
+
 For more information, see:
   - docs/llm_optimize.md
-  - fileorg/llm_classifier/models/model_card_somple.md
+  - fileorg/llm_classifier/models/README.md
         """,
     )
 
@@ -330,6 +573,25 @@ For more information, see:
     )
 
     parser.add_argument(
+        "--fp16",
+        action="store_true",
+        help="Preserve FP16 precision (skip INT8 quantization). Use if you need maximum accuracy.",
+    )
+
+    parser.add_argument(
+        "--skip-validation",
+        action="store_true",
+        help="Skip automatic validation of quantized model (faster export, but no accuracy guarantee)",
+    )
+
+    parser.add_argument(
+        "--validation-samples",
+        type=int,
+        default=5,
+        help="Number of samples to use for validation (default: 5, range: 1-10)",
+    )
+
+    parser.add_argument(
         "--yes",
         "-y",
         action="store_true",
@@ -339,8 +601,16 @@ For more information, see:
     # Parse arguments (explicitly use sys.argv[1:] for Windows compatibility)
     args = parser.parse_args(sys.argv[1:])
 
+    # Determine quantization setting
+    quantize = not args.fp16  # Quantize by default unless --fp16 is specified
+
+    # Validate validation_samples range
+    if args.validation_samples < 1 or args.validation_samples > 10:
+        logger.error("--validation-samples must be between 1 and 10")
+        sys.exit(1)
+
     # Show welcome message with model info
-    show_welcome_message(model_name=args.model)
+    show_welcome_message(model_name=args.model, quantize=quantize)
 
     # Confirm (unless --yes flag)
     if not args.yes:
@@ -348,7 +618,13 @@ For more information, see:
             sys.exit(1)
 
     # Create exporter
-    exporter = LLMExporter(model_name=args.model, output_dir=args.output)
+    exporter = LLMExporter(
+        model_name=args.model,
+        output_dir=args.output,
+        quantize=quantize,
+        skip_validation=args.skip_validation,
+        validation_samples=args.validation_samples,
+    )
 
     # Check dependencies
     if not exporter.check_dependencies():

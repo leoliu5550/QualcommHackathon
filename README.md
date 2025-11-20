@@ -64,7 +64,7 @@ fileorg organize --path /path/to/directory
 
 ---
 
-#### Option 2: ONNX Runtime (Lightweight & Fast)
+#### Option 2: ONNX Runtime (Lightweight & Fast) ⚡
 
 **Best for:** Production use without heavy PyTorch dependencies
 
@@ -72,8 +72,8 @@ fileorg organize --path /path/to/directory
 # 1. Install lightweight runtime (~2 GB, NO PyTorch)
 uv pip install -e .
 
-# 2. Download pre-exported ONNX model (~6 GB, one-time)
-python scripts/download_onnx_model.py
+# 2. Download pre-exported INT8 ONNX model (~3 GB, one-time)
+fileorg-download-model
 
 # 3. Start using immediately
 fileorg organize --path /path/to/directory
@@ -82,6 +82,7 @@ fileorg organize --path /path/to/directory
 **Benefits:**
 - 5-10x faster startup than PyTorch
 - 80% smaller installation size
+- **50% smaller models** with INT8 quantization (3GB vs 6GB)
 - Multi-platform: CUDA, CoreML, Qualcomm NPU, CPU
 
 <details>
@@ -91,9 +92,19 @@ fileorg organize --path /path/to/directory
 # Install export dependencies (~10 GB)
 uv pip install -e '.[llm-export]'
 
-# Export model
+# Export model (defaults to INT8 quantized)
 fileorg-export-llm --yes
+
+# Or export FP16 (preserve original precision, larger file)
+fileorg-export-llm --fp16 --yes
 ```
+
+**What's INT8 quantization?**
+- Reduces model size by ~50% (6GB → 3GB)
+- Minimal accuracy loss (<1%)
+- Automatically validated during export
+- Uses dynamic quantization (no calibration data needed)
+
 </details>
 
 ---

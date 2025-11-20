@@ -115,9 +115,10 @@ Issues = "https://github.com/leoliu5550/QualcommHackathon/issues"
 [project.scripts]
 fileorg = "fileorg.main:main"
 fileorg-export-llm = "fileorg.llm_classifier.infrastructure.export_model:main"
+fileorg-download-model = "scripts.download_onnx_model:main"
 
 [tool.setuptools.packages.find]
-include = ["fileorg*"]
+include = ["fileorg*", "scripts*"]
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
