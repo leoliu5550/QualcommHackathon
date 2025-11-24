@@ -5,12 +5,16 @@ This adapter implements ILLMProvider using HuggingFace transformers library
 for local NVIDIA GPU inference with Llama models.
 """
 
-from typing import Dict, List, Optional
+from __future__ import annotations
 
-import torch
+from typing import TYPE_CHECKING, Dict, List, Optional
+
 from loguru import logger
 
 from fileorg.llm_classifier.ports.interfaces import ILLMProvider
+
+if TYPE_CHECKING:
+    import torch
 
 
 class GPUProvider(ILLMProvider):
@@ -25,7 +29,7 @@ class GPUProvider(ILLMProvider):
         self,
         model_name: str = "meta-llama/Llama-3.2-3B-Instruct",
         device: Optional[str] = None,
-        dtype: Optional[torch.dtype] = None,
+        dtype: Optional["torch.dtype"] = None,
         **model_kwargs,
     ):
         """
@@ -37,6 +41,8 @@ class GPUProvider(ILLMProvider):
             dtype: Torch data type (default: auto-detect based on device)
             **model_kwargs: Additional arguments passed to AutoModelForCausalLM.from_pretrained
         """
+        import torch  # noqa: F401 - Import here to fail fast if torch is not installed
+
         self.model_name = model_name
         self.device = device or self._get_device()
         self.dtype = dtype or self._get_dtype()
@@ -50,12 +56,16 @@ class GPUProvider(ILLMProvider):
 
     def _get_device(self) -> str:
         """Auto-detect best available device."""
+        import torch
+
         if torch.cuda.is_available():
             return "cuda"
         return "cpu"
 
-    def _get_dtype(self) -> torch.dtype:
+    def _get_dtype(self) -> "torch.dtype":
         """Auto-detect best dtype based on device."""
+        import torch
+
         if self.device == "cuda":
             # Use bfloat16 for GPU if available, else float16
             if torch.cuda.is_bf16_supported():

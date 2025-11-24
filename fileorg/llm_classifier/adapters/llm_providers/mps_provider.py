@@ -5,12 +5,16 @@ This adapter implements ILLMProvider using HuggingFace transformers library
 optimized for Apple Silicon with MPS (Metal Performance Shaders) acceleration.
 """
 
-from typing import Dict, List, Optional
+from __future__ import annotations
 
-import torch
+from typing import TYPE_CHECKING, Dict, List, Optional
+
 from loguru import logger
 
 from fileorg.llm_classifier.ports.interfaces import ILLMProvider
+
+if TYPE_CHECKING:
+    import torch
 
 
 class MPSProvider(ILLMProvider):
@@ -22,7 +26,7 @@ class MPSProvider(ILLMProvider):
     """
 
     def __init__(
-        self, model_name: str = "meta-llama/Llama-3.2-3B-Instruct", use_mps: bool = True, dtype: Optional[torch.dtype] = None, **model_kwargs
+        self, model_name: str = "meta-llama/Llama-3.2-3B-Instruct", use_mps: bool = True, dtype: Optional["torch.dtype"] = None, **model_kwargs
     ):
         """
         Initialize MacOS provider.
@@ -33,6 +37,8 @@ class MPSProvider(ILLMProvider):
             dtype: Torch data type (default: float16 for MPS)
             **model_kwargs: Additional arguments passed to AutoModelForCausalLM.from_pretrained
         """
+        import torch  # noqa: F401 - Import here to fail fast if torch is not installed
+
         self.model_name = model_name
         self.use_mps = use_mps
         self.device = self._get_device()
@@ -47,12 +53,16 @@ class MPSProvider(ILLMProvider):
 
     def _get_device(self) -> str:
         """Auto-detect best available device for macOS."""
+        import torch
+
         if self.use_mps and torch.backends.mps.is_available():
             return "mps"
         return "cpu"
 
-    def _get_dtype(self) -> torch.dtype:
+    def _get_dtype(self) -> "torch.dtype":
         """Auto-detect best dtype based on device."""
+        import torch
+
         if self.device == "mps":
             # MPS works best with float16
             return torch.float16
