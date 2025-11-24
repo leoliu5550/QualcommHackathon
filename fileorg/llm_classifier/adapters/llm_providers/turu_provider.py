@@ -28,7 +28,7 @@ class TURUProvider(ILLMProvider):
     Usage:
         provider = TURUProvider(
             api_key="your_api_key",
-            base_url="http://127.0.0.1:8000/v1",
+            base_url="http://127.0.0.1:80/v1.0",
             model=".bot/Llama 3.1 8B @NPU",
             temperature=0.1
         )
@@ -43,7 +43,7 @@ class TURUProvider(ILLMProvider):
     def __init__(
         self,
         api_key: str = "API_KEY",
-        base_url: str = "http://127.0.0.1:8000/v1",
+        base_url: str = "http://127.0.0.1:80/v1.0",
         model: str = ".bot/Llama 3.1 8B @NPU",
         temperature: float = 0.1,
         timeout: float = 600.0,
@@ -53,7 +53,7 @@ class TURUProvider(ILLMProvider):
 
         Args:
             api_key: API key for authentication (default: "API_KEY")
-            base_url: Base URL for TURU API (default: "http://127.0.0.1:8000/v1")
+            base_url: Base URL for TURU API (default: "http://127.0.0.1:80/v1.0")
             model: Model identifier (default: ".bot/Llama 3.1 8B @NPU")
             temperature: Sampling temperature (default: 0.1 for more deterministic output)
             timeout: Request timeout in seconds (default: 600.0 for 10 minutes)

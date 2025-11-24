@@ -151,8 +151,8 @@ nano .env
 **Available environment variables:**
 
 ```bash
-# TURU API endpoint (default: http://127.0.0.1:8000/v1)
-TURU_BASE_URL=http://127.0.0.1:8000/v1
+# TURU API endpoint (default: http://127.0.0.1:80/v1.0)
+TURU_BASE_URL=http://127.0.0.1:80/v1.0
 
 # NPU model to use (default: .bot/Llama 3.1 8B @NPU)
 TURU_MODEL=.bot/Llama 3.1 8B @NPU
