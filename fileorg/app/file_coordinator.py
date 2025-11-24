@@ -129,7 +129,7 @@ class FileCoordinator:
             raise RuntimeError(f"Organizer initialization failed: {e}") from e
 
     def _init_report_generator(self):
-        if self.report_generator is None:
+        if self.report_generator is not None:
             return  # Already initialized
         try:
             logger.info("Initializing report generator...")
