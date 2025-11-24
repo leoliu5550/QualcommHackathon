@@ -35,7 +35,7 @@ class HtmlReportGenerator(ClassificationReportHtmlPort):
         """
 
         # Default output file name
-        output_path = root_dir / ".backup" / "ClassificationReport.html"
+        output_path = Path(root_dir) / ".backup" / "ClassificationReport.html"
 
         # 自動建立所有不存在的資料夾
         output_path.parent.mkdir(parents=True, exist_ok=True)
