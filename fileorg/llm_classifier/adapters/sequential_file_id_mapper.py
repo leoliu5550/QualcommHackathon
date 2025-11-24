@@ -116,7 +116,7 @@ class SequentialFileIdMapper(IFileIdMapper):
         Retrieve original file path for a given file ID.
 
         Args:
-            file_id: The file identifier (e.g., "A001")
+            file_id: The file identifier (e.g., "A001" or "A1")
 
         Returns:
             Original file path if found, None otherwise
@@ -126,10 +126,57 @@ class SequentialFileIdMapper(IFileIdMapper):
             >>> mapper.create_mappings(["/path/file.txt"])
             >>> mapper.get_path("A001")
             "/path/file.txt"
+            >>> mapper.get_path("A1")  # Also works (normalized)
+            "/path/file.txt"
             >>> mapper.get_path("A999")
             None
         """
-        return self._id_to_path.get(file_id)
+        # First try exact match
+        if file_id in self._id_to_path:
+            return self._id_to_path[file_id]
+
+        # Try to normalize the ID (handle cases like "A13" -> "A013")
+        normalized_id = self._normalize_id(file_id)
+        if normalized_id and normalized_id in self._id_to_path:
+            return self._id_to_path[normalized_id]
+
+        return None
+
+    def _normalize_id(self, file_id: str) -> Optional[str]:
+        """
+        Normalize a file ID to match the expected format.
+
+        Handles cases where LLM strips leading zeros (e.g., "A13" -> "A013").
+
+        Args:
+            file_id: The file identifier to normalize
+
+        Returns:
+            Normalized file ID or None if format is invalid
+        """
+        if not file_id:
+            return None
+
+        # Extract prefix and number
+        prefix = ""
+        num_str = ""
+
+        for i, char in enumerate(file_id):
+            if char.isalpha():
+                prefix += char
+            else:
+                num_str = file_id[i:]
+                break
+
+        if not prefix or not num_str:
+            return None
+
+        try:
+            num = int(num_str)
+            # Reconstruct with proper zero-padding
+            return f"{prefix.upper()}{num:0{self._id_width}d}"
+        except ValueError:
+            return None
 
     def get_id(self, file_path: str) -> Optional[str]:
         """
