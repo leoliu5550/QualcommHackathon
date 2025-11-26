@@ -73,11 +73,24 @@ class ProviderFactory:
         """Check if TURU API server is available."""
         try:
             import httpx
+        except ImportError:
+            logger.debug("httpx not installed, TURU provider unavailable")
+            return False
 
-            with httpx.Client(timeout=1.0) as client:
-                response = client.get("http://127.0.0.1:8000/v1/models")
+        try:
+            import os
+
+            base_url = os.getenv("TURU_BASE_URL", "http://127.0.0.1:80/v1.0")
+            models_url = f"{base_url}/models"
+
+            with httpx.Client(timeout=2.0) as client:
+                response = client.get(models_url)
                 return response.status_code == 200
-        except Exception:
+        except httpx.ConnectError:
+            logger.debug(f"Cannot connect to TURU server at {base_url}")
+            return False
+        except Exception as e:
+            logger.debug(f"TURU check failed: {e}")
             return False
 
     @staticmethod
@@ -161,7 +174,7 @@ class ProviderFactory:
                 # Load TURU configuration from environment variables
                 turu_config = {
                     "api_key": os.getenv("TURU_API_KEY", "API_KEY"),
-                    "base_url": os.getenv("TURU_BASE_URL", "http://127.0.0.1:8000/v1"),
+                    "base_url": os.getenv("TURU_BASE_URL", "http://127.0.0.1:80/v1.0"),
                     "model": os.getenv("TURU_MODEL", ".bot/Llama 3.1 8B @NPU"),
                     "temperature": float(os.getenv("TURU_TEMPERATURE", "0.1")),
                     "timeout": float(os.getenv("TURU_TIMEOUT", "600.0")),
@@ -216,12 +229,36 @@ class ProviderFactory:
 
                 return GPUProvider(model_name=model_name, device="cpu", **kwargs)
             except ImportError as e:
-                error_msg = (
-                    f"No LLM provider available. Please either:\n"
-                    f"  1. Start TURU API server at http://127.0.0.1:8000\n"
-                    f"  2. Install torch: pip install torch\n"
-                    f"\nOriginal error: {e}"
-                )
+                # Check what's missing and provide specific guidance
+                missing_deps = []
+                try:
+                    import httpx  # noqa: F401
+                except ImportError:
+                    missing_deps.append("httpx (for TURU)")
+
+                try:
+                    import torch  # noqa: F401
+                except ImportError:
+                    missing_deps.append("torch (for CPU/GPU mode)")
+
+                if missing_deps:
+                    deps_str = ", ".join(missing_deps)
+                    error_msg = (
+                        f"No LLM provider available. Missing dependencies: {deps_str}\n\n"
+                        f"For TURU (recommended):\n"
+                        f"  1. Install httpx: pip install httpx\n"
+                        f"  2. Start TURU API server at http://127.0.0.1:8000\n\n"
+                        f"For CPU/GPU mode:\n"
+                        f"  Install torch: pip install torch\n"
+                        f"\nOriginal error: {e}"
+                    )
+                else:
+                    error_msg = (
+                        f"No LLM provider available. Please either:\n"
+                        f"  1. Start TURU API server at http://127.0.0.1:8000\n"
+                        f"  2. Install torch: pip install torch\n"
+                        f"\nOriginal error: {e}"
+                    )
                 raise RuntimeError(error_msg) from e
 
         else:
