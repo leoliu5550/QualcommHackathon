@@ -19,22 +19,28 @@ class ProviderFactory:
     Factory for creating the appropriate LLM provider based on hardware.
 
     Automatically detects available hardware and selects the best provider:
-    1. Qualcomm AI Engine (QAIC) - if available
-    2. NVIDIA CUDA GPU - if available
-    3. Apple Silicon (MPS) - if on macOS with Apple Silicon
-    4. CPU fallback
+    1. TURU API Server (Recommended) - Local HTTP API for NPU acceleration
+    2. Qualcomm AI Engine (QAIC) - Direct NPU access
+    3. NVIDIA CUDA GPU - GPU acceleration
+    4. Apple Silicon (MPS) - macOS GPU acceleration
+    5. CPU fallback
+
+    TURU API is prioritized as the default provider when available, eliminating
+    the need for torch installation and providing optimal NPU performance.
 
     Usage:
-        # Automatic selection
+        # Automatic selection (TURU is prioritized if available)
         provider = ProviderFactory.create()
 
         # Explicit selection
+        provider = ProviderFactory.create(provider_type="turu")  # TURU API (Recommended)
+        provider = ProviderFactory.create(provider_type="qaic")  # Qualcomm Direct
         provider = ProviderFactory.create(provider_type="gpu")   # NVIDIA
         provider = ProviderFactory.create(provider_type="mps")   # Apple Silicon
-        provider = ProviderFactory.create(provider_type="qaic")  # Qualcomm
 
-        # With custom model
+        # With custom model (for non-TURU providers)
         provider = ProviderFactory.create(
+            provider_type="gpu",
             model_name="meta-llama/Llama-3.2-8B-Instruct"
         )
     """
@@ -55,7 +61,7 @@ class ProviderFactory:
             import torch
 
             return torch.cuda.is_available()
-        except ImportError:
+        except (ImportError, ModuleNotFoundError):
             return False
 
     @staticmethod
@@ -65,7 +71,7 @@ class ProviderFactory:
             import torch
 
             return platform.system() == "Darwin" and torch.backends.mps.is_available()
-        except ImportError:
+        except (ImportError, ModuleNotFoundError):
             return False
 
     @staticmethod
@@ -99,29 +105,37 @@ class ProviderFactory:
         Auto-detect the best available provider.
 
         Priority:
-        1. TURU (Local API server)
+        1. TURU (Local API server) - Recommended
         2. QAIC (Qualcomm AI Engine)
         3. CUDA (NVIDIA GPU)
         4. MPS (Apple Silicon)
         5. CPU (fallback)
+
+        Note: TURU is checked first and preferred as it doesn't require torch installation.
         """
+        # Priority 1: Check TURU first (no torch dependency)
         if ProviderFactory._check_turu_available():
-            logger.info("Detected TURU API server")
+            logger.info("✓ Detected TURU API server (recommended)")
             return "turu"
 
+        # Priority 2: Check QAIC (no torch dependency)
         if ProviderFactory._check_qaic_available():
-            logger.info("Detected Qualcomm AI Engine (QAIC)")
+            logger.info("✓ Detected Qualcomm AI Engine (QAIC)")
             return "qaic"
 
+        # Priority 3-4: Check torch-based providers (requires torch installation)
+        # These checks are safe as they handle ImportError gracefully
         if ProviderFactory._check_cuda_available():
-            logger.info("Detected NVIDIA CUDA GPU")
+            logger.info("✓ Detected NVIDIA CUDA GPU")
             return "gpu"
 
         if ProviderFactory._check_mps_available():
-            logger.info("Detected Apple Silicon (MPS)")
+            logger.info("✓ Detected Apple Silicon (MPS)")
             return "mps"
 
-        logger.info("No accelerator detected, using CPU fallback")
+        # Priority 5: CPU fallback
+        logger.warning("No accelerator detected. Using CPU fallback.")
+        logger.warning("For better performance, consider starting TURU API server.")
         return "cpu"
 
     @staticmethod
@@ -130,9 +144,10 @@ class ProviderFactory:
         Create an LLM provider instance.
 
         Args:
-            provider_type: Explicit provider type ("gpu", "mps", "qaic", "cpu")
-                          If None, auto-detects the best provider
-            model_name: HuggingFace model identifier
+            provider_type: Explicit provider type ("turu", "qaic", "gpu", "mps", "cpu")
+                          If None, auto-detects the best available provider.
+                          TURU is prioritized and recommended for NPU acceleration.
+            model_name: HuggingFace model identifier (not used for TURU provider)
             **kwargs: Additional arguments passed to the provider
 
         Returns:
@@ -143,23 +158,24 @@ class ProviderFactory:
             RuntimeError: If the requested provider is not available
 
         Examples:
-            # Auto-detect
+            # Auto-detect (TURU is prioritized if available)
             provider = ProviderFactory.create()
+
+            # Explicit TURU API
+            provider = ProviderFactory.create(provider_type="turu")
 
             # Explicit NVIDIA GPU
             provider = ProviderFactory.create(provider_type="gpu")
-
-            # Explicit Apple Silicon MPS
-            provider = ProviderFactory.create(provider_type="mps")
 
             # Custom model
             provider = ProviderFactory.create(
                 model_name="meta-llama/Llama-3.2-8B-Instruct"
             )
         """
-        # Auto-detect if not specified
+        # Auto-detect if not specified (TURU is prioritized)
         if provider_type is None:
             provider_type = ProviderFactory._detect_best_provider()
+            logger.info(f"Auto-detected provider: {provider_type}")
 
         provider_type = provider_type.lower()
 
