@@ -83,6 +83,11 @@ PDF, Word, Excel, PowerPoint, TXT, HTML, JSON, CSV, XML, Markdown
 
 Issues and Pull Requests are welcome!
 
+## Media & Feedback
+> **官方評語 (Qualcomm Feedback):** "The project delivers a complete solution that fully harnesses the Snapdragon X Elite NPU to showcase the power of on-device AI, creating an impressive and highly personalized user experience."
+>
+> **相關報導 (Related News):** [Yahoo News](https://tw.stock.yahoo.com/news/%E9%A6%96%E5%B1%8F-%E9%AB%98%E9%80%9A%E5%8F%B0%E7%81%A3ai%E9%BB%91%E5%AE%A2%E6%9D%BE-%E5%9C%93%E6%BB%A1%E8%90%BD%E5%B9%95-%E4%B8%89%E5%BC%B7%E5%9C%98%E9%9A%8A%E5%B1%95%E7%8F%BE%E9%82%8A%E7%B7%A3ai%E5%89%B5%E6%96%B0%E5%AF%A6%E5%8A%9B-010835638.html)
+
 ## License
 
 This project is licensed under the GPL v3 License - see the [LICENSE](LICENSE) file for details.
